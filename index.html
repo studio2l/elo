@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <link rel="stylesheet" type="text/css" href="ello.css">
+  </head>
+  <body style="display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:flex-end;">
+      <div style="font-size:2rem;">ello</div>
+      <div style="flex:1"></div>
+      <div style="font-size:1.2rem;width:3.3em;">태스크</div>
+      <select style="font-size:1.2rem;min-width:6em;"></select>
+    </div>
+    <div style="height:1rem;"></div>
+    <div style="display:flex;margin-bottom:0.3rem;">
+      <div class="item-box">프로젝트</div>
+      <div style="width:1rem;"></div>
+      <div class="item-box">샷</div>
+      <div style="width:1rem;"></div>
+      <div class="item-box">버전</div>
+    </div>
+    <div style="display:flex;flex:1;">
+      <div class="item-box" style="border-radius:2px;border:solid 1px grey;"></div>
+      <div style="width:1rem;"></div>
+      <div class="item-box" style="border-radius:2px;border:solid 1px grey;"></div>
+      <div style="width:1rem;"></div>
+      <div class="item-box" style="border-radius:2px;border:solid 1px grey;"></div>
+    </div>
+    <script>
+      // You can also require other files to run in this process
+      require('./renderer.js')
+    </script>
+  </body>
+</html>
