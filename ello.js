@@ -1,11 +1,27 @@
 var fs = require('fs');
 
-let projectRoot = process.env.PROJECT_ROOT;
-if (!projectRoot) {
-    throw Error("please set PROJECT_ROOT environment variable first");
+function init() {
+    let projectRoot = process.env.PROJECT_ROOT;
+    if (!projectRoot) {
+        notifyError("PROJECT_ROOT 환경변수를 설정해 주세요.");
+        return
+    }
+    if (!fs.existsSync(projectRoot)) {
+        fs.mkdirSync(projectRoot);
+    }
 }
-if (!fs.existsSync(projectRoot)) {
-    fs.mkdirSync(projectRoot);
+init();
+
+function notify(text) {
+    let notifier = document.getElementById("notifier");
+    notifier.style.backgroundColor = "";
+    notifier.innerText = text;
+}
+
+function notifyError(text) {
+    let notifier = document.getElementById("notifier");
+    notifier.style.backgroundColor = "#ef5350";
+    notifier.innerText = text;
 }
 
 let projectDirs = [
