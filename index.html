@@ -16,18 +16,18 @@
         <select id="task-menu" class="grey" style="min-width:6em"></select>
       </div>
       <div style="display:flex;margin-bottom:0.3rem;">
-        <div class="item-box">프로젝트</div>
+        <div class="item-label">프로젝트</div>
         <div style="width:1rem;"></div>
-        <div class="item-box">샷</div>
+        <div class="item-label">샷</div>
         <div style="width:1rem;"></div>
-        <div class="item-box">버전</div>
+        <div class="item-label">버전</div>
       </div>
       <div style="display:flex;flex:1;">
-        <div class="grey item-box"></div>
+        <div id="project-box" class="grey item-box"></div>
         <div style="width:1rem;"></div>
-        <div class="grey item-box"></div>
+        <div id="shot-box" class="grey item-box"></div>
         <div style="width:1rem;"></div>
-        <div class="grey item-box"></div>
+        <div id="version-box" class="grey item-box"></div>
       </div>
     </div>
     <div style="height: 3rem;"></div>
@@ -37,6 +37,7 @@
       // You can also require other files to run in this process
       let ello = require('./ello.js');
       ello.addTaskMenuItems();
+      ello.addProjectItems();
     </script>
   </body>
 </html>

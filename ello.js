@@ -1,7 +1,9 @@
 var fs = require('fs');
 
+let projectRoot = "";
+
 function init() {
-    let projectRoot = process.env.PROJECT_ROOT;
+    projectRoot = process.env.PROJECT_ROOT;
     if (!projectRoot) {
         notify("Ello를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
         disableAll();
@@ -11,6 +13,7 @@ function init() {
         fs.mkdirSync(projectRoot);
     }
 }
+
 init();
 
 function notify(text) {
@@ -102,5 +105,43 @@ exports.addTaskMenuItems = function() {
         let opt = document.createElement("option");
         opt.text = t;
         menu.add(opt);
+    }
+}
+
+function projects() {
+    let prjs = Array();
+    fs.readdirSync(projectRoot).forEach(f => {
+        let isDir = fs.lstatSync(projectRoot + "/" + f).isDirectory();
+        if (isDir) {
+            prjs.push(f);
+        }
+    });
+    return prjs;
+}
+
+function selectProject(id) {
+    let items = document.getElementsByClassName("project-item");
+    for (let item of items) {
+        item.classList.remove("selected");
+    }
+    let selected = document.getElementById(id);
+    selected.classList.add("selected");
+}
+
+exports.addProjectItems = function() {
+    let prjs = projects();
+    let pbox = document.getElementById("project-box");
+    if (!pbox) {
+        notify("project-box가 없습니다.");
+        return;
+    }
+    for (let i in prjs) {
+        let p = prjs[i];
+        let div = document.createElement("div");
+        div.id = "project-" + p;
+        div.className = "project-item";
+        div.innerText = p;
+        div.addEventListener("click", function() { selectProject(div.id); });
+        pbox.append(div);
     }
 }
