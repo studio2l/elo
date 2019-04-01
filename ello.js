@@ -28,6 +28,18 @@ let projectDirs = [
     "shot",
 ];
 
+let shotDirs = [
+    "plate",
+    "src",
+    "ref",
+    "pub",
+    "pub/cam",
+    "pub/geo",
+    "pub/char",
+    "task",
+    "render",
+];
+
 function createDirs(curdir, dirs) {
     if (!dirs) {
         return;
