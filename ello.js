@@ -28,6 +28,18 @@ let projectDirs = [
     "shot",
 ];
 
+let tasks = [
+    "model",
+    "track",
+    "rig",
+    "ani",
+    "light",
+    "fx",
+    "matte",
+    "motion",
+    "comp",
+];
+
 let shotDirs = [
     "plate",
     "src",
@@ -66,3 +78,15 @@ function createProject(prjname) {
     createDirs(prjDir, projectDirs);
 }
 
+exports.addTaskMenuItems = function() {
+    let menu = document.getElementById("task-menu");
+    if (!menu) {
+        throw Error("not found task-menu")
+    }
+    for (let i in tasks) {
+        let t = tasks[i];
+        let opt = document.createElement("option");
+        opt.text = t;
+        menu.add(opt);
+    }
+}

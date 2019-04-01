@@ -10,7 +10,7 @@
       <div style="font-size:2rem;">ello</div>
       <div style="flex:1"></div>
       <div style="font-size:1.2rem;width:3.3em;">태스크</div>
-      <select style="font-size:1.2rem;min-width:6em;"></select>
+      <select id="task-menu" style="font-size:1.2rem;min-width:6em;"></select>
     </div>
     <div style="height:1rem;"></div>
     <div style="display:flex;margin-bottom:0.3rem;">
@@ -29,7 +29,8 @@
     </div>
     <script>
       // You can also require other files to run in this process
-      require('./ello.js')
+      let ello = require('./ello.js');
+      ello.addTaskMenuItems();
     </script>
   </body>
 </html>
