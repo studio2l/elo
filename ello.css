@@ -8,10 +8,20 @@ body {
 	margin: 0;
 	padding: 0.5rem;
 	min-width: 50rem;
+	background-color: #202124;
+	color: white;
+	font-family: 'Open Sans', sans-serif;
 }
 
 .item-box {
 	flex: 1;
+	border-radius: 2px;
 }
 
+.grey {
+	background-color: #CFD8DC;
+}
 
+.darkgrey {
+	background-color: #303134;
+}

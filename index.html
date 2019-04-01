@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <title>Ello</title>
     <link rel="stylesheet" type="text/css" href="ello.css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
   </head>
   <body style="display:flex;flex-direction:column;">
     <div style="flex:1;display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:flex-end;">
-        <div style="font-size:2rem;">Ello</div>
-        <div style="flex:1"></div>
-        <div style="font-size:1.2rem;width:3.3em;">태스크</div>
-        <select id="task-menu" style="font-size:1.2rem;min-width:6em;"></select>
+      <div style="font-size:2.5rem;">Ello</div>
+      <div style="border-top:solid 1px #37474F;"></div>
+      <div style="display:flex;margin:0.5rem 0 1.5rem 0;align-items:center;">
+        <div style="flex:1;"></div>
+        <div style="width:3.3em;">태스크</div>
+        <select id="task-menu" class="grey" style="min-width:6em"></select>
       </div>
-      <div style="height:1rem;"></div>
       <div style="display:flex;margin-bottom:0.3rem;">
         <div class="item-box">프로젝트</div>
         <div style="width:1rem;"></div>
@@ -22,15 +23,15 @@
         <div class="item-box">버전</div>
       </div>
       <div style="display:flex;flex:1;">
-        <div class="item-box" style="border-radius:2px;border:solid 1px grey;"></div>
+        <div class="grey item-box"></div>
         <div style="width:1rem;"></div>
-        <div class="item-box" style="border-radius:2px;border:solid 1px grey;"></div>
+        <div class="grey item-box"></div>
         <div style="width:1rem;"></div>
-        <div class="item-box" style="border-radius:2px;border:solid 1px grey;"></div>
+        <div class="grey item-box"></div>
       </div>
     </div>
-    <div style="height: 1rem;"></div>
-    <div id="notifier" style="border:solid 1px grey;border-radius:2px;padding: 0.5rem;height:1.2rem;">
+    <div style="height: 3rem;"></div>
+    <div id="notifier" class="darkgrey" style="padding: 0.5rem;height:1.2rem;">
     </div>
     <script>
       // You can also require other files to run in this process

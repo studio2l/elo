@@ -4,6 +4,7 @@ function init() {
     let projectRoot = process.env.PROJECT_ROOT;
     if (!projectRoot) {
         notifyError("Ello를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
+        disableAll();
         return;
     }
     if (!fs.existsSync(projectRoot)) {
@@ -14,13 +15,15 @@ init();
 
 function notify(text) {
     let notifier = document.getElementById("notifier");
+    notifier.style.color = "white";
     notifier.style.backgroundColor = "";
     notifier.innerText = text;
 }
 
 function notifyError(text) {
     let notifier = document.getElementById("notifier");
-    notifier.style.backgroundColor = "#ef5350";
+    notifier.style.color = "black";
+    notifier.style.backgroundColor = "#FDD835";
     notifier.innerText = text;
 }
 
