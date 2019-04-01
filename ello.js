@@ -3,7 +3,7 @@ var fs = require('fs');
 function init() {
     let projectRoot = process.env.PROJECT_ROOT;
     if (!projectRoot) {
-        notifyError("Ello를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
+        notify("Ello를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
         disableAll();
         return;
     }
@@ -15,15 +15,6 @@ init();
 
 function notify(text) {
     let notifier = document.getElementById("notifier");
-    notifier.style.color = "white";
-    notifier.style.backgroundColor = "";
-    notifier.innerText = text;
-}
-
-function notifyError(text) {
-    let notifier = document.getElementById("notifier");
-    notifier.style.color = "black";
-    notifier.style.backgroundColor = "#FDD835";
     notifier.innerText = text;
 }
 
@@ -76,14 +67,14 @@ function createDirs(curdir, dirs) {
         return;
     }
     if (!fs.existsSync(curdir)) {
-        notifyError("current directory not exist");
+        notify("current directory not exist");
         return;
     }
     for (let i in dirs) {
         let d = dirs[i];
         let child = curdir + "/" + d;
         if (fs.existsSync(child)) {
-            notifyError("child directory already exist");
+            notify("child directory already exist");
             return;
         }
         fs.mkdirSync(child);
@@ -93,7 +84,7 @@ function createDirs(curdir, dirs) {
 function createProject(prjname) {
     let prjDir = projectRoot + "/" + prjname;
     if (fs.existsSync(prjDir)) {
-        notifyError("project directory already exist");
+        notify("project directory already exist");
         return;
     }
     fs.mkdirSync(prjDir);
@@ -103,7 +94,7 @@ function createProject(prjname) {
 exports.addTaskMenuItems = function() {
     let menu = document.getElementById("task-menu");
     if (!menu) {
-        notifyError("not found task-menu");
+        notify("not found task-menu");
         return;
     }
     for (let i in tasks) {
