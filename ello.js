@@ -3,8 +3,8 @@ var fs = require('fs');
 function init() {
     let projectRoot = process.env.PROJECT_ROOT;
     if (!projectRoot) {
-        notifyError("PROJECT_ROOT 환경변수를 설정해 주세요.");
-        return
+        notifyError("Ello를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
+        return;
     }
     if (!fs.existsSync(projectRoot)) {
         fs.mkdirSync(projectRoot);
@@ -73,13 +73,15 @@ function createDirs(curdir, dirs) {
         return;
     }
     if (!fs.existsSync(curdir)) {
-        throw "current directory not exist";
+        notifyError("current directory not exist");
+        return;
     }
     for (let i in dirs) {
         let d = dirs[i];
         let child = curdir + "/" + d;
         if (fs.existsSync(child)) {
-            throw "child directory already exist";
+            notifyError("child directory already exist");
+            return;
         }
         fs.mkdirSync(child);
     }
@@ -88,7 +90,8 @@ function createDirs(curdir, dirs) {
 function createProject(prjname) {
     let prjDir = projectRoot + "/" + prjname;
     if (fs.existsSync(prjDir)) {
-        throw "project directory already exist";
+        notifyError("project directory already exist");
+        return;
     }
     fs.mkdirSync(prjDir);
     createDirs(prjDir, projectDirs);
@@ -97,7 +100,8 @@ function createProject(prjname) {
 exports.addTaskMenuItems = function() {
     let menu = document.getElementById("task-menu");
     if (!menu) {
-        throw Error("not found task-menu")
+        notifyError("not found task-menu");
+        return;
     }
     for (let i in tasks) {
         let t = tasks[i];
