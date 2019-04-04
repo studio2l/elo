@@ -7,6 +7,19 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
   </head>
   <body style="display:flex;flex-direction:column;">
+    <div id="modal">
+      <div style="widht:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+        <div id="modal-box" class="grey">
+          <div>
+            <input id="modal-input" /><button id="modal-apply">생성</button>
+          </div>
+          <div style="height:1rem;"></div>
+          <div style="display:flex;flex-direction:column;">
+            <button id="modal-close" onclick="elo.closeModal()">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div style="display:flex;margin:0.5rem 0 1.5rem 0;align-items:center;">
       <div style="flex:1;"></div>
       <div style="width:3.3em;">태스크</div>
@@ -14,7 +27,7 @@
     </div>
     <div style="flex:1;display:flex;">
       <div class="box-container">
-        <div class="box-label">프로젝트</div>
+        <div class="box-label"><div>프로젝트</div><div class="add-button" onclick="elo.openModal('프로젝트')">[+]</div></div>
         <div id="project-box" class="grey item-box"></div>
       </div>
       <div class="box-container">
@@ -36,7 +49,7 @@
       // You can also require other files to run in this process
       let elo = require('./elo.js');
       elo.addTaskMenuItems();
-      elo.addProjectItems();
+      elo.reloadProjects();
     </script>
   </body>
 </html>

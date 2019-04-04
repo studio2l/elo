@@ -16,6 +16,39 @@ function init() {
 
 init();
 
+function openModal(kind) {
+    let m = document.getElementById("modal");
+    m.style.display = "block";
+    let input = document.getElementById("modal-input");
+    input.innerText = "";
+    input.placeholder = "생성 할 " + kind + " 이름";
+    let apply = document.getElementById("modal-apply");
+    apply.onclick = function() { createItem(kind); };
+}
+
+exports.openModal = openModal;
+
+function createItem(kind) {
+    let name = document.getElementById("modal-input").value;
+    if (kind == "프로젝트") {
+        createProject(name);
+        reloadProjects();
+    } else if (kind == "샷") {
+    } else if (kind == "태스크") {
+    } else if (kind == "버전") {
+    }
+    closeModal();
+}
+
+exports.createItem = createItem;
+
+function closeModal() {
+    let m = document.getElementById("modal");
+    m.style.display = "none";
+}
+
+exports.closeModal = closeModal;
+
 function notify(text) {
     let notifier = document.getElementById("notifier");
     notifier.innerText = text;
@@ -94,7 +127,7 @@ function createProject(prjname) {
     createDirs(prjDir, projectDirs);
 }
 
-exports.addTaskMenuItems = function() {
+function addTaskMenuItems() {
     let menu = document.getElementById("task-menu");
     if (!menu) {
         notify("not found task-menu");
@@ -107,6 +140,8 @@ exports.addTaskMenuItems = function() {
         menu.add(opt);
     }
 }
+
+exports.addTaskMenuItems = addTaskMenuItems;
 
 function projects() {
     let prjs = Array();
@@ -128,13 +163,14 @@ function selectProject(id) {
     selected.classList.add("selected");
 }
 
-exports.addProjectItems = function() {
+function reloadProjects() {
     let prjs = projects();
     let pbox = document.getElementById("project-box");
     if (!pbox) {
         notify("project-box가 없습니다.");
         return;
     }
+    pbox.innerText = "";
     for (let i in prjs) {
         let p = prjs[i];
         let div = document.createElement("div");
@@ -145,3 +181,5 @@ exports.addProjectItems = function() {
         pbox.append(div);
     }
 }
+
+exports.reloadProjects = reloadProjects;
