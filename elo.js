@@ -5,7 +5,7 @@ let projectRoot = "";
 function init() {
     projectRoot = process.env.PROJECT_ROOT;
     if (!projectRoot) {
-        notify("Ello를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
+        notify("Elo를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
         disableAll();
         return;
     }
