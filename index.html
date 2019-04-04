@@ -7,29 +7,30 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
   </head>
   <body style="display:flex;flex-direction:column;">
-    <div style="flex:1;display:flex;flex-direction:column;">
-      <div style="display:flex;margin:0.5rem 0 1.5rem 0;align-items:center;">
-        <div style="flex:1;"></div>
-        <div style="width:3.3em;">태스크</div>
-        <select id="task-menu" class="grey" style="min-width:6em"></select>
-      </div>
-      <div style="display:flex;margin-bottom:0.3rem;">
+    <div style="display:flex;margin:0.5rem 0 1.5rem 0;align-items:center;">
+      <div style="flex:1;"></div>
+      <div style="width:3.3em;">태스크</div>
+      <select id="task-menu" class="grey" style="min-width:6em"></select>
+    </div>
+    <div style="flex:1;display:flex;">
+      <div class="box-container">
         <div class="item-label">프로젝트</div>
-        <div style="width:1rem;"></div>
-        <div class="item-label">샷</div>
-        <div style="width:1rem;"></div>
-        <div class="item-label">버전</div>
-      </div>
-      <div style="display:flex;flex:1;">
         <div id="project-box" class="grey item-box"></div>
-        <div style="width:1rem;"></div>
+      </div>
+      <div class="box-container">
+        <div class="item-label">샷</div>
         <div id="shot-box" class="grey item-box"></div>
-        <div style="width:1rem;"></div>
+      </div>
+      <div class="box-container">
+        <div class="item-label">태스크</div>
+        <div id="task-box" class="grey item-box"></div>
+      </div>
+      <div class="box-container">
+        <div class="item-label">버전</div>
         <div id="version-box" class="grey item-box"></div>
       </div>
     </div>
-    <div style="height: 3rem;"></div>
-    <div id="notifier" class="darkgrey" style="padding: 0.5rem;height:1.2rem;color:white;">
+    <div id="notifier" class="darkgrey" style="padding: 0.5rem;height:1.2rem;color:white;margin:0.5rem;">
     </div>
     <script>
       // You can also require other files to run in this process
