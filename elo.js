@@ -152,22 +152,22 @@ function createProject(prj) {
 }
 
 function createShot(prj, shot) {
-    let shotDir = projectRoot + "/" + prj + "/shot/" + shot;
-    if (fs.existsSync(shotDir)) {
+    let d = shotPath(prj, shot);
+    if (fs.existsSync(d)) {
         notify("shot directory already exist");
         return;
     }
-    fs.mkdirSync(shotDir, { recursive: true });
-    createDirs(shotDir, shotDirs);
+    fs.mkdirSync(d, { recursive: true });
+    createDirs(d, shotDirs);
 }
 
 function createTask(prj, shot, task) {
-    let taskDir = projectRoot + "/" + prj + "/shot/" + shot + "/task/" + task;
-    if (fs.existsSync(taskDir)) {
+    let d = taskPath(prj, shot, task);
+    if (fs.existsSync(d)) {
         notify("task directory already exist");
         return;
     }
-    fs.mkdirSync(taskDir, { recursive: true });
+    fs.mkdirSync(d, { recursive: true });
 }
 
 function createVersion(prj, shot, task, version) {
@@ -201,23 +201,41 @@ function childDirs(d) {
     return cds;
 }
 
+function projectPath(prj) {
+    return projectRoot + "/" + prj;
+}
+
+function shotPath(prj, shot) {
+    return projectRoot + "/" + prj + "/shot/" + shot;
+}
+
+function taskPath(prj, shot, task) {
+    return projectRoot + "/" + prj + "/shot/" + shot + "/task/" + task;
+}
+
+function versionPath(prj, shot, task) {
+    // TODO: 디자인 필요
+    return null;
+}
+
 function projects() {
     let d = projectRoot;
     return childDirs(d);
 }
 
 function shotsOf(prj) {
-    let d = projectRoot + "/" + prj + "/shot";
+    let d = projectPath(prj) + "/shot";
     return childDirs(d);
 }
 
 function tasksOf(prj, shot) {
-    let d = projectRoot + "/" + prj + "/shot/" + shot + "/task";
+    let d = shotPath(prj, shot) + "/task";
     return childDirs(d);
 }
 
 function versionsOf(prj, shot, task, prog) {
-    return Array(); // 아직 디자인 되지 않음.
+    // TODO: 디자인 필요
+    return Array();
 }
 
 function selectProject(prj) {
