@@ -221,6 +221,9 @@ function versionsOf(prj, shot, task, prog) {
 }
 
 function selectProject(prj) {
+    clearShots();
+    clearTasks();
+    clearVersions();
     let items = document.getElementsByClassName("project-item");
     for (let item of items) {
         item.classList.remove("selected");
@@ -228,11 +231,11 @@ function selectProject(prj) {
     let selected = document.getElementById("project-" + prj);
     selected.classList.add("selected");
     reloadShots(prj);
-    clearTasks();
-    clearVersions();
 }
 
 function selectShot(prj, shot) {
+    clearTasks();
+    clearVersions();
     let items = document.getElementsByClassName("shot-item");
     for (let item of items) {
         item.classList.remove("selected");
@@ -240,10 +243,10 @@ function selectShot(prj, shot) {
     let selected = document.getElementById("shot-" + shot);
     selected.classList.add("selected");
     reloadTasks(prj, shot);
-    clearVersions();
 }
 
 function selectTask(prj, shot, task) {
+    clearVersions();
     let items = document.getElementsByClassName("task-item");
     for (let item of items) {
         item.classList.remove("selected");
