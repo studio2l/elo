@@ -59,6 +59,8 @@ body {
 .item {
 	cursor: pointer;
 	padding: 0.3rem 0.5rem;
+	background-color: #BDBDBD;
+	border-bottom: solid 1px #606268;
 }
 
 .selected {
@@ -66,7 +68,7 @@ body {
 }
 
 .grey {
-	background-color: #BDBDBD;
+	background-color: #9B9B9B;
 }
 
 .darkgrey {
