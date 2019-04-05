@@ -56,20 +56,13 @@ body {
 	color: black;
 }
 
+.item {
+	cursor: pointer;
+	padding: 0.3rem 0.5rem;
+}
+
 .selected {
 	background-color: white;
-}
-
-.project-item {
-	padding: 0.3rem 0.5rem;
-}
-
-.shot-item {
-	padding: 0.3rem 0.5rem;
-}
-
-.project-item {
-	padding: 0.3rem 0.5rem;
 }
 
 .grey {

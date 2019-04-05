@@ -325,7 +325,7 @@ function reloadProjects() {
     for (let prj of prjs) {
         let div = document.createElement("div");
         div.id = "project-" + prj;
-        div.className = "project-item";
+        div.classList.add("project-item", "item");
         div.innerText = prj;
         div.addEventListener("click", function() { selectProject(prj); });
         pbox.append(div);
@@ -348,7 +348,7 @@ function reloadShots(prj) {
     for (let s of shotsOf(prj)) {
         let div = document.createElement("div");
         div.id = "shot-" + s;
-        div.className = "shot-item";
+        div.classList.add("shot-item", "item");
         div.innerText = s;
         div.addEventListener("click", function() { selectShot(prj, s); });
         sbox.append(div);
@@ -373,7 +373,7 @@ function reloadTasks(prj, shot) {
     for (let t of tasksOf(prj, shot)) {
         let div = document.createElement("div");
         div.id = "task-" + t;
-        div.className = "task-item";
+        div.classList.add("task-item", "item");
         div.innerText = t;
         div.addEventListener("click", function() { selectTask(prj, shot, t); });
         tbox.append(div);
@@ -402,7 +402,7 @@ function reloadVersions(prj, shot, task) {
     for (let v of versionsOf(prj, shot, task)) {
         let div = document.createElement("div");
         div.id = "version-" + v;
-        div.className = "version-item";
+        div.classList.add("version-item", "item");
         div.innerText = v;
         div.addEventListener("click", function() { selectVersion(prj, shot, task, v); });
         vbox.append(div);
