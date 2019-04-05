@@ -6,7 +6,6 @@ function init() {
     projectRoot = process.env.PROJECT_ROOT;
     if (!projectRoot) {
         notify("Elo를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
-        disableAll();
         return;
     }
     if (!fs.existsSync(projectRoot)) {
@@ -17,11 +16,29 @@ function init() {
 init();
 
 function openModal(kind) {
+    if (kind == "shot" && !currentProject()) {
+        notify("아직 프로젝트를 선택하지 않았습니다.");
+        return;
+    }
+    if (kind == "task" && !currentShot()) {
+        notify("아직 샷을 선택하지 않았습니다.");
+        return;
+    }
+    if (kind == "version" && !currentTask()) {
+        notify("아직 태스크를 선택하지 않았습니다.");
+        return;
+    }
     let m = document.getElementById("modal");
     m.style.display = "block";
-    let input = document.getElementById("modal-input");
-    input.innerText = "";
-    input.placeholder = "생성 할 " + kind + " 이름";
+    let input = document.getElementById("modal-input").value;
+    input.value = "";
+    kor = {
+        "project": "프로젝트",
+        "shot": "샷",
+        "task": "태스크",
+        "version": "버전",
+    }
+    input.placeholder = "생성 할 " + kor[kind] + " 이름";
     let apply = document.getElementById("modal-apply");
     apply.onclick = function() { createItem(kind); };
 }
@@ -30,12 +47,18 @@ exports.openModal = openModal;
 
 function createItem(kind) {
     let name = document.getElementById("modal-input").value;
-    if (kind == "프로젝트") {
+    if (kind == "project") {
         createProject(name);
         reloadProjects();
-    } else if (kind == "샷") {
-    } else if (kind == "태스크") {
-    } else if (kind == "버전") {
+    } else if (kind == "shot") {
+        createShot(currentProject(), name);
+        reloadShots(currentProject());
+    } else if (kind == "task") {
+        createTask(currentProject(), currentShot(), name);
+        reloadTasks(currentProject(), currentShot());
+    } else if (kind == "version") {
+        createVersion(currentProject(), currentShot(), currentTask(), name);
+        reloadVersions(currentProject(), currentShot(), currentTask());
     }
     closeModal();
 }
@@ -98,33 +121,57 @@ let shotDirs = [
     "render",
 ];
 
-function createDirs(curdir, dirs) {
+function createDirs(parentd, dirs) {
+    if (!parentd) {
+        notify("부모 디렉토리는 비어있을 수 없습니다.");
+        throw Error("parent directory should not be empty");
+    }
     if (!dirs) {
         return;
     }
-    if (!fs.existsSync(curdir)) {
-        notify("current directory not exist");
-        return;
+    if (!fs.existsSync(parentd)) {
+        // TODO: 부모 디렉토리 생성할 지 물어보기
     }
-    for (let i in dirs) {
-        let d = dirs[i];
-        let child = curdir + "/" + d;
+    for (let d of dirs) {
+        let child = parentd + "/" + d;
         if (fs.existsSync(child)) {
-            notify("child directory already exist");
-            return;
+            continue;
         }
-        fs.mkdirSync(child);
+        fs.mkdirSync(child, { recursive: true });
     }
 }
 
-function createProject(prjname) {
-    let prjDir = projectRoot + "/" + prjname;
+function createProject(prj) {
+    let prjDir = projectRoot + "/" + prj;
     if (fs.existsSync(prjDir)) {
         notify("project directory already exist");
         return;
     }
-    fs.mkdirSync(prjDir);
+    fs.mkdirSync(prjDir, { recursive: true });
     createDirs(prjDir, projectDirs);
+}
+
+function createShot(prj, shot) {
+    let shotDir = projectRoot + "/" + prj + "/shot/" + shot;
+    if (fs.existsSync(shotDir)) {
+        notify("shot directory already exist");
+        return;
+    }
+    fs.mkdirSync(shotDir, { recursive: true });
+    createDirs(shotDir, shotDirs);
+}
+
+function createTask(prj, shot, task) {
+    let taskDir = projectRoot + "/" + prj + "/shot/" + shot + "/task/" + task;
+    if (fs.existsSync(taskDir)) {
+        notify("task directory already exist");
+        return;
+    }
+    fs.mkdirSync(taskDir, { recursive: true });
+}
+
+function createVersion(prj, shot, task, version) {
+    // TODO
 }
 
 function addTaskMenuItems() {
@@ -143,24 +190,128 @@ function addTaskMenuItems() {
 
 exports.addTaskMenuItems = addTaskMenuItems;
 
-function projects() {
-    let prjs = Array();
-    fs.readdirSync(projectRoot).forEach(f => {
-        let isDir = fs.lstatSync(projectRoot + "/" + f).isDirectory();
+function childDirs(d) {
+    let cds = Array();
+    fs.readdirSync(d).forEach(f => {
+        let isDir = fs.lstatSync(d + "/" + f).isDirectory();
         if (isDir) {
-            prjs.push(f);
+            cds.push(f);
         }
     });
-    return prjs;
+    return cds;
 }
 
-function selectProject(id) {
+function projects() {
+    let d = projectRoot;
+    return childDirs(d);
+}
+
+function shotsOf(prj) {
+    let d = projectRoot + "/" + prj + "/shot";
+    return childDirs(d);
+}
+
+function tasksOf(prj, shot) {
+    let d = projectRoot + "/" + prj + "/shot/" + shot + "/task";
+    return childDirs(d);
+}
+
+function versionsOf(prj, shot, task, prog) {
+    return Array(); // 아직 디자인 되지 않음.
+}
+
+function selectProject(prj) {
     let items = document.getElementsByClassName("project-item");
     for (let item of items) {
         item.classList.remove("selected");
     }
-    let selected = document.getElementById(id);
+    let selected = document.getElementById("project-" + prj);
     selected.classList.add("selected");
+    reloadShots(prj);
+    clearTasks();
+    clearVersions();
+}
+
+function selectShot(prj, shot) {
+    let items = document.getElementsByClassName("shot-item");
+    for (let item of items) {
+        item.classList.remove("selected");
+    }
+    let selected = document.getElementById("shot-" + shot);
+    selected.classList.add("selected");
+    reloadTasks(prj, shot);
+    clearVersions();
+}
+
+function selectTask(prj, shot, task) {
+    let items = document.getElementsByClassName("task-item");
+    for (let item of items) {
+        item.classList.remove("selected");
+    }
+    let selected = document.getElementById("task-" + task);
+    selected.classList.add("selected");
+    reloadVersions(prj, shot, task);
+}
+
+function selectVersion(prj, shot, task, version) {
+    let items = document.getElementsByClassName("version-item");
+    for (let item of items) {
+        item.classList.remove("selected");
+    }
+    let selected = document.getElementById("version-" + version);
+    selected.classList.add("selected");
+}
+
+function currentProject() {
+    let items = document.getElementsByClassName("project-item");
+    if (!items) {
+        notify("project-item이 없습니다.");
+        throw Error("project-item not found");
+    }
+    for (let item of items) {
+        if (item.classList.contains("selected")) {
+            return item.innerText;
+        }
+    }
+}
+
+function currentShot() {
+    let items = document.getElementsByClassName("shot-item");
+    if (!items) {
+        notify("shot-item이 없습니다.");
+        throw Error("shot-item not found");
+    }
+    for (let item of items) {
+        if (item.classList.contains("selected")) {
+            return item.innerText;
+        }
+    }
+}
+
+function currentTask() {
+    let items = document.getElementsByClassName("task-item");
+    if (!items) {
+        notify("task-item이 없습니다.");
+        throw Error("task-item not found");
+    }
+    for (let item of items) {
+        if (item.classList.contains("selected")) {
+            return item.innerText;
+        }
+    }
+}
+
+function currentVersion() {
+    let items = document.getElementsByClassName("version-item");
+    if (!items) {
+        notify("version-item이 없습니다.");
+        throw Error("project-item not found");
+    }
+    for (let item of items) {
+        if (item.classList.contains("selected")) {
+            return item.innerText;
+        }
+    }
 }
 
 function reloadProjects() {
@@ -168,18 +319,113 @@ function reloadProjects() {
     let pbox = document.getElementById("project-box");
     if (!pbox) {
         notify("project-box가 없습니다.");
-        return;
+        throw Error("project-box not found");
     }
     pbox.innerText = "";
-    for (let i in prjs) {
-        let p = prjs[i];
+    for (let prj of prjs) {
         let div = document.createElement("div");
-        div.id = "project-" + p;
+        div.id = "project-" + prj;
         div.className = "project-item";
-        div.innerText = p;
-        div.addEventListener("click", function() { selectProject(div.id); });
+        div.innerText = prj;
+        div.addEventListener("click", function() { selectProject(prj); });
         pbox.append(div);
     }
 }
 
 exports.reloadProjects = reloadProjects;
+
+function reloadShots(prj) {
+    if (!prj) {
+        notify("선택된 프로젝트가 없습니다.");
+        return;
+    }
+    let sbox = document.getElementById("shot-box");
+    if (!sbox) {
+        notify("shot-box가 없습니다.");
+        throw Error("shot-box not found");
+    }
+    sbox.innerText = "";
+    for (let s of shotsOf(prj)) {
+        let div = document.createElement("div");
+        div.id = "shot-" + s;
+        div.className = "shot-item";
+        div.innerText = s;
+        div.addEventListener("click", function() { selectShot(prj, s); });
+        sbox.append(div);
+    }
+}
+
+function reloadTasks(prj, shot) {
+    if (!prj) {
+        notify("선택된 프로젝트가 없습니다.");
+        return;
+    }
+    if (!shot) {
+        notify("선택된 샷이 없습니다.");
+        return;
+    }
+    let tbox = document.getElementById("task-box");
+    if (!tbox) {
+        notify("task-box가 없습니다.");
+        throw Error("task-box not found");
+    }
+    tbox.innerText = "";
+    for (let t of tasksOf(prj, shot)) {
+        let div = document.createElement("div");
+        div.id = "task-" + t;
+        div.className = "task-item";
+        div.innerText = t;
+        div.addEventListener("click", function() { selectTask(prj, shot, t); });
+        tbox.append(div);
+    }
+}
+
+function reloadVersions(prj, shot, task) {
+    if (!prj) {
+        notify("선택된 프로젝트가 없습니다.");
+        return;
+    }
+    if (!shot) {
+        notify("선택된 샷이 없습니다.");
+        return;
+    }
+    if (!task) {
+        notify("선택된 태스크가 없습니다.");
+        return;
+    }
+    let vbox = document.getElementById("version-box");
+    if (!vbox) {
+        notify("version-box가 없습니다.");
+        throw Error("version-box not found");
+    }
+    vbox.innerText = "";
+    for (let v of versionsOf(prj, shot, task)) {
+        let div = document.createElement("div");
+        div.id = "version-" + v;
+        div.className = "version-item";
+        div.innerText = v;
+        div.addEventListener("click", function() { selectVersion(prj, shot, task, v); });
+        vbox.append(div);
+    }
+}
+
+function clearBox(id) {
+    let box = document.getElementById(id);
+    if (!box) {
+        notify(id + "가 없습니다.");
+        throw Error(id + " not found");
+    }
+    box.innerText = "";
+}
+
+function clearShots() {
+    clearBox("version-box");
+}
+
+function clearTasks() {
+    clearBox("task-box");
+}
+
+function clearVersions() {
+    clearBox("version-box");
+}
