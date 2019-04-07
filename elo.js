@@ -45,6 +45,7 @@ function openModal(kind) {
             closeModal();
         }
     }
+    input.focus();
     let apply = document.getElementById("modal-apply");
     apply.onclick = function() {
         createItem(kind);
