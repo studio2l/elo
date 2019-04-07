@@ -209,6 +209,10 @@ function addTaskMenuItems() {
 exports.addTaskMenuItems = addTaskMenuItems;
 
 function childDirs(d) {
+    if (!fs.existsSync(d)) {
+        notify(d + " 디렉토리가 존재하지 않습니다.");
+        throw Error(d + " not exists");
+    }
     let cds = Array();
     fs.readdirSync(d).forEach(f => {
         let isDir = fs.lstatSync(d + "/" + f).isDirectory();
