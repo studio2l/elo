@@ -157,7 +157,7 @@ function createDirs(parentd, dirs) {
 function createProject(prj) {
     let prjDir = projectRoot + "/" + prj;
     if (fs.existsSync(prjDir)) {
-        notify("project directory already exist");
+        notify("프로젝트 디렉토리가 이미 존재합니다.");
         return;
     }
     fs.mkdirSync(prjDir, { recursive: true });
@@ -167,7 +167,7 @@ function createProject(prj) {
 function createShot(prj, shot) {
     let d = shotPath(prj, shot);
     if (fs.existsSync(d)) {
-        notify("shot directory already exist");
+        notify("샷 디렉토리가 이미 존재합니다.");
         return;
     }
     fs.mkdirSync(d, { recursive: true });
@@ -177,7 +177,7 @@ function createShot(prj, shot) {
 function createTask(prj, shot, task) {
     let d = taskPath(prj, shot, task);
     if (fs.existsSync(d)) {
-        notify("task directory already exist");
+        notify("태스크 디렉토리가 이미 존재합니다.");
         return;
     }
     fs.mkdirSync(d, { recursive: true });
@@ -190,7 +190,7 @@ function createVersion(prj, shot, task, version) {
 function addTaskMenuItems() {
     let menu = document.getElementById("task-menu");
     if (!menu) {
-        notify("not found task-menu");
+        notify("task-menu가 없습니다.");
         return;
     }
     for (let i in tasks) {
