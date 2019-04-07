@@ -42,10 +42,14 @@ function openModal(kind) {
     input.onkeydown = function(ev) {
         if (ev.key == "Enter") {
             createItem(kind);
+            closeModal();
         }
     }
     let apply = document.getElementById("modal-apply");
-    apply.onclick = function() { createItem(kind); };
+    apply.onclick = function() {
+        createItem(kind);
+        closeModal();
+    };
 }
 
 exports.openModal = openModal;
@@ -65,7 +69,6 @@ function createItem(kind) {
         createVersion(currentProject(), currentShot(), currentTask(), name);
         reloadVersions(currentProject(), currentShot(), currentTask());
     }
-    closeModal();
 }
 
 exports.createItem = createItem;
