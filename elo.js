@@ -39,6 +39,11 @@ function openModal(kind) {
         "version": "버전",
     }
     input.placeholder = "생성 할 " + kor[kind] + " 이름";
+    input.onkeydown = function(ev) {
+        if (ev.key == "Enter") {
+            createItem(kind);
+        }
+    }
     let apply = document.getElementById("modal-apply");
     apply.onclick = function() { createItem(kind); };
 }
