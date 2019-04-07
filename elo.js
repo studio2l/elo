@@ -90,6 +90,11 @@ function notify(text) {
     notifier.innerText = text;
 }
 
+function clearNotify() {
+    let notifier = document.getElementById("notifier");
+    notifier.innerText = "";
+}
+
 let projectDirs = [
     "asset",
     "doc",
@@ -252,6 +257,7 @@ function versionsOf(prj, shot, task, prog) {
 }
 
 function selectProject(prj) {
+    clearNotify();
     clearShots();
     clearTasks();
     clearVersions();
@@ -265,6 +271,7 @@ function selectProject(prj) {
 }
 
 function selectShot(prj, shot) {
+    clearNotify();
     clearTasks();
     clearVersions();
     let items = document.getElementsByClassName("shot-item");
@@ -277,6 +284,7 @@ function selectShot(prj, shot) {
 }
 
 function selectTask(prj, shot, task) {
+    clearNotify();
     clearVersions();
     let items = document.getElementsByClassName("task-item");
     for (let item of items) {
@@ -288,6 +296,7 @@ function selectTask(prj, shot, task) {
 }
 
 function selectVersion(prj, shot, task, version) {
+    clearNotify();
     let items = document.getElementsByClassName("version-item");
     for (let item of items) {
         item.classList.remove("selected");
