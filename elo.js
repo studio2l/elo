@@ -56,6 +56,10 @@ exports.openModal = openModal;
 
 function createItem(kind) {
     let name = document.getElementById("modal-input").value;
+    if (!name) {
+        notify("생성할 항목의 이름을 설정하지 않았습니다.");
+        return;
+    }
     if (kind == "project") {
         createProject(name);
         reloadProjects();
