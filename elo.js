@@ -30,7 +30,7 @@ function openModal(kind) {
     }
     let m = document.getElementById("modal");
     m.style.display = "block";
-    let input = document.getElementById("modal-input").value;
+    let input = document.getElementById("modal-input");
     input.value = "";
     kor = {
         "project": "프로젝트",
