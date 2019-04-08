@@ -1,4 +1,5 @@
-var fs = require('fs');
+var fs = require("fs");
+var proc = require("child_process");
 
 let projectRoot = "";
 
@@ -150,6 +151,32 @@ let taskDirs = {
     ],
 }
 
+let defaultProgram = {
+    "fx": "houdini",
+}
+
+let createSceneFunc = {
+    "fx": function(prj, shot, elem, prog) {
+        let d = taskPath(prj, shot, "fx")
+        if (!d) {
+            notify("태스크 디렉토리가 없습니다.")
+            throw Error("task directory not found")
+        }
+        if (!prog) {
+            notify("요소를 선택하지 않았습니다.")
+            throw Error("please set element")
+        }
+        if (prog == "houdini") {
+            let s = d + "/" + prj + "_" + shot + "_" + elem + "_v001.hip";
+            console.log(s);
+            proc.execFileSync("hython", ["-c", `hou.hipFile.save('${s}')`])
+            return
+        }
+        notify(prog + "는 정의되지 않은 프로그램입니다.");
+        throw Error("program not defined");
+    }
+}
+
 function createDirs(parentd, dirs) {
     if (!parentd) {
         notify("부모 디렉토리는 비어있을 수 없습니다.");
@@ -205,6 +232,11 @@ function createTask(prj, shot, task) {
         let sd = d + "/" + s;
         fs.mkdirSync(sd);
     }
+    let createFn = createSceneFunc[task];
+    if (!createFn) {
+        return
+    }
+    createFn(prj, shot, "main", defaultProgram[task]);
 }
 
 function createVersion(prj, shot, task, version) {
