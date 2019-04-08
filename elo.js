@@ -139,6 +139,17 @@ let shotDirs = [
     "render",
 ];
 
+let taskDirs = {
+    "fx": [
+        "backup",
+        "geo",
+        "precomp",
+        "preview",
+        "render",
+        "temp",
+    ],
+}
+
 function createDirs(parentd, dirs) {
     if (!parentd) {
         notify("부모 디렉토리는 비어있을 수 없습니다.");
@@ -186,6 +197,14 @@ function createTask(prj, shot, task) {
         return;
     }
     fs.mkdirSync(d, { recursive: true });
+    let subdirs = taskDirs[task];
+    if (!subdirs) {
+        return;
+    }
+    for (let s of subdirs) {
+        let sd = d + "/" + s;
+        fs.mkdirSync(sd);
+    }
 }
 
 function createVersion(prj, shot, task, version) {
