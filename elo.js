@@ -155,26 +155,46 @@ let defaultProgram = {
     "fx": "houdini",
 }
 
-let createSceneFunc = {
-    "fx": function(prj, shot, elem, prog) {
-        let d = taskPath(prj, shot, "fx")
-        if (!d) {
-            notify("태스크 디렉토리가 없습니다.")
-            throw Error("task directory not found")
+// createScene은 씬 생성에 필요한 정보를 받아들여 씬을 생성하는 함수이다.
+function createScene(prj, shot, task, elem, prog) {
+    if (!tasks.includes(task)) {
+        notify("해당 태스크가 없습니다.");
+        throw Error("task directory not found");
+    }
+    let d = taskPath(prj, shot, task)
+    if (!d) {
+        notify("태스크 디렉토리가 없습니다.");
+        throw Error("task directory not found");
+    }
+    if (!elem) {
+        notify("요소를 선택하지 않았습니다.");
+        throw Error("please set element");
+    }
+    if (!prog) {
+        notify("프로그램을 선택하지 않았습니다.");
+        throw Error("please set program");
+    }
+    let exec = function(cmd, args) {
+        try {
+            proc.execFileSync(cmd, args);
+        } catch(e) {
+            if (e.errno == "ENOENT") {
+                notify(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.");
+                throw Error("program not found");
+            }
+            notify(prog + " 씬 생성중 에러가 났습니다: " + e.message);
+            throw Error("run error");
         }
-        if (!prog) {
-            notify("요소를 선택하지 않았습니다.")
-            throw Error("please set element")
-        }
+    }
+    if (task == "fx") {
         if (prog == "houdini") {
             let s = d + "/" + prj + "_" + shot + "_" + elem + "_v001.hip";
-            console.log(s);
-            proc.execFileSync("hython", ["-c", `hou.hipFile.save('${s}')`])
-            return
+            exec("hython", ["-c", `hou.hipFile.save('${s}')`]);
+            return;
         }
-        notify(prog + "는 정의되지 않은 프로그램입니다.");
-        throw Error("program not defined");
     }
+    notify(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.");
+    throw Error("program not defined");
 }
 
 function createDirs(parentd, dirs) {
@@ -232,11 +252,11 @@ function createTask(prj, shot, task) {
         let sd = d + "/" + s;
         fs.mkdirSync(sd);
     }
-    let createFn = createSceneFunc[task];
-    if (!createFn) {
-        return
+    let prog = defaultProgram[task];
+    if (!prog) {
+        return;
     }
-    createFn(prj, shot, "main", defaultProgram[task]);
+    createScene(prj, shot, task, "main", prog);
 }
 
 function createVersion(prj, shot, task, version) {
