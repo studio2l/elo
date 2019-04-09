@@ -42,15 +42,15 @@ function openModal(kind) {
     input.placeholder = "생성 할 " + kor[kind] + " 이름";
     input.onkeydown = function(ev) {
         if (ev.key == "Enter") {
-            createItem(kind);
             closeModal();
+            createItem(kind);
         }
     }
     input.focus();
     let apply = document.getElementById("modal-apply");
     apply.onclick = function() {
-        createItem(kind);
         closeModal();
+        createItem(kind);
     };
 }
 
