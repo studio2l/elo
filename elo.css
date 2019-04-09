@@ -55,6 +55,7 @@ body {
 .item-box {
 	flex: 1;
 	color: black;
+	overflow-y: auto;
 }
 
 .item {
