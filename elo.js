@@ -64,16 +64,12 @@ function createItem(kind) {
     }
     if (kind == "project") {
         createProject(name);
-        reloadProjects();
     } else if (kind == "shot") {
         createShot(currentProject(), name);
-        reloadShots(currentProject());
     } else if (kind == "task") {
         createTask(currentProject(), currentShot(), name);
-        reloadTasks(currentProject(), currentShot());
     } else if (kind == "version") {
         createVersion(currentProject(), currentShot(), currentTask(), name);
-        reloadVersions(currentProject(), currentShot(), currentTask());
     }
 }
 
@@ -225,6 +221,8 @@ function createProject(prj) {
     }
     fs.mkdirSync(prjDir, { recursive: true });
     createDirs(prjDir, projectDirs);
+    reloadProjects();
+    selectProject(prj);
 }
 
 function createShot(prj, shot) {
@@ -235,6 +233,8 @@ function createShot(prj, shot) {
     }
     fs.mkdirSync(d, { recursive: true });
     createDirs(d, shotDirs);
+    reloadShots(currentProject());
+    selectShot(prj, shot);
 }
 
 function createTask(prj, shot, task) {
@@ -252,6 +252,8 @@ function createTask(prj, shot, task) {
         let sd = d + "/" + s;
         fs.mkdirSync(sd);
     }
+    reloadTasks(currentProject(), currentShot());
+    selectTask(prj, shot, task);
     let prog = defaultProgram[task];
     if (!prog) {
         return;
@@ -261,6 +263,7 @@ function createTask(prj, shot, task) {
 
 function createVersion(prj, shot, task, version) {
     // TODO
+    reloadVersions(currentProject(), currentShot(), currentTask());
 }
 
 function addTaskMenuItems() {
