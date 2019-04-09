@@ -116,18 +116,6 @@ let projectDirs = [
     "shot",
 ];
 
-let tasks = [
-    "model",
-    "track",
-    "rig",
-    "ani",
-    "light",
-    "fx",
-    "matte",
-    "motion",
-    "comp",
-];
-
 let shotDirs = [
     "plate",
     "src",
@@ -138,6 +126,18 @@ let shotDirs = [
     "pub/char",
     "task",
     "render",
+];
+
+let tasks = [
+    "model",
+    "track",
+    "rig",
+    "ani",
+    "light",
+    "fx",
+    "matte",
+    "motion",
+    "comp",
 ];
 
 let taskDirs = {
