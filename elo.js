@@ -443,11 +443,13 @@ function reloadProjects() {
         throw Error("project-box not found");
     }
     pbox.innerText = "";
+    let t = document.getElementById("pinnable-item-tmpl");
     for (let prj of prjs) {
-        let div = document.createElement("div");
+        let frag = document.importNode(t.content, true);
+        let div = frag.querySelector("div");
         div.id = "project-" + prj;
         div.classList.add("project-item", "item");
-        div.innerText = prj;
+        div.getElementsByClassName("item-val")[0].textContent = prj;
         div.addEventListener("click", function() { selectProject(prj); });
         pbox.append(div);
     }

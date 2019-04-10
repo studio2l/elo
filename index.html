@@ -45,6 +45,16 @@
     </div>
     <div id="notifier" class="darkgrey" style="padding: 0.5rem;height:1.2rem;color:white;margin:0.5rem;">
     </div>
+    <template id="pinnable-item-tmpl">
+      <div>
+        <!-- 여기부터 -->
+        <div class="pinnable-item" style="flex:1;display:flex;">
+          <div class="item-val" style="flex:1;"></div>
+          <div class="item-pin" style="color:#B0B0B0;padding:0 0.3rem;border-radius:2px;border:solid 1px #B0B0B0">!</div>
+        </div>
+        <!-- 여기까지 -->
+      </div>
+    </template>
     <script>
       // You can also require other files to run in this process
       let elo = require('./elo.js');
