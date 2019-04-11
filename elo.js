@@ -384,55 +384,46 @@ function selectVersion(prj, shot, task, version) {
 }
 
 function currentProject() {
-    let items = document.getElementsByClassName("project-item");
-    if (!items) {
-        notify("project-item이 없습니다.");
-        throw Error("project-item not found");
-    }
-    for (let item of items) {
-        if (item.classList.contains("selected")) {
-            return item.innerText;
-        }
-    }
+    return selectedItemValue("project-box");
 }
 
 function currentShot() {
-    let items = document.getElementsByClassName("shot-item");
-    if (!items) {
-        notify("shot-item이 없습니다.");
-        throw Error("shot-item not found");
-    }
-    for (let item of items) {
-        if (item.classList.contains("selected")) {
-            return item.innerText;
-        }
-    }
+    return selectedItemValue("shot-box");
 }
 
 function currentTask() {
-    let items = document.getElementsByClassName("task-item");
-    if (!items) {
-        notify("task-item이 없습니다.");
-        throw Error("task-item not found");
-    }
-    for (let item of items) {
-        if (item.classList.contains("selected")) {
-            return item.innerText;
-        }
-    }
+    return selectedItemValue("task-box");
 }
 
 function currentVersion() {
-    let items = document.getElementsByClassName("version-item");
+    return selecteItemValue("version-box");
+}
+
+function selectedItemValue(boxId) {
+    let box = document.getElementById(boxId);
+    if (!box) {
+        notify("version-box가 없습니다.");
+        throw Error("version-box not found");
+    }
+    let items = document.getElementsByClassName("item");
     if (!items) {
-        notify("version-item이 없습니다.");
-        throw Error("project-item not found");
+        return null
     }
     for (let item of items) {
         if (item.classList.contains("selected")) {
-            return item.innerText;
+            return itemValue(item);
         }
     }
+    return null;
+}
+
+function itemValue(item) {
+    let el = item.getElementsByClassName("item-val")
+    if (!el) {
+        notify("item-val이 없습니다.");
+        throw Error("item-val not found");
+    }
+    return el[0].textContent;
 }
 
 function reloadProjects() {
