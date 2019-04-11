@@ -471,7 +471,7 @@ function selectedItemValue(boxId) {
         notify(boxId + "가 없습니다.");
         throw Error(boxId + " not found");
     }
-    let items = document.getElementsByClassName("item");
+    let items = box.getElementsByClassName("item");
     if (!items) {
         return null
     }
