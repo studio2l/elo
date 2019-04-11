@@ -1,5 +1,7 @@
 var fs = require("fs");
 var proc = require("child_process");
+const {remote} = require("electron");
+const {Menu, MenuItem} = remote;
 
 let projectRoot = "";
 
@@ -16,6 +18,27 @@ function init() {
     ensureElement("shot-box");
     ensureElement("task-box");
     ensureElement("version-box");
+
+    const projectMenu = new Menu();
+    const projectMenuItem = new MenuItem({
+        label: "hi"
+    });
+    projectMenu.append(projectMenuItem);
+    window.addEventListener("contextmenu", function(ev) {
+        function hasParent(ev, id) {
+            let paths = ev.path;
+            for (let p of paths) {
+                if (p.id == id) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        ev.preventDefault();
+        if (hasParent(ev, "project-box")) {
+            projectMenu.popup(remote.getCurrentWindow());
+        }
+    });
 }
 
 init();
