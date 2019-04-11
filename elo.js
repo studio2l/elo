@@ -4,6 +4,7 @@ const {remote} = require("electron");
 const {Menu, MenuItem} = remote;
 
 let projectRoot = "";
+let pinnedProject = {}
 
 function init() {
     projectRoot = process.env.PROJECT_ROOT;
@@ -19,24 +20,50 @@ function init() {
     ensureElement("task-box");
     ensureElement("version-box");
 
-    const projectMenu = new Menu();
-    const projectMenuItem = new MenuItem({
-        label: "hi"
-    });
-    projectMenu.append(projectMenuItem);
     window.addEventListener("contextmenu", function(ev) {
-        function hasParent(ev, id) {
+        ev.preventDefault();
+        function parentById(ev, id) {
             let paths = ev.path;
             for (let p of paths) {
                 if (p.id == id) {
-                    return true;
+                    return p;
                 }
             }
-            return false;
+            return null;
         }
-        ev.preventDefault();
-        if (hasParent(ev, "project-box")) {
+        function parentByClassName(ev, cls) {
+            let paths = ev.path;
+            for (let p of paths) {
+                if (p.classList.contains(cls)) {
+                    return p;
+                }
+            }
+            return null;
+        }
+        if (parentById(ev, "project-box")) {
+            let prj = parentByClassName(ev, "item").id.split("-")[1];
+            let projectMenu = new Menu();
+            let pinProjectMenuItem = new MenuItem({
+                label: "상단에 고정",
+                click: function() {
+                    pinnedProject[prj] = true;
+                    reloadProjects();
+                },
+            });
+            let unpinProjectMenuItem = new MenuItem({
+                label: "상단에서 제거",
+                click: function() {
+                    delete pinnedProject[prj];
+                    reloadProjects();
+                },
+            });
+            if (pinnedProject[prj]) {
+                projectMenu.append(unpinProjectMenuItem);
+            } else {
+                projectMenu.append(pinProjectMenuItem);
+            }
             projectMenu.popup(remote.getCurrentWindow());
+            return;
         }
     });
 }
@@ -466,16 +493,29 @@ function itemValue(item) {
 }
 
 function reloadProjects() {
-    let prjs = projects();
     let box = document.getElementById("project-box");
     box.innerText = "";
     let tmpl = document.getElementById("item-tmpl");
+    let prjs = projects();
+    let pinned = []
+    let unpinned = []
+    for (let prj of prjs) {
+        if (pinnedProject[prj]) {
+            pinned.push(prj)
+        } else {
+            unpinned.push(prj)
+        }
+    }
+    prjs = pinned.concat(unpinned);
     for (let prj of prjs) {
         let frag = document.importNode(tmpl.content, true);
         let div = frag.querySelector("div");
         div.id = "project-" + prj;
         div.classList.add("pinnable-item");
         div.getElementsByClassName("item-val")[0].textContent = prj;
+        if (pinned.includes(prj)) {
+            div.getElementsByClassName("item-pin")[0].textContent = "*";
+        }
         div.addEventListener("click", function() { selectProject(prj); });
         box.append(div);
     }
