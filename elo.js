@@ -1,5 +1,6 @@
 var fs = require("fs");
 var proc = require("child_process");
+var user = require("./user.js");
 const {remote} = require("electron");
 const {Menu, MenuItem} = remote;
 
@@ -15,6 +16,10 @@ function init() {
     if (!fs.existsSync(projectRoot)) {
         fs.mkdirSync(projectRoot);
     }
+
+    ensureConfigDirExist();
+    loadPinnedProject();
+
     ensureElement("project-box");
     ensureElement("shot-box");
     ensureElement("task-box");
@@ -46,14 +51,14 @@ function init() {
             let pinProjectMenuItem = new MenuItem({
                 label: "상단에 고정",
                 click: function() {
-                    pinnedProject[prj] = true;
+                    pinProject(prj);
                     reloadProjects();
                 },
             });
             let unpinProjectMenuItem = new MenuItem({
                 label: "상단에서 제거",
                 click: function() {
-                    delete pinnedProject[prj];
+                    unpinProject(prj);
                     reloadProjects();
                 },
             });
@@ -609,4 +614,39 @@ function clearTasks() {
 
 function clearVersions() {
     clearBox("version-box");
+}
+
+function configDir() {
+    return user.configDir() + "/elo";
+}
+
+function ensureConfigDirExist() {
+    let dir = configDir();
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir);
+    }
+}
+
+function loadPinnedProject() {
+    let fname = configDir() + "/pinned.json";
+    if (!fs.existsSync(fname)) {
+        pinnedProject = {};
+        return;
+    }
+    let data = fs.readFileSync(fname);
+    pinnedProject = JSON.parse(data);
+}
+
+function pinProject(prj) {
+    pinnedProject[prj] = true;
+    let fname = configDir() + "/pinned.json";
+    let data = JSON.stringify(pinnedProject);
+    fs.writeFileSync(fname, data);
+}
+
+function unpinProject(prj) {
+    delete pinnedProject[prj];
+    let fname = configDir() + "/pinned.json";
+    let data = JSON.stringify(pinnedProject);
+    fs.writeFileSync(fname, data);
 }
