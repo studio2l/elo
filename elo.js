@@ -6,6 +6,7 @@ const {Menu, MenuItem} = remote;
 
 let projectRoot = "";
 let pinnedProject = {}
+let pinnedShot = {}
 
 function init() {
     projectRoot = process.env.PROJECT_ROOT;
@@ -19,6 +20,7 @@ function init() {
 
     ensureConfigDirExist();
     loadPinnedProject();
+    loadPinnedShot();
 
     ensureElement("project-box");
     ensureElement("shot-box");
@@ -68,6 +70,32 @@ function init() {
                 projectMenu.append(pinProjectMenuItem);
             }
             projectMenu.popup(remote.getCurrentWindow());
+            return;
+        }
+        if (parentById(ev, "shot-box")) {
+            let prj = currentProject();
+            let shot = parentByClassName(ev, "item").id.split("-")[1];
+            let shotMenu = new Menu();
+            let pinShotMenuItem = new MenuItem({
+                label: "상단에 고정",
+                click: function() {
+                    pinShot(prj, shot);
+                    reloadShots(prj);
+                },
+            });
+            let unpinShotMenuItem = new MenuItem({
+                label: "상단에서 제거",
+                click: function() {
+                    unpinShot(prj, shot);
+                    reloadShots(prj);
+                },
+            });
+            if (pinnedShot[prj] && pinnedShot[prj][shot]) {
+                shotMenu.append(unpinShotMenuItem);
+            } else {
+                shotMenu.append(pinShotMenuItem);
+            }
+            shotMenu.popup(remote.getCurrentWindow());
             return;
         }
     });
@@ -535,13 +563,28 @@ function reloadShots(prj) {
     }
     let box = document.getElementById("shot-box");
     box.innerText = "";
+
+    let shots = shotsOf(prj);
+    let pinned = []
+    let unpinned = []
+    for (let shot of shots) {
+        if (pinnedShot[prj] && pinnedShot[prj][shot]) {
+            pinned.push(shot)
+        } else {
+            unpinned.push(shot)
+        }
+    }
+    shots = pinned.concat(unpinned);
     let tmpl = document.getElementById("item-tmpl");
-    for (let shot of shotsOf(prj)) {
+    for (let shot of shots) {
         let frag = document.importNode(tmpl.content, true);
         let div = frag.querySelector("div");
         div.id = "shot-" + shot;
         div.classList.add("pinnable-item");
         div.getElementsByClassName("item-val")[0].textContent = shot;
+        if (pinned.includes(shot)) {
+            div.getElementsByClassName("item-pin")[0].textContent = "*";
+        }
         div.addEventListener("click", function() { selectShot(prj, shot); });
         box.append(div);
     }
@@ -628,7 +671,7 @@ function ensureConfigDirExist() {
 }
 
 function loadPinnedProject() {
-    let fname = configDir() + "/pinned.json";
+    let fname = configDir() + "/pinned_project.json";
     if (!fs.existsSync(fname)) {
         pinnedProject = {};
         return;
@@ -639,14 +682,44 @@ function loadPinnedProject() {
 
 function pinProject(prj) {
     pinnedProject[prj] = true;
-    let fname = configDir() + "/pinned.json";
+    let fname = configDir() + "/pinned_project.json";
     let data = JSON.stringify(pinnedProject);
     fs.writeFileSync(fname, data);
 }
 
 function unpinProject(prj) {
     delete pinnedProject[prj];
-    let fname = configDir() + "/pinned.json";
+    let fname = configDir() + "/pinned_project.json";
     let data = JSON.stringify(pinnedProject);
+    fs.writeFileSync(fname, data);
+}
+
+function loadPinnedShot() {
+    let fname = configDir() + "/pinned_shot.json";
+    if (!fs.existsSync(fname)) {
+        pinnedShot = {};
+        return;
+    }
+    let data = fs.readFileSync(fname);
+    pinnedShot = JSON.parse(data);
+}
+
+function pinShot(prj, shot) {
+    if (!pinnedShot[prj]) {
+        pinnedShot[prj] = {};
+    }
+    pinnedShot[prj][shot] = true;
+    let fname = configDir() + "/pinned_shot.json";
+    let data = JSON.stringify(pinnedShot);
+    fs.writeFileSync(fname, data);
+}
+
+function unpinShot(prj, shot) {
+    delete pinnedShot[prj][shot];
+    if (Object.keys(pinnedShot[prj]).length == 0) {
+        delete pinnedShot[prj];
+    }
+    let fname = configDir() + "/pinned_shot.json";
+    let data = JSON.stringify(pinnedShot);
     fs.writeFileSync(fname, data);
 }
