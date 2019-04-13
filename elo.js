@@ -30,8 +30,7 @@ function init() {
     window.addEventListener("contextmenu", function(ev) {
         ev.preventDefault();
         function parentById(ev, id) {
-            let paths = ev.path;
-            for (let p of paths) {
+            for (let p of ev.path) {
                 if (p.id == id) {
                     return p;
                 }
@@ -39,8 +38,7 @@ function init() {
             return null;
         }
         function parentByClassName(ev, cls) {
-            let paths = ev.path;
-            for (let p of paths) {
+            for (let p of ev.path) {
                 if (p.classList.contains(cls)) {
                     return p;
                 }
