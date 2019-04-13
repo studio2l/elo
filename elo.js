@@ -22,10 +22,10 @@ function init() {
     loadPinnedProject();
     loadPinnedShot();
 
-    ensureElement("project-box");
-    ensureElement("shot-box");
-    ensureElement("task-box");
-    ensureElement("version-box");
+    ensureElementExist("project-box");
+    ensureElementExist("shot-box");
+    ensureElementExist("task-box");
+    ensureElementExist("version-box");
 
     window.addEventListener("contextmenu", function(ev) {
         ev.preventDefault();
@@ -101,7 +101,7 @@ function init() {
 
 init();
 
-function ensureElement(id) {
+function ensureElementExist(id) {
     let el = document.getElementById(id);
     if (!el) {
         notify(id + "가 존재하지 않습니다.");
