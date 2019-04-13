@@ -11,8 +11,7 @@ let pinnedShot = {}
 function init() {
     projectRoot = process.env.PROJECT_ROOT;
     if (!projectRoot) {
-        notify("Elo를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
-        return;
+        throw Error("Elo를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.");
     }
     if (!fs.existsSync(projectRoot)) {
         fs.mkdirSync(projectRoot);
@@ -26,6 +25,9 @@ function init() {
     ensureElementExist("shot-box");
     ensureElementExist("task-box");
     ensureElementExist("version-box");
+
+    addTaskMenuItems();
+    reloadProjects();
 
     window.addEventListener("contextmenu", function(ev) {
         ev.preventDefault();
@@ -51,15 +53,23 @@ function init() {
             let pinProjectMenuItem = new MenuItem({
                 label: "상단에 고정",
                 click: function() {
-                    pinProject(prj);
-                    reloadProjects();
+                    try {
+                        pinProject(prj);
+                        reloadProjects();
+                    } catch(err) {
+                        notify(err.message);
+                    }
                 },
             });
             let unpinProjectMenuItem = new MenuItem({
                 label: "상단에서 제거",
                 click: function() {
-                    unpinProject(prj);
-                    reloadProjects();
+                    try {
+                        unpinProject(prj);
+                        reloadProjects();
+                    } catch(err) {
+                        notify(err.message);
+                    }
                 },
             });
             if (pinnedProject[prj]) {
@@ -77,15 +87,23 @@ function init() {
             let pinShotMenuItem = new MenuItem({
                 label: "상단에 고정",
                 click: function() {
-                    pinShot(prj, shot);
-                    reloadShots(prj);
+                    try {
+                        pinShot(prj, shot);
+                        reloadShots(prj);
+                    } catch(err) {
+                        notify(err.message);
+                    }
                 },
             });
             let unpinShotMenuItem = new MenuItem({
                 label: "상단에서 제거",
                 click: function() {
-                    unpinShot(prj, shot);
-                    reloadShots(prj);
+                    try {
+                        unpinShot(prj, shot);
+                        reloadShots(prj);
+                    } catch(err) {
+                        notify(err.message);
+                    }
                 },
             });
             if (pinnedShot[prj] && pinnedShot[prj][shot]) {
@@ -99,17 +117,14 @@ function init() {
     });
 }
 
-init();
-
 function ensureElementExist(id) {
     let el = document.getElementById(id);
     if (!el) {
-        notify(id + "가 존재하지 않습니다.");
-        throw Error(id + " not found");
+        throw Error(id + "가 존재하지 않습니다.");
     }
 }
 
-function openModal(kind) {
+exports.openModalEv = function(kind) {
     if (kind == "shot" && !currentProject()) {
         notify("아직 프로젝트를 선택하지 않았습니다.");
         return;
@@ -122,6 +137,14 @@ function openModal(kind) {
         notify("아직 태스크를 선택하지 않았습니다.");
         return;
     }
+    try {
+        openModal(kind);
+    } catch(err) {
+        notify(err.message);
+    }
+}
+
+function openModal(kind) {
     let m = document.getElementById("modal");
     m.style.display = "block";
     let input = document.getElementById("modal-input");
@@ -135,19 +158,33 @@ function openModal(kind) {
     input.placeholder = "생성 할 " + kor[kind] + " 이름";
     input.onkeydown = function(ev) {
         if (ev.key == "Enter") {
-            closeModal();
-            createItem(kind);
+            try {
+                closeModal();
+                createItem(kind);
+            } catch(err) {
+                notify(err.message);
+            }
         }
     }
     input.focus();
     let apply = document.getElementById("modal-apply");
     apply.onclick = function() {
-        closeModal();
-        createItem(kind);
-    };
+        try {
+            closeModal();
+            createItem(kind);
+        } catch(err) {
+            notify(err.message);
+        }
+    }
 }
 
-exports.openModal = openModal;
+exports.createItemEv = function(kind) {
+    try {
+        createItem(kind);
+    } catch(err) {
+        notify(err.message);
+    }
+}
 
 function createItem(kind) {
     let name = document.getElementById("modal-input").value;
@@ -166,14 +203,18 @@ function createItem(kind) {
     }
 }
 
-exports.createItem = createItem;
+exports.closeModalEv = function() {
+    try {
+        closeModal();
+    } catch(err) {
+        notify(err.message);
+    }
+}
 
 function closeModal() {
     let m = document.getElementById("modal");
     m.style.display = "none";
 }
-
-exports.closeModal = closeModal;
 
 function notify(text) {
     let notifier = document.getElementById("notifier");
@@ -247,32 +288,26 @@ let defaultProgram = {
 // createScene은 씬 생성에 필요한 정보를 받아들여 씬을 생성하는 함수이다.
 function createScene(prj, shot, task, elem, prog) {
     if (!tasksOf(prj, shot).includes(task)) {
-        notify("해당 태스크가 없습니다.");
-        throw Error("task not found");
+        throw Error("해당 태스크가 없습니다.");
     }
     let d = taskPath(prj, shot, task)
     if (!d) {
-        notify("태스크 디렉토리가 없습니다.");
-        throw Error("task directory not found");
+        throw Error("태스크 디렉토리가 없습니다.");
     }
     if (!elem) {
-        notify("요소를 선택하지 않았습니다.");
-        throw Error("please set element");
+        throw Error("요소를 선택하지 않았습니다.");
     }
     if (!prog) {
-        notify("프로그램을 선택하지 않았습니다.");
-        throw Error("please set program");
+        throw Error("프로그램을 선택하지 않았습니다.");
     }
     let exec = function(cmd, args) {
         try {
             proc.execFileSync(cmd, args);
-        } catch(e) {
-            if (e.errno == "ENOENT") {
-                notify(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.");
-                throw Error("program not found");
+        } catch(err) {
+            if (err.errno == "ENOENT") {
+                throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.");
             }
-            notify(prog + " 씬 생성중 에러가 났습니다: " + e.message);
-            throw Error("run error");
+            throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message);
         }
     }
     if (task == "fx") {
@@ -282,14 +317,12 @@ function createScene(prj, shot, task, elem, prog) {
             return;
         }
     }
-    notify(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.");
-    throw Error("program not defined");
+    throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.");
 }
 
 function createDirs(parentd, dirs) {
     if (!parentd) {
-        notify("부모 디렉토리는 비어있을 수 없습니다.");
-        throw Error("parent directory should not be empty");
+        throw Error("부모 디렉토리는 비어있을 수 없습니다.");
     }
     if (!dirs) {
         return;
@@ -309,8 +342,7 @@ function createDirs(parentd, dirs) {
 function createProject(prj) {
     let prjDir = projectRoot + "/" + prj;
     if (fs.existsSync(prjDir)) {
-        notify("프로젝트 디렉토리가 이미 존재합니다.");
-        return;
+        throw Error("프로젝트 디렉토리가 이미 존재합니다.");
     }
     fs.mkdirSync(prjDir, { recursive: true });
     createDirs(prjDir, projectDirs);
@@ -321,8 +353,7 @@ function createProject(prj) {
 function createShot(prj, shot) {
     let d = shotPath(prj, shot);
     if (fs.existsSync(d)) {
-        notify("샷 디렉토리가 이미 존재합니다.");
-        return;
+        throw Error("샷 디렉토리가 이미 존재합니다.");
     }
     fs.mkdirSync(d, { recursive: true });
     createDirs(d, shotDirs);
@@ -333,8 +364,7 @@ function createShot(prj, shot) {
 function createTask(prj, shot, task) {
     let d = taskPath(prj, shot, task);
     if (fs.existsSync(d)) {
-        notify("태스크 디렉토리가 이미 존재합니다.");
-        return;
+        throw Error("태스크 디렉토리가 이미 존재합니다.");
     }
     fs.mkdirSync(d, { recursive: true });
     let subdirs = taskDirs[task];
@@ -362,8 +392,7 @@ function createVersion(prj, shot, task, version) {
 function addTaskMenuItems() {
     let menu = document.getElementById("task-menu");
     if (!menu) {
-        notify("task-menu가 없습니다.");
-        return;
+        throw Error("task-menu가 없습니다.");
     }
     for (let t of tasks) {
         let opt = document.createElement("option");
@@ -372,12 +401,9 @@ function addTaskMenuItems() {
     }
 }
 
-exports.addTaskMenuItems = addTaskMenuItems;
-
 function childDirs(d) {
     if (!fs.existsSync(d)) {
-        notify(d + " 디렉토리가 존재하지 않습니다.");
-        throw Error(d + " not exists");
+        throw Error(d + " 디렉토리가 존재하지 않습니다.");
     }
     let cds = Array();
     fs.readdirSync(d).forEach(f => {
@@ -426,6 +452,14 @@ function versionsOf(prj, shot, task, prog) {
     return Array();
 }
 
+function selectProjectEv(prj) {
+    try {
+        selectProject(prj)
+    } catch(err) {
+        notify(err.message);
+    }
+}
+
 function selectProject(prj) {
     clearNotify();
     clearShots();
@@ -439,6 +473,14 @@ function selectProject(prj) {
     let selected = document.getElementById("project-" + prj);
     selected.classList.add("selected");
     reloadShots(prj);
+}
+
+function selectShotEv(prj, shot) {
+    try {
+        selectShot(prj, shot)
+    } catch(err) {
+        notify(err.message);
+    }
 }
 
 function selectShot(prj, shot) {
@@ -455,6 +497,14 @@ function selectShot(prj, shot) {
     reloadTasks(prj, shot);
 }
 
+function selectTaskEv(prj, shot, task) {
+    try {
+        selectTask(prj, shot, task)
+    } catch(err) {
+        notify(err.message);
+    }
+}
+
 function selectTask(prj, shot, task) {
     clearNotify();
     clearVersions();
@@ -466,6 +516,14 @@ function selectTask(prj, shot, task) {
     let selected = document.getElementById("task-" + task);
     selected.classList.add("selected");
     reloadVersions(prj, shot, task);
+}
+
+function selectVersionEv(prj, shot, task, version) {
+    try {
+        selectVersion(prj, shot, task, version)
+    } catch(err) {
+        notify(err.message);
+    }
 }
 
 function selectVersion(prj, shot, task, version) {
@@ -498,8 +556,7 @@ function currentVersion() {
 function selectedItemValue(boxId) {
     let box = document.getElementById(boxId);
     if (!box) {
-        notify(boxId + "가 없습니다.");
-        throw Error(boxId + " not found");
+        throw Error(boxId + "가 없습니다.");
     }
     let items = box.getElementsByClassName("item");
     if (!items) {
@@ -516,8 +573,7 @@ function selectedItemValue(boxId) {
 function itemValue(item) {
     let el = item.getElementsByClassName("item-val")
     if (!el) {
-        notify("item-val이 없습니다.");
-        throw Error("item-val not found");
+        throw Error("item-val이 없습니다.");
     }
     return el[0].textContent;
 }
@@ -546,17 +602,14 @@ function reloadProjects() {
         if (pinned.includes(prj)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*";
         }
-        div.addEventListener("click", function() { selectProject(prj); });
+        div.addEventListener("click", function() { selectProjectEv(prj); });
         box.append(div);
     }
 }
 
-exports.reloadProjects = reloadProjects;
-
 function reloadShots(prj) {
     if (!prj) {
-        notify("선택된 프로젝트가 없습니다.");
-        return;
+        throw Error("선택된 프로젝트가 없습니다.");
     }
     let box = document.getElementById("shot-box");
     box.innerText = "";
@@ -582,19 +635,17 @@ function reloadShots(prj) {
         if (pinned.includes(shot)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*";
         }
-        div.addEventListener("click", function() { selectShot(prj, shot); });
+        div.addEventListener("click", function() { selectShotEv(prj, shot); });
         box.append(div);
     }
 }
 
 function reloadTasks(prj, shot) {
     if (!prj) {
-        notify("선택된 프로젝트가 없습니다.");
-        return;
+        throw Error("선택된 프로젝트가 없습니다.");
     }
     if (!shot) {
-        notify("선택된 샷이 없습니다.");
-        return;
+        throw Error("선택된 샷이 없습니다.");
     }
     let box = document.getElementById("task-box");
     box.innerText = "";
@@ -604,23 +655,20 @@ function reloadTasks(prj, shot) {
         let div = frag.querySelector("div");
         div.id = "task-" + t;
         div.getElementsByClassName("item-val")[0].textContent = t;
-        div.addEventListener("click", function() { selectTask(prj, shot, t); });
+        div.addEventListener("click", function() { selectTaskEv(prj, shot, t); });
         box.append(div);
     }
 }
 
 function reloadVersions(prj, shot, task) {
     if (!prj) {
-        notify("선택된 프로젝트가 없습니다.");
-        return;
+        throw Error("선택된 프로젝트가 없습니다.");
     }
     if (!shot) {
-        notify("선택된 샷이 없습니다.");
-        return;
+        throw Error("선택된 샷이 없습니다.");
     }
     if (!task) {
-        notify("선택된 태스크가 없습니다.");
-        return;
+        throw Error("선택된 태스크가 없습니다.");
     }
     let box = document.getElementById("version-box");
     box.innerText = "";
@@ -630,7 +678,7 @@ function reloadVersions(prj, shot, task) {
         let div = frag.querySelector("div");
         div.id = "version-" + v;
         div.getElementsByClassName("item-val")[0].textContent = v;
-        div.addEventListener("click", function() { selectVersion(prj, shot, task, v); });
+        div.addEventListener("click", function() { selectVersionEv(prj, shot, task, v); });
         box.append(div);
     }
 }
@@ -638,8 +686,7 @@ function reloadVersions(prj, shot, task) {
 function clearBox(id) {
     let box = document.getElementById(id);
     if (!box) {
-        notify(id + "가 없습니다.");
-        throw Error(id + " not found");
+        throw Error(id + "가 없습니다.");
     }
     box.innerText = "";
 }
@@ -719,4 +766,10 @@ function unpinShot(prj, shot) {
     let fname = configDir() + "/pinned_shot.json";
     let data = JSON.stringify(pinnedShot);
     fs.writeFileSync(fname, data);
+}
+
+try {
+    init();
+} catch(err) {
+    notify(err.message);
 }
