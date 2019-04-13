@@ -1,8 +1,8 @@
-var fs = require("fs");
-var proc = require("child_process");
-var user = require("./user.js");
-const {remote} = require("electron");
-const {Menu, MenuItem} = remote;
+const fs = require("fs");
+const proc = require("child_process");
+const user = require("./user.js");
+const { remote } = require("electron");
+const { Menu, MenuItem } = remote;
 
 let projectRoot = "";
 let pinnedProject = {}
