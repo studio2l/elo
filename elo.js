@@ -367,8 +367,7 @@ function addTaskMenuItems() {
         notify("task-menu가 없습니다.");
         return;
     }
-    for (let i in tasks) {
-        let t = tasks[i];
+    for (let t of tasks) {
         let opt = document.createElement("option");
         opt.text = t;
         menu.add(opt);
