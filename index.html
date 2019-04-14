@@ -39,8 +39,8 @@
         <div id="task-box" class="grey item-box"></div>
       </div>
       <div class="box-container">
-        <div class="box-label"><div>버전</div><div class="add-button" onclick="elo.openModalEv('version')">[+]</div></div>
-        <div id="version-box" class="grey item-box"></div>
+        <div class="box-label"><div>요소</div><div class="add-button" onclick="elo.openModalEv('element')">[+]</div></div>
+        <div id="element-box" class="grey item-box"></div>
       </div>
     </div>
     <div id="notifier" class="darkgrey" style="padding: 0.5rem;height:1.2rem;color:white;margin:0.5rem;">
@@ -49,6 +49,12 @@
       <div class="item" style="flex:1;display:flex;">
         <div class="item-val" style="flex:1;"></div>
         <div class="item-pin" style="color:#A0A0A0;"></div>
+      </div>
+    </template>
+    <template id="element-item-tmpl">
+      <div class="item" style="flex:1;display:flex;">
+        <div class="item-val" style="flex:1;"></div>
+        <div class="prog" style="color:#00000088;background-color:#00000055;border:solid 1px #00000088;border-radius:3px;padding:0 0.5em;"></div>
       </div>
     </template>
     <script>

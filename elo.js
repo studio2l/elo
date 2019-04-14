@@ -24,7 +24,7 @@ function init() {
     ensureElementExist("project-box")
     ensureElementExist("shot-box")
     ensureElementExist("task-box")
-    ensureElementExist("version-box")
+    ensureElementExist("element-box")
 
     addTaskMenuItems()
     reloadProjects()
@@ -199,7 +199,7 @@ function createItem(kind) {
     } else if (kind == "task") {
         createTask(currentProject(), currentShot(), name)
     } else if (kind == "version") {
-        createVersion(currentProject(), currentShot(), currentTask(), name)
+        createElements(currentProject(), currentShot(), currentTask(), name)
     }
 }
 
@@ -281,8 +281,35 @@ let taskDirs = {
     ],
 }
 
-let defaultProgram = {
-    "fx": "houdini",
+let defaultElements = {
+    "fx": [
+        {
+            "name": "main",
+            "prog": "houdini",
+        },
+        {
+            "name": "precomp",
+            "prog": "nuke",
+        },
+    ],
+}
+
+let taskPrograms = {
+    "fx": {
+        "houdini": {
+            "subdir": "",
+            "ext": ".hip",
+            "create": {
+                "cmd": "hython",
+                "args": ["-c", "hou.hipFile.save('{{scene}}')"],
+            },
+        },
+        "nuke": {
+            "subdir": "precomp",
+            "ext": ".nk",
+            "create": null,
+        },
+    }
 }
 
 // createScene은 씬 생성에 필요한 정보를 받아들여 씬을 생성하는 함수이다.
@@ -290,8 +317,8 @@ function createScene(prj, shot, task, elem, prog) {
     if (!tasksOf(prj, shot).includes(task)) {
         throw Error("해당 태스크가 없습니다.")
     }
-    let d = taskPath(prj, shot, task)
-    if (!d) {
+    let taskdir = taskPath(prj, shot, task)
+    if (!taskdir) {
         throw Error("태스크 디렉토리가 없습니다.")
     }
     if (!elem) {
@@ -299,6 +326,34 @@ function createScene(prj, shot, task, elem, prog) {
     }
     if (!prog) {
         throw Error("프로그램을 선택하지 않았습니다.")
+    }
+    if (!taskPrograms[task]) {
+        throw Error(task + "에 대한 프로그램 정보가 없습니다.")
+    }
+    let p = taskPrograms[task][prog]
+    if (!p) {
+        throw Error(task + "에 대한 " + prog + " 프로그램 정보가 없습니다.")
+    }
+    if (!p.create) {
+        throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.")
+    }
+    let c = p.create
+    let scenedir = taskdir
+    if (p.subdir) {
+        scenedir += "/" + p.subdir
+    }
+    let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_v001" + p.ext
+    let args = []
+    let pathChanged = false
+    for (let i in c.args) {
+        let arg = c.args[i]
+        if (arg.includes("{{scene}}")) {
+            c.args[i] = arg.replace("{{scene}}", scene)
+            pathChanged = true
+        }
+    }
+    if (!pathChanged) {
+        throw Error(prog + "의 args 인수 안에 씬 경로를 넣을 수 있는 부분이 없습니다.")
     }
     function exec(cmd, args) {
         try {
@@ -310,14 +365,7 @@ function createScene(prj, shot, task, elem, prog) {
             throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
         }
     }
-    if (task == "fx") {
-        if (prog == "houdini") {
-            let s = d + "/" + prj + "_" + shot + "_" + elem + "_v001.hip"
-            exec("hython", ["-c", `hou.hipFile.save('${s}')`])
-            return
-        }
-    }
-    throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.")
+    exec(c.cmd, c.args)
 }
 
 function createDirs(parentd, dirs) {
@@ -376,16 +424,17 @@ function createTask(prj, shot, task) {
     }
     reloadTasks(currentProject(), currentShot())
     selectTask(prj, shot, task)
-    let prog = defaultProgram[task]
-    if (!prog) {
-        return
+    let elems = defaultElements[task]
+    if (elems) {
+        for (let el of elems) {
+            createScene(prj, shot, task, el.name, el.prog)
+        }
     }
-    createScene(prj, shot, task, "main", prog)
 }
 
-function createVersion(prj, shot, task, version) {
+function createElements(prj, shot, task, elem) {
     // TODO
-    reloadVersions(currentProject(), currentShot(), currentTask())
+    reloadElements(currentProject(), currentShot(), currentTask())
 }
 
 function addTaskMenuItems() {
@@ -446,9 +495,45 @@ function tasksOf(prj, shot) {
     return childDirs(d)
 }
 
-function versionsOf(prj, shot, task, prog) {
-    // TODO: 디자인 필요
-    return Array()
+function elementsOf(prj, shot, task) {
+    let taskdir = taskPath(prj, shot, task)
+    let progs = taskPrograms[task]
+    if (!progs) {
+        return {}
+    }
+    let elems = {}
+    for (let n in progs) {
+        let p = progs[n]
+        let scenedir = taskdir + "/" + p.subdir
+        let files = fs.readdirSync(scenedir)
+        for (let f of files) {
+            if (!fs.lstatSync(scenedir + "/" + f).isFile()) {
+                continue
+            }
+            if (!f.endsWith(p.ext)) {
+                continue
+            }
+            f = f.substring(0, f.length - p.ext.length)
+            let ws = f.split("_")
+            if (ws.length != 4) {
+                continue
+            }
+            let [prj, shot, elem, version] = ws
+            if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
+                console.log("hey")
+                continue
+            }
+            if (!elems[elem]) {
+                elems[elem] = {
+                    "name": elem,
+                    "program": n,
+                    "versions": [],
+                }
+            }
+            elems[elem].versions.push(version)
+        }
+    }
+    return elems
 }
 
 function selectProjectEv(prj) {
@@ -463,7 +548,7 @@ function selectProject(prj) {
     clearNotify()
     clearShots()
     clearTasks()
-    clearVersions()
+    clearElements()
     let box = document.getElementById("project-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
@@ -485,7 +570,7 @@ function selectShotEv(prj, shot) {
 function selectShot(prj, shot) {
     clearNotify()
     clearTasks()
-    clearVersions()
+    clearElements()
     let box = document.getElementById("shot-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
@@ -506,7 +591,7 @@ function selectTaskEv(prj, shot, task) {
 
 function selectTask(prj, shot, task) {
     clearNotify()
-    clearVersions()
+    clearElements()
     let box = document.getElementById("task-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
@@ -514,25 +599,29 @@ function selectTask(prj, shot, task) {
     }
     let selected = document.getElementById("task-" + task)
     selected.classList.add("selected")
-    reloadVersions(prj, shot, task)
+    reloadElements(prj, shot, task)
 }
 
-function selectVersionEv(prj, shot, task, version) {
+function selectElementEv(prj, shot, task, elem, ver) {
     try {
-        selectVersion(prj, shot, task, version)
+        selectElement(prj, shot, task, elem, ver)
     } catch(err) {
         notify(err.message)
     }
 }
 
-function selectVersion(prj, shot, task, version) {
+function selectElement(prj, shot, task, elem, ver) {
     clearNotify()
-    let box = document.getElementById("version-box")
+    let box = document.getElementById("element-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
         item[0].classList.remove("selected")
     }
-    let selected = document.getElementById("version-" + prj)
+    let id = "element-" + elem
+    if (ver) {
+        id += "-" + ver
+    }
+    let selected = document.getElementById(id)
     selected.classList.add("selected")
 }
 
@@ -548,8 +637,8 @@ function currentTask() {
     return selectedItemValue("task-box")
 }
 
-function currentVersion() {
-    return selectedItemValue("version-box")
+function currentElement() {
+    return selectedItemValue("element-box")
 }
 
 function selectedItemValue(boxId) {
@@ -659,7 +748,7 @@ function reloadTasks(prj, shot) {
     }
 }
 
-function reloadVersions(prj, shot, task) {
+function reloadElements(prj, shot, task) {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
@@ -669,16 +758,28 @@ function reloadVersions(prj, shot, task) {
     if (!task) {
         throw Error("선택된 태스크가 없습니다.")
     }
-    let box = document.getElementById("version-box")
+    let box = document.getElementById("element-box")
     box.innerText = ""
-    let tmpl = document.getElementById("item-tmpl")
-    for (let v of versionsOf(prj, shot, task)) {
+    let tmpl = document.getElementById("element-item-tmpl")
+    let elems = elementsOf(prj, shot, task)
+    for (let elem in elems) {
+        e = elems[elem]
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
-        div.id = "version-" + v
-        div.getElementsByClassName("item-val")[0].textContent = v
-        div.addEventListener("click", function() { selectVersionEv(prj, shot, task, v) })
+        div.id = "element-" + elem
+        div.getElementsByClassName("item-val")[0].textContent = elem
+        div.getElementsByClassName("prog")[0].textContent = e.program
+        div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, "") })
         box.append(div)
+        for (let ver of e.versions) {
+            let frag = document.importNode(tmpl.content, true)
+            let div = frag.querySelector("div")
+            div.id = "element-" + elem + "-" + ver
+            div.getElementsByClassName("item-val")[0].textContent = ver
+            div.getElementsByClassName("prog")[0].textContent = "열기"
+            div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, ver) })
+            box.append(div)
+        }
     }
 }
 
@@ -691,15 +792,15 @@ function clearBox(id) {
 }
 
 function clearShots() {
-    clearBox("version-box")
+    clearBox("shot-box")
 }
 
 function clearTasks() {
     clearBox("task-box")
 }
 
-function clearVersions() {
-    clearBox("version-box")
+function clearElements() {
+    clearBox("element-box")
 }
 
 function configDir() {
