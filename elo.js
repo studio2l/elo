@@ -300,7 +300,7 @@ function createScene(prj, shot, task, elem, prog) {
     if (!prog) {
         throw Error("프로그램을 선택하지 않았습니다.");
     }
-    let exec = function(cmd, args) {
+    function exec(cmd, args) {
         try {
             proc.execFileSync(cmd, args);
         } catch(err) {
