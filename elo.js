@@ -368,12 +368,11 @@ function createTask(prj, shot, task) {
     }
     fs.mkdirSync(d, { recursive: true })
     let subdirs = taskDirs[task]
-    if (!subdirs) {
-        return
-    }
-    for (let s of subdirs) {
-        let sd = d + "/" + s
-        fs.mkdirSync(sd)
+    if (subdirs) {
+        for (let s of subdirs) {
+            let sd = d + "/" + s
+            fs.mkdirSync(sd)
+        }
     }
     reloadTasks(currentProject(), currentShot())
     selectTask(prj, shot, task)
