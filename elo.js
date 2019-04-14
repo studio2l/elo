@@ -520,7 +520,6 @@ function elementsOf(prj, shot, task) {
             }
             let [prj, shot, elem, version] = ws
             if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
-                console.log("hey")
                 continue
             }
             if (!elems[elem]) {
