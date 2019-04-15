@@ -57,6 +57,7 @@ function init() {
                         pinProject(prj)
                         reloadProjects()
                     } catch(err) {
+                        console.log(err)
                         notify(err.message)
                     }
                 },
@@ -68,6 +69,7 @@ function init() {
                         unpinProject(prj)
                         reloadProjects()
                     } catch(err) {
+                        console.log(err)
                         notify(err.message)
                     }
                 },
@@ -91,6 +93,7 @@ function init() {
                         pinShot(prj, shot)
                         reloadShots(prj)
                     } catch(err) {
+                        console.log(err)
                         notify(err.message)
                     }
                 },
@@ -102,6 +105,7 @@ function init() {
                         unpinShot(prj, shot)
                         reloadShots(prj)
                     } catch(err) {
+                        console.log(err)
                         notify(err.message)
                     }
                 },
@@ -140,6 +144,7 @@ exports.openModalEv = function(kind) {
     try {
         openModal(kind)
     } catch(err) {
+        console.log(err)
         notify(err.message)
     }
 }
@@ -162,7 +167,7 @@ function openModal(kind) {
                 closeModal()
                 createItem(kind)
             } catch(err) {
-                notify(err.message)
+                notify(err.lineNumber)
             }
         }
     }
@@ -173,6 +178,7 @@ function openModal(kind) {
             closeModal()
             createItem(kind)
         } catch(err) {
+            console.log(err)
             notify(err.message)
         }
     }
@@ -182,6 +188,7 @@ exports.createItemEv = function(kind) {
     try {
         createItem(kind)
     } catch(err) {
+        console.log(err)
         notify(err.message)
     }
 }
@@ -207,6 +214,7 @@ exports.closeModalEv = function() {
     try {
         closeModal()
     } catch(err) {
+        console.log(err)
         notify(err.message)
     }
 }
@@ -287,27 +295,54 @@ let defaultElements = {
             "name": "main",
             "prog": "houdini",
         },
-        {
-            "name": "precomp",
-            "prog": "nuke",
-        },
     ],
 }
+
+function elemsInDir(dir, prog, ext) {
+    let elems = {}
+    let files = fs.readdirSync(dir)
+    for (let f of files) {
+        if (!fs.lstatSync(dir + "/" + f).isFile()) {
+            continue
+        }
+        if (!f.endsWith(ext)) {
+            continue
+        }
+        f = f.substring(0, f.length - ext.length)
+        let ws = f.split("_")
+        if (ws.length != 4) {
+            continue
+        }
+        let [prj, shot, elem, version] = ws
+        if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
+            continue
+        }
+        if (!elems[elem]) {
+            elems[elem] = {
+                "name": elem,
+                "program": prog,
+                "versions": [],
+            }
+        }
+        elems[elem].versions.push(version)
+    }
+    return elems
+}
+
 
 let taskPrograms = {
     "fx": {
         "houdini": {
-            "subdir": "",
-            "ext": ".hip",
-            "create": {
-                "cmd": "hython",
-                "args": ["-c", "hou.hipFile.save('{{scene}}')"],
+            "createElement": function(prj, shot, task, elem) {
+                let scenedir = taskPath(prj, shot, task)
+                let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001.hip"
+                fs.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
             },
-        },
-        "nuke": {
-            "subdir": "precomp",
-            "ext": ".nk",
-            "create": null,
+            "listElements": function(prj, shot, task) {
+                let scenedir = taskPath(prj, shot, task)
+                let elems = elemsInDir(scenedir, "houdini", ".hip")
+                return elems
+            },
         },
     }
 }
@@ -337,35 +372,14 @@ function createScene(prj, shot, task, elem, prog) {
     if (!p.create) {
         throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.")
     }
-    let c = p.create
-    let scenedir = taskdir
-    if (p.subdir) {
-        scenedir += "/" + p.subdir
-    }
-    let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_v001" + p.ext
-    let args = []
-    let pathChanged = false
-    for (let i in c.args) {
-        let arg = c.args[i]
-        if (arg.includes("{{scene}}")) {
-            c.args[i] = arg.replace("{{scene}}", scene)
-            pathChanged = true
+    try {
+        p.create(prj, shot, task, elem)
+    } catch(err) {
+        if (err.errno == "ENOENT") {
+            throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
         }
+        throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
     }
-    if (!pathChanged) {
-        throw Error(prog + "의 args 인수 안에 씬 경로를 넣을 수 있는 부분이 없습니다.")
-    }
-    function exec(cmd, args) {
-        try {
-            proc.execFileSync(cmd, args)
-        } catch(err) {
-            if (err.errno == "ENOENT") {
-                throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
-            }
-            throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
-        }
-    }
-    exec(c.cmd, c.args)
 }
 
 function createDirs(parentd, dirs) {
@@ -502,35 +516,9 @@ function elementsOf(prj, shot, task) {
         return {}
     }
     let elems = {}
-    for (let n in progs) {
-        let p = progs[n]
-        let scenedir = taskdir + "/" + p.subdir
-        let files = fs.readdirSync(scenedir)
-        for (let f of files) {
-            if (!fs.lstatSync(scenedir + "/" + f).isFile()) {
-                continue
-            }
-            if (!f.endsWith(p.ext)) {
-                continue
-            }
-            f = f.substring(0, f.length - p.ext.length)
-            let ws = f.split("_")
-            if (ws.length != 4) {
-                continue
-            }
-            let [prj, shot, elem, version] = ws
-            if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
-                continue
-            }
-            if (!elems[elem]) {
-                elems[elem] = {
-                    "name": elem,
-                    "program": n,
-                    "versions": [],
-                }
-            }
-            elems[elem].versions.push(version)
-        }
+    for (let i in progs) {
+        let p = progs[i]
+        Object.assign(elems, p.listElements(prj, shot, task))
     }
     return elems
 }
@@ -539,6 +527,7 @@ function selectProjectEv(prj) {
     try {
         selectProject(prj)
     } catch(err) {
+        console.log(err)
         notify(err.message)
     }
 }
@@ -562,6 +551,7 @@ function selectShotEv(prj, shot) {
     try {
         selectShot(prj, shot)
     } catch(err) {
+        console.log(err)
         notify(err.message)
     }
 }
@@ -584,6 +574,7 @@ function selectTaskEv(prj, shot, task) {
     try {
         selectTask(prj, shot, task)
     } catch(err) {
+        console.log(err)
         notify(err.message)
     }
 }
@@ -605,6 +596,7 @@ function selectElementEv(prj, shot, task, elem, ver) {
     try {
         selectElement(prj, shot, task, elem, ver)
     } catch(err) {
+        console.log(err)
         notify(err.message)
     }
 }
@@ -870,5 +862,6 @@ function unpinShot(prj, shot) {
 try {
     init()
 } catch(err) {
+    console.log(err)
     notify(err.message)
 }
