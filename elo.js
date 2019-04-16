@@ -232,131 +232,47 @@ function clearNotify() {
     notifier.innerText = ""
 }
 
-function createDirs(parentd, dirs) {
-    if (!parentd) {
-        throw Error("부모 디렉토리는 비어있을 수 없습니다.")
-    }
-    if (!dirs) {
-        return
-    }
-    if (!fs.existsSync(parentd)) {
-        // TODO: 부모 디렉토리 생성할 지 물어보기
-    }
-    for (let d of dirs) {
-        let child = parentd + "/" + d
-        if (fs.existsSync(child)) {
-            continue
-        }
-        fs.mkdirSync(child, { recursive: true })
-    }
-}
-
 function createProjectEv(prj) {
     try {
-        createProject(prj)
+        site.createProject(prj)
+        reloadProjects()
+        selectProject(prj)
     } catch(err) {
         console.log(err)
         notify(err.message)
     }
-}
-
-function createProject(prj) {
-    let prjDir = site.projectPath(prj)
-    if (fs.existsSync(prjDir)) {
-        throw Error("프로젝트 디렉토리가 이미 존재합니다.")
-    }
-    fs.mkdirSync(prjDir, { recursive: true })
-    createDirs(prjDir, projectDirs)
-    reloadProjects()
-    selectProject(prj)
 }
 
 function createShotEv(prj, shot) {
     try {
-        createShot(prj, shot)
+        site.createShot(prj, shot)
+        reloadShots(currentProject())
+        selectShot(prj, shot)
     } catch(err) {
         console.log(err)
         notify(err.message)
     }
-}
-
-function createShot(prj, shot) {
-    let d = site.shotPath(prj, shot)
-    if (fs.existsSync(d)) {
-        throw Error("샷 디렉토리가 이미 존재합니다.")
-    }
-    fs.mkdirSync(d, { recursive: true })
-    createDirs(d, shotDirs)
-    reloadShots(currentProject())
-    selectShot(prj, shot)
 }
 
 function createTaskEv(prj, shot, task) {
     try {
-        createTask(prj, shot, task)
+        site.createTask(prj, shot, task)
+        reloadTasks(currentProject(), currentShot())
+        selectTask(prj, shot, task)
     } catch(err) {
         console.log(err)
         notify(err.message)
-    }
-}
-
-function createTask(prj, shot, task) {
-    let d = site.taskPath(prj, shot, task)
-    if (fs.existsSync(d)) {
-        throw Error("태스크 디렉토리가 이미 존재합니다.")
-    }
-    fs.mkdirSync(d, { recursive: true })
-    let subdirs = site.taskDirs[task]
-    if (subdirs) {
-        for (let s of subdirs) {
-            let sd = d + "/" + s
-            fs.mkdirSync(sd)
-        }
-    }
-    reloadTasks(currentProject(), currentShot())
-    selectTask(prj, shot, task)
-    let elems = site.defaultElements[task]
-    if (elems) {
-        for (let el of elems) {
-            createElement(prj, shot, task, el.name, el.prog)
-        }
     }
 }
 
 function createElementEv(prj, shot, task, elem, prog) {
     try {
-        createElement(prj, shot, task, elem, prog)
+        site.createElement(prj, shot, task, elem, prog)
+        reloadElements(currentProject(), currentShot(), currentTask())
     } catch(err) {
         console.log(err)
         notify(err.message)
     }
-}
-
-// createElement은 씬 생성에 필요한 정보를 받아들여 씬을 생성하는 함수이다.
-function createElement(prj, shot, task, elem, prog) {
-    if (!site.tasksOf(prj, shot).includes(task)) {
-        throw Error("해당 태스크가 없습니다.")
-    }
-    let taskdir = site.taskPath(prj, shot, task)
-    if (!taskdir) {
-        throw Error("태스크 디렉토리가 없습니다.")
-    }
-    if (!elem) {
-        throw Error("요소를 선택하지 않았습니다.")
-    }
-    if (!prog) {
-        throw Error("프로그램을 선택하지 않았습니다.")
-    }
-    let p = site.program(prj, shot, task, prog)
-    try {
-        p.createElement(prj, shot, task, elem)
-    } catch(err) {
-        if (err.errno == "ENOENT") {
-            throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
-        }
-        throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
-    }
-    reloadElements(currentProject(), currentShot(), currentTask())
 }
 
 function addTaskMenuItems() {

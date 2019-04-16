@@ -21,6 +21,16 @@ function projects() {
 }
 exports.projects = projects
 
+function createProject(prj) {
+    let prjDir = projectPath(prj)
+    if (fs.existsSync(prjDir)) {
+        throw Error("프로젝트 디렉토리가 이미 존재합니다.")
+    }
+    fs.mkdirSync(prjDir, { recursive: true })
+    createDirs(prjDir, projectDirs)
+}
+exports.createProject = createProject
+
 projectDirs = [
     "asset",
     "doc",
@@ -55,6 +65,16 @@ function shotsOf(prj) {
 }
 exports.shotsOf = shotsOf
 
+function createShot(prj, shot) {
+    let d = shotPath(prj, shot)
+    if (fs.existsSync(d)) {
+        throw Error("샷 디렉토리가 이미 존재합니다.")
+    }
+    fs.mkdirSync(d, { recursive: true })
+    createDirs(d, shotDirs)
+}
+exports.createShot = createShot
+
 shotDirs = [
     "plate",
     "src",
@@ -80,6 +100,28 @@ function tasksOf(prj, shot) {
     return childDirs(d)
 }
 exports.tasksOf = tasksOf
+
+function createTask(prj, shot, task) {
+    let d = taskPath(prj, shot, task)
+    if (fs.existsSync(d)) {
+        throw Error("태스크 디렉토리가 이미 존재합니다.")
+    }
+    fs.mkdirSync(d, { recursive: true })
+    let subdirs = taskDirs[task]
+    if (subdirs) {
+        for (let s of subdirs) {
+            let sd = d + "/" + s
+            fs.mkdirSync(sd)
+        }
+    }
+    let elems = defaultElements[task]
+    if (elems) {
+        for (let el of elems) {
+            createElement(prj, shot, task, el.name, el.prog)
+        }
+    }
+}
+exports.createTask = createTask
 
 tasks = [
     "model",
@@ -122,6 +164,32 @@ function elementsOf(prj, shot, task) {
     return elems
 }
 exports.elementsOf = elementsOf
+
+function createElement(prj, shot, task, elem, prog) {
+    if (!tasksOf(prj, shot).includes(task)) {
+        throw Error("해당 태스크가 없습니다.")
+    }
+    let taskdir = taskPath(prj, shot, task)
+    if (!taskdir) {
+        throw Error("태스크 디렉토리가 없습니다.")
+    }
+    if (!elem) {
+        throw Error("요소를 선택하지 않았습니다.")
+    }
+    if (!prog) {
+        throw Error("프로그램을 선택하지 않았습니다.")
+    }
+    let p = program(prj, shot, task, prog)
+    try {
+        p.createElement(prj, shot, task, elem)
+    } catch(err) {
+        if (err.errno == "ENOENT") {
+            throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
+        }
+        throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
+    }
+}
+exports.createElement = createElement
 
 function elemsInDir(dir, prog, ext) {
     let elems = {}
@@ -227,4 +295,23 @@ function childDirs(d) {
         }
     })
     return cds
+}
+
+function createDirs(parentd, dirs) {
+    if (!parentd) {
+        throw Error("부모 디렉토리는 비어있을 수 없습니다.")
+    }
+    if (!dirs) {
+        return
+    }
+    if (!fs.existsSync(parentd)) {
+        // TODO: 부모 디렉토리 생성할 지 물어보기
+    }
+    for (let d of dirs) {
+        let child = parentd + "/" + d
+        if (fs.existsSync(child)) {
+            continue
+        }
+        fs.mkdirSync(child, { recursive: true })
+    }
 }
