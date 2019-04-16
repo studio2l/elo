@@ -626,8 +626,19 @@ function reloadElements(prj, shot, task) {
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.getElementsByClassName("prog")[0].textContent = "열기"
             div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, ver) })
+            div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, ver) })
             box.append(div)
         }
+    }
+}
+
+function openVersionEv(prj, shot, task, elem, prog, ver) {
+    try {
+        p = site.taskPrograms[task][prog]
+        p.openVersion(prj, shot, task, elem, ver)
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
     }
 }
 

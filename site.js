@@ -167,15 +167,21 @@ exports.defaultElements = defaultElements
 taskPrograms = {
     "fx": {
         "houdini": {
-            "createElement": function(prj, shot, task, elem) {
-                let scenedir = taskPath(prj, shot, task)
-                let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001.hip"
-                proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
-            },
             "listElements": function(prj, shot, task) {
                 let scenedir = taskPath(prj, shot, task)
                 let elems = elemsInDir(scenedir, "houdini", ".hip")
                 return elems
+            },
+            "createElement": function(prj, shot, task, elem) {
+                let scenedir = taskPath(prj, shot, task)
+                let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + ".hip"
+                proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
+            },
+            "openVersion": function(prj, shot, task, elem, ver) {
+                let scenedir = taskPath(prj, shot, task)
+                let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + ".hip"
+                console.log(scene)
+                proc.execFileSync("houdini", [scene])
             },
         },
     }
