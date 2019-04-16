@@ -1,4 +1,5 @@
 const fs = require("fs")
+const proc = require("child_process")
 
 // 루트
 
@@ -169,7 +170,7 @@ taskPrograms = {
             "createElement": function(prj, shot, task, elem) {
                 let scenedir = taskPath(prj, shot, task)
                 let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001.hip"
-                fs.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
+                proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
             },
             "listElements": function(prj, shot, task) {
                 let scenedir = taskPath(prj, shot, task)
