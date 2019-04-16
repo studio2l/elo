@@ -1,24 +1,24 @@
 const fs = require("fs")
 
+// 루트
+
 function projectRoot() {
     return process.env.PROJECT_ROOT
 }
 exports.projectRoot = projectRoot
+
+// 프로젝트
 
 function projectPath(prj) {
     return projectRoot() + "/" + prj
 }
 exports.projectPath = projectPath
 
-function shotPath(prj, shot) {
-    return projectRoot() + "/" + prj + "/shot/" + shot
+function projects() {
+    let d = projectRoot()
+    return childDirs(d)
 }
-exports.shotPath = shotPath
-
-function taskPath(prj, shot, task) {
-    return projectRoot() + "/" + prj + "/shot/" + shot + "/task/" + task
-}
-exports.taskPath = taskPath
+exports.projects = projects
 
 projectDirs = [
     "asset",
@@ -41,6 +41,19 @@ projectDirs = [
 ]
 exports.projectDirs = projectDirs
 
+// 샷
+
+function shotPath(prj, shot) {
+    return projectPath(prj) + "/shot/" + shot
+}
+exports.shotPath = shotPath
+
+function shotsOf(prj) {
+    let d = projectPath(prj) + "/shot"
+    return childDirs(d)
+}
+exports.shotsOf = shotsOf
+
 shotDirs = [
     "plate",
     "src",
@@ -53,6 +66,19 @@ shotDirs = [
     "render",
 ]
 exports.shotDirs = shotDirs
+
+// 태스크
+
+function taskPath(prj, shot, task) {
+    return shotPath(prj, shot) + "/task/" + task
+}
+exports.taskPath = taskPath
+
+function tasksOf(prj, shot) {
+    let d = shotPath(prj, shot) + "/task"
+    return childDirs(d)
+}
+exports.tasksOf = tasksOf
 
 tasks = [
     "model",
@@ -79,15 +105,22 @@ taskDirs = {
 }
 exports.taskDirs = taskDirs
 
-defaultElements = {
-    "fx": [
-        {
-            "name": "main",
-            "prog": "houdini",
-        },
-    ],
+// 엘리먼트
+
+function elementsOf(prj, shot, task) {
+    let taskdir = taskPath(prj, shot, task)
+    let progs = taskPrograms[task]
+    if (!progs) {
+        return {}
+    }
+    let elems = {}
+    for (let i in progs) {
+        let p = progs[i]
+        Object.assign(elems, p.listElements(prj, shot, task))
+    }
+    return elems
 }
-exports.defaultElements = defaultElements
+exports.elementsOf = elementsOf
 
 function elemsInDir(dir, prog, ext) {
     let elems = {}
@@ -120,6 +153,16 @@ function elemsInDir(dir, prog, ext) {
     return elems
 }
 
+defaultElements = {
+    "fx": [
+        {
+            "name": "main",
+            "prog": "houdini",
+        },
+    ],
+}
+exports.defaultElements = defaultElements
+
 taskPrograms = {
     "fx": {
         "houdini": {
@@ -138,7 +181,6 @@ taskPrograms = {
 }
 exports.taskPrograms = taskPrograms
 
-
 function childDirs(d) {
     if (!fs.existsSync(d)) {
         throw Error(d + " 디렉토리가 존재하지 않습니다.")
@@ -152,36 +194,3 @@ function childDirs(d) {
     })
     return cds
 }
-
-function projects() {
-    let d = projectRoot()
-    return childDirs(d)
-}
-exports.projects = projects
-
-function shotsOf(prj) {
-    let d = projectPath(prj) + "/shot"
-    return childDirs(d)
-}
-exports.shotsOf = shotsOf
-
-function tasksOf(prj, shot) {
-    let d = shotPath(prj, shot) + "/task"
-    return childDirs(d)
-}
-exports.tasksOf = tasksOf
-
-function elementsOf(prj, shot, task) {
-    let taskdir = taskPath(prj, shot, task)
-    let progs = taskPrograms[task]
-    if (!progs) {
-        return {}
-    }
-    let elems = {}
-    for (let i in progs) {
-        let p = progs[i]
-        Object.assign(elems, p.listElements(prj, shot, task))
-    }
-    return elems
-}
-exports.elementsOf = elementsOf
