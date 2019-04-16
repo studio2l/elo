@@ -1,6 +1,7 @@
 const fs = require("fs")
 const proc = require("child_process")
 const user = require("./user.js")
+const site = require("./site.js")
 const { remote } = require("electron")
 const { Menu, MenuItem } = remote
 
@@ -9,15 +10,12 @@ let pinnedProject = {}
 let pinnedShot = {}
 
 function init() {
-    projectRoot = process.env.PROJECT_ROOT
+    projectRoot = site.projectRoot()
     if (!projectRoot) {
         throw Error("Elo를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.")
     }
-    if (!fs.existsSync(projectRoot)) {
-        fs.mkdirSync(projectRoot)
-    }
-
-    ensureConfigDirExist()
+    ensureDirExist(projectRoot)
+    ensureDirExist(configDir())
     loadPinnedProject()
     loadPinnedShot()
 
@@ -200,13 +198,13 @@ function createItem(kind) {
         return
     }
     if (kind == "project") {
-        createProject(name)
+        createProjectEv(name)
     } else if (kind == "shot") {
-        createShot(currentProject(), name)
+        createShotEv(currentProject(), name)
     } else if (kind == "task") {
-        createTask(currentProject(), currentShot(), name)
+        createTaskEv(currentProject(), currentShot(), name)
     } else if (kind == "version") {
-        createElements(currentProject(), currentShot(), currentTask(), name)
+        createElementsEv(currentProject(), currentShot(), currentTask(), name)
     }
 }
 
@@ -234,125 +232,12 @@ function clearNotify() {
     notifier.innerText = ""
 }
 
-let projectDirs = [
-    "asset",
-    "doc",
-    "doc/cglist",
-    "doc/credit",
-    "doc/droid",
-    "edit",
-    "ref",
-    "input",
-    "input/lut",
-    "input/src",
-    "input/scan",
-    "review",
-    "output",
-    "vendor",
-    "vendor/input",
-    "vendor/output",
-    "shot",
-]
-
-let shotDirs = [
-    "plate",
-    "src",
-    "ref",
-    "pub",
-    "pub/cam",
-    "pub/geo",
-    "pub/char",
-    "task",
-    "render",
-]
-
-let tasks = [
-    "model",
-    "track",
-    "rig",
-    "ani",
-    "light",
-    "fx",
-    "matte",
-    "motion",
-    "comp",
-]
-
-let taskDirs = {
-    "fx": [
-        "backup",
-        "geo",
-        "precomp",
-        "preview",
-        "render",
-        "temp",
-    ],
-}
-
-let defaultElements = {
-    "fx": [
-        {
-            "name": "main",
-            "prog": "houdini",
-        },
-    ],
-}
-
-function elemsInDir(dir, prog, ext) {
-    let elems = {}
-    let files = fs.readdirSync(dir)
-    for (let f of files) {
-        if (!fs.lstatSync(dir + "/" + f).isFile()) {
-            continue
-        }
-        if (!f.endsWith(ext)) {
-            continue
-        }
-        f = f.substring(0, f.length - ext.length)
-        let ws = f.split("_")
-        if (ws.length != 4) {
-            continue
-        }
-        let [prj, shot, elem, version] = ws
-        if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
-            continue
-        }
-        if (!elems[elem]) {
-            elems[elem] = {
-                "name": elem,
-                "program": prog,
-                "versions": [],
-            }
-        }
-        elems[elem].versions.push(version)
-    }
-    return elems
-}
-
-
-let taskPrograms = {
-    "fx": {
-        "houdini": {
-            "createElement": function(prj, shot, task, elem) {
-                let scenedir = taskPath(prj, shot, task)
-                let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001.hip"
-                fs.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
-            },
-            "listElements": function(prj, shot, task) {
-                let scenedir = taskPath(prj, shot, task)
-                let elems = elemsInDir(scenedir, "houdini", ".hip")
-                return elems
-            },
-        },
-    }
-}
-
 // createScene은 씬 생성에 필요한 정보를 받아들여 씬을 생성하는 함수이다.
 function createScene(prj, shot, task, elem, prog) {
-    if (!tasksOf(prj, shot).includes(task)) {
+    if (!site.tasksOf(prj, shot).includes(task)) {
         throw Error("해당 태스크가 없습니다.")
     }
-    let taskdir = taskPath(prj, shot, task)
+    let taskdir = site.taskPath(prj, shot, task)
     if (!taskdir) {
         throw Error("태스크 디렉토리가 없습니다.")
     }
@@ -362,10 +247,10 @@ function createScene(prj, shot, task, elem, prog) {
     if (!prog) {
         throw Error("프로그램을 선택하지 않았습니다.")
     }
-    if (!taskPrograms[task]) {
+    if (!site.taskPrograms[task]) {
         throw Error(task + "에 대한 프로그램 정보가 없습니다.")
     }
-    let p = taskPrograms[task][prog]
+    let p = site.taskPrograms[task][prog]
     if (!p) {
         throw Error(task + "에 대한 " + prog + " 프로그램 정보가 없습니다.")
     }
@@ -373,7 +258,7 @@ function createScene(prj, shot, task, elem, prog) {
         throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.")
     }
     try {
-        p.create(prj, shot, task, elem)
+        p.createElement(prj, shot, task, elem)
     } catch(err) {
         if (err.errno == "ENOENT") {
             throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
@@ -401,8 +286,17 @@ function createDirs(parentd, dirs) {
     }
 }
 
+function createProjectEv(prj) {
+    try {
+        createProject(prj)
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
+    }
+}
+
 function createProject(prj) {
-    let prjDir = projectRoot + "/" + prj
+    let prjDir = site.projectPath(prj)
     if (fs.existsSync(prjDir)) {
         throw Error("프로젝트 디렉토리가 이미 존재합니다.")
     }
@@ -412,8 +306,17 @@ function createProject(prj) {
     selectProject(prj)
 }
 
+function createShotEv(prj, shot) {
+    try {
+        createShot(prj, shot)
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
+    }
+}
+
 function createShot(prj, shot) {
-    let d = shotPath(prj, shot)
+    let d = site.shotPath(prj, shot)
     if (fs.existsSync(d)) {
         throw Error("샷 디렉토리가 이미 존재합니다.")
     }
@@ -423,13 +326,22 @@ function createShot(prj, shot) {
     selectShot(prj, shot)
 }
 
+function createTaskEv(prj, shot, task) {
+    try {
+        createTask(prj, shot, task)
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
+    }
+}
+
 function createTask(prj, shot, task) {
-    let d = taskPath(prj, shot, task)
+    let d = site.taskPath(prj, shot, task)
     if (fs.existsSync(d)) {
         throw Error("태스크 디렉토리가 이미 존재합니다.")
     }
     fs.mkdirSync(d, { recursive: true })
-    let subdirs = taskDirs[task]
+    let subdirs = site.taskDirs[task]
     if (subdirs) {
         for (let s of subdirs) {
             let sd = d + "/" + s
@@ -438,7 +350,7 @@ function createTask(prj, shot, task) {
     }
     reloadTasks(currentProject(), currentShot())
     selectTask(prj, shot, task)
-    let elems = defaultElements[task]
+    let elems = site.defaultElements[task]
     if (elems) {
         for (let el of elems) {
             createScene(prj, shot, task, el.name, el.prog)
@@ -446,7 +358,16 @@ function createTask(prj, shot, task) {
     }
 }
 
-function createElements(prj, shot, task, elem) {
+function createElementEv(prj, shot, task, elem, prog) {
+    try {
+        createElement(prj, shot, task, elem, prog)
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
+    }
+}
+
+function createElement(prj, shot, task, elem, prog) {
     // TODO
     reloadElements(currentProject(), currentShot(), currentTask())
 }
@@ -456,71 +377,11 @@ function addTaskMenuItems() {
     if (!menu) {
         throw Error("task-menu가 없습니다.")
     }
-    for (let t of tasks) {
+    for (let t of site.tasks) {
         let opt = document.createElement("option")
         opt.text = t
         menu.add(opt)
     }
-}
-
-function childDirs(d) {
-    if (!fs.existsSync(d)) {
-        throw Error(d + " 디렉토리가 존재하지 않습니다.")
-    }
-    let cds = Array()
-    fs.readdirSync(d).forEach(f => {
-        let isDir = fs.lstatSync(d + "/" + f).isDirectory()
-        if (isDir) {
-            cds.push(f)
-        }
-    })
-    return cds
-}
-
-function projectPath(prj) {
-    return projectRoot + "/" + prj
-}
-
-function shotPath(prj, shot) {
-    return projectRoot + "/" + prj + "/shot/" + shot
-}
-
-function taskPath(prj, shot, task) {
-    return projectRoot + "/" + prj + "/shot/" + shot + "/task/" + task
-}
-
-function versionPath(prj, shot, task) {
-    // TODO: 디자인 필요
-    return null
-}
-
-function projects() {
-    let d = projectRoot
-    return childDirs(d)
-}
-
-function shotsOf(prj) {
-    let d = projectPath(prj) + "/shot"
-    return childDirs(d)
-}
-
-function tasksOf(prj, shot) {
-    let d = shotPath(prj, shot) + "/task"
-    return childDirs(d)
-}
-
-function elementsOf(prj, shot, task) {
-    let taskdir = taskPath(prj, shot, task)
-    let progs = taskPrograms[task]
-    if (!progs) {
-        return {}
-    }
-    let elems = {}
-    for (let i in progs) {
-        let p = progs[i]
-        Object.assign(elems, p.listElements(prj, shot, task))
-    }
-    return elems
 }
 
 function selectProjectEv(prj) {
@@ -661,7 +522,7 @@ function reloadProjects() {
     let box = document.getElementById("project-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let prjs = projects()
+    let prjs = site.projects()
     let pinned = []
     let unpinned = []
     for (let prj of prjs) {
@@ -693,7 +554,7 @@ function reloadShots(prj) {
     let box = document.getElementById("shot-box")
     box.innerText = ""
 
-    let shots = shotsOf(prj)
+    let shots = site.shotsOf(prj)
     let pinned = []
     let unpinned = []
     for (let shot of shots) {
@@ -729,7 +590,7 @@ function reloadTasks(prj, shot) {
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    for (let t of tasksOf(prj, shot)) {
+    for (let t of site.tasksOf(prj, shot)) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "task-" + t
@@ -752,7 +613,7 @@ function reloadElements(prj, shot, task) {
     let box = document.getElementById("element-box")
     box.innerText = ""
     let tmpl = document.getElementById("element-item-tmpl")
-    let elems = elementsOf(prj, shot, task)
+    let elems = site.elementsOf(prj, shot, task)
     for (let elem in elems) {
         e = elems[elem]
         let frag = document.importNode(tmpl.content, true)
@@ -798,8 +659,7 @@ function configDir() {
     return user.configDir() + "/elo"
 }
 
-function ensureConfigDirExist() {
-    let dir = configDir()
+function ensureDirExist(dir) {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir)
     }
