@@ -347,16 +347,7 @@ function createElement(prj, shot, task, elem, prog) {
     if (!prog) {
         throw Error("프로그램을 선택하지 않았습니다.")
     }
-    if (!site.taskPrograms[task]) {
-        throw Error(task + "에 대한 프로그램 정보가 없습니다.")
-    }
-    let p = site.taskPrograms[task][prog]
-    if (!p) {
-        throw Error(task + "에 대한 " + prog + " 프로그램 정보가 없습니다.")
-    }
-    if (!p.createElement) {
-        throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.")
-    }
+    let p = site.program(prj, shot, task, prog)
     try {
         p.createElement(prj, shot, task, elem)
     } catch(err) {
@@ -634,7 +625,7 @@ function reloadElements(prj, shot, task) {
 
 function openVersionEv(prj, shot, task, elem, prog, ver) {
     try {
-        p = site.taskPrograms[task][prog]
+        p = site.program(prj, shot, task, prog)
         p.openVersion(prj, shot, task, elem, ver)
     } catch(err) {
         console.log(err)

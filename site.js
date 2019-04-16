@@ -110,7 +110,7 @@ exports.taskDirs = taskDirs
 
 function elementsOf(prj, shot, task) {
     let taskdir = taskPath(prj, shot, task)
-    let progs = taskPrograms[task]
+    let progs = taskPrograms(prj, shot, task)
     if (!progs) {
         return {}
     }
@@ -164,29 +164,56 @@ defaultElements = {
 }
 exports.defaultElements = defaultElements
 
-taskPrograms = {
-    "fx": {
-        "houdini": {
-            "listElements": function(prj, shot, task) {
-                let scenedir = taskPath(prj, shot, task)
-                let elems = elemsInDir(scenedir, "houdini", ".hip")
-                return elems
-            },
-            "createElement": function(prj, shot, task, elem) {
-                let scenedir = taskPath(prj, shot, task)
-                let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + ".hip"
-                proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
-            },
-            "openVersion": function(prj, shot, task, elem, ver) {
-                let scenedir = taskPath(prj, shot, task)
-                let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + ".hip"
-                console.log(scene)
-                proc.execFileSync("houdini", [scene])
+sitePrograms = {
+    "": {
+        "": {
+            "fx": {
+                "houdini": {
+                    "listElements": function(prj, shot, task) {
+                        let scenedir = taskPath(prj, shot, task)
+                        let elems = elemsInDir(scenedir, "houdini", ".hip")
+                        return elems
+                    },
+                    "createElement": function(prj, shot, task, elem) {
+                        let scenedir = taskPath(prj, shot, task)
+                        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + ".hip"
+                        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
+                    },
+                    "openVersion": function(prj, shot, task, elem, ver) {
+                        let scenedir = taskPath(prj, shot, task)
+                        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + ".hip"
+                        console.log(scene)
+                        proc.execFileSync("houdini", [scene])
+                    },
+                },
             },
         },
-    }
+    },
 }
-exports.taskPrograms = taskPrograms
+
+function taskPrograms(prj, shot, task) {
+    if (!sitePrograms[prj]) {
+        prj = ""
+    }
+    let projectPrograms = sitePrograms[prj]
+    if (!projectPrograms[shot]) {
+        shot = ""
+    }
+    let shotPrograms = projectPrograms[shot]
+    if (!shotPrograms[task]) {
+        throw Error(task + " 태스크의 프로그램 정보가 등록되어 있지 않습니다.")
+    }
+    return shotPrograms[task]
+}
+
+function program(prj, shot, task, prog) {
+    let programs = taskPrograms(prj, shot, task)
+    if (!programs[prog]) {
+        throw Error(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
+    }
+    return programs[prog]
+}
+exports.program = program
 
 function childDirs(d) {
     if (!fs.existsSync(d)) {
