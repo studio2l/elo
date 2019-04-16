@@ -204,7 +204,7 @@ function createItem(kind) {
     } else if (kind == "task") {
         createTaskEv(currentProject(), currentShot(), name)
     } else if (kind == "version") {
-        createElementsEv(currentProject(), currentShot(), currentTask(), name)
+        createElementEv(currentProject(), currentShot(), currentTask(), name)
     }
 }
 
