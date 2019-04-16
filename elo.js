@@ -232,41 +232,6 @@ function clearNotify() {
     notifier.innerText = ""
 }
 
-// createScene은 씬 생성에 필요한 정보를 받아들여 씬을 생성하는 함수이다.
-function createScene(prj, shot, task, elem, prog) {
-    if (!site.tasksOf(prj, shot).includes(task)) {
-        throw Error("해당 태스크가 없습니다.")
-    }
-    let taskdir = site.taskPath(prj, shot, task)
-    if (!taskdir) {
-        throw Error("태스크 디렉토리가 없습니다.")
-    }
-    if (!elem) {
-        throw Error("요소를 선택하지 않았습니다.")
-    }
-    if (!prog) {
-        throw Error("프로그램을 선택하지 않았습니다.")
-    }
-    if (!site.taskPrograms[task]) {
-        throw Error(task + "에 대한 프로그램 정보가 없습니다.")
-    }
-    let p = site.taskPrograms[task][prog]
-    if (!p) {
-        throw Error(task + "에 대한 " + prog + " 프로그램 정보가 없습니다.")
-    }
-    if (!p.create) {
-        throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.")
-    }
-    try {
-        p.createElement(prj, shot, task, elem)
-    } catch(err) {
-        if (err.errno == "ENOENT") {
-            throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
-        }
-        throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
-    }
-}
-
 function createDirs(parentd, dirs) {
     if (!parentd) {
         throw Error("부모 디렉토리는 비어있을 수 없습니다.")
@@ -353,7 +318,7 @@ function createTask(prj, shot, task) {
     let elems = site.defaultElements[task]
     if (elems) {
         for (let el of elems) {
-            createScene(prj, shot, task, el.name, el.prog)
+            createElement(prj, shot, task, el.name, el.prog)
         }
     }
 }
@@ -367,8 +332,39 @@ function createElementEv(prj, shot, task, elem, prog) {
     }
 }
 
+// createElement은 씬 생성에 필요한 정보를 받아들여 씬을 생성하는 함수이다.
 function createElement(prj, shot, task, elem, prog) {
-    // TODO
+    if (!site.tasksOf(prj, shot).includes(task)) {
+        throw Error("해당 태스크가 없습니다.")
+    }
+    let taskdir = site.taskPath(prj, shot, task)
+    if (!taskdir) {
+        throw Error("태스크 디렉토리가 없습니다.")
+    }
+    if (!elem) {
+        throw Error("요소를 선택하지 않았습니다.")
+    }
+    if (!prog) {
+        throw Error("프로그램을 선택하지 않았습니다.")
+    }
+    if (!site.taskPrograms[task]) {
+        throw Error(task + "에 대한 프로그램 정보가 없습니다.")
+    }
+    let p = site.taskPrograms[task][prog]
+    if (!p) {
+        throw Error(task + "에 대한 " + prog + " 프로그램 정보가 없습니다.")
+    }
+    if (!p.createElement) {
+        throw Error(prog + "는 " + task + "내에 씬 생성방법이 정의되지 않은 프로그램입니다.")
+    }
+    try {
+        p.createElement(prj, shot, task, elem)
+    } catch(err) {
+        if (err.errno == "ENOENT") {
+            throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
+        }
+        throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
+    }
     reloadElements(currentProject(), currentShot(), currentTask())
 }
 
