@@ -177,19 +177,7 @@ function openModal(kind) {
         "element": "요소",
     }
     input.placeholder = "생성 할 " + kor[kind] + " 이름"
-    input.onkeydown = function(ev) {
-        if (ev.key == "Enter") {
-            try {
-                closeModal()
-                createItem(kind)
-            } catch(err) {
-                notify(err.lineNumber)
-            }
-        }
-    }
-    input.focus()
-    let apply = document.getElementById("modal-apply")
-    apply.onclick = function() {
+    function createItem() {
         closeModal()
         let name = document.getElementById("modal-input").value
         if (!name) {
@@ -197,14 +185,32 @@ function openModal(kind) {
             return
         }
         if (kind == "project") {
-            createProjectEv(name)
+            createProject(name)
         } else if (kind == "shot") {
-            createShotEv(currentProject(), name)
+            createShot(currentProject(), name)
         } else if (kind == "task") {
-            createTaskEv(currentProject(), currentShot(), name)
+            createTask(currentProject(), currentShot(), name)
         } else if (kind == "element") {
             let prog = document.getElementById("modal-prog-input").value
-            createElementEv(currentProject(), currentShot(), currentTask(), name, prog)
+            createElement(currentProject(), currentShot(), currentTask(), name, prog)
+        }
+    }
+    input.onkeydown = function(ev) {
+        if (ev.key == "Enter") {
+            try {
+                createItem()
+            } catch(err) {
+                notify(err.message)
+            }
+        }
+    }
+    input.focus()
+    let apply = document.getElementById("modal-apply")
+    apply.onclick = function() {
+        try {
+            createItem()
+        } catch(err) {
+            notify(err.message)
         }
     }
 }
@@ -233,47 +239,28 @@ function clearNotify() {
     notifier.innerText = ""
 }
 
-function createProjectEv(prj) {
-    try {
-        site.createProject(prj)
-        reloadProjects()
-        selectProject(prj)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+function createProject(prj) {
+    site.createProject(prj)
+    reloadProjects()
+    selectProject(prj)
 }
 
-function createShotEv(prj, shot) {
-    try {
-        site.createShot(prj, shot)
-        reloadShots(currentProject())
-        selectShot(prj, shot)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+function createShot(prj, shot) {
+    site.createShot(prj, shot)
+    reloadShots(currentProject())
+    selectShot(prj, shot)
 }
 
-function createTaskEv(prj, shot, task) {
-    try {
-        site.createTask(prj, shot, task)
-        reloadTasks(currentProject(), currentShot())
-        selectTask(prj, shot, task)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+function createTask(prj, shot, task) {
+    site.createTask(prj, shot, task)
+    reloadTasks(currentProject(), currentShot())
+    selectTask(prj, shot, task)
 }
 
-function createElementEv(prj, shot, task, elem, prog) {
-    try {
-        site.createElement(prj, shot, task, elem, prog)
-        reloadElements(currentProject(), currentShot(), currentTask())
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+function createElement(prj, shot, task, elem, prog) {
+    site.createElement(prj, shot, task, elem, prog)
+    reloadElements(currentProject(), currentShot(), currentTask())
+    selectElement(prj, shot, task, elem, "")
 }
 
 function addTaskMenuItems() {
@@ -530,7 +517,7 @@ function reloadElements(prj, shot, task) {
         div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, lastver) })
         let toggleVersion = document.createElement("div")
         toggleVersion.textContent = "▷"
-        toggleVersion.style.marginRight = "0.5em"
+        toggleVersion.style.width = "1.5em"
         let hideVersion = true
         toggleVersion.addEventListener("click", function() {
             hideVersion = !hideVersion
