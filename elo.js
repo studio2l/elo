@@ -156,7 +156,7 @@ function openModal(kind) {
         "project": "프로젝트",
         "shot": "샷",
         "task": "태스크",
-        "version": "버전",
+        "element": "요소",
     }
     input.placeholder = "생성 할 " + kor[kind] + " 이름"
     input.onkeydown = function(ev) {
