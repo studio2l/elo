@@ -135,7 +135,7 @@ exports.openModalEv = function(kind) {
         notify("아직 샷을 선택하지 않았습니다.")
         return
     }
-    if (kind == "version" && !currentTask()) {
+    if (kind == "element" && !currentTask()) {
         notify("아직 태스크를 선택하지 않았습니다.")
         return
     }
@@ -152,6 +152,24 @@ function openModal(kind) {
     m.style.display = "block"
     let input = document.getElementById("modal-input")
     input.value = ""
+    let progInput = document.getElementById("modal-prog-input")
+    progInput.hidden = true
+    if (kind == "element") {
+        progInput.hidden = false
+        progInput.innerText = ""
+        let progs = Array()
+        try {
+            progs = site.taskPrograms(currentProject(), currentShot(), currentTask())
+        } catch(err) {
+            m.style.display = "none"
+            throw err
+        }
+        for (let p in progs) {
+            let opt = document.createElement("option")
+            opt.text = p
+            progInput.add(opt)
+        }
+    }
     kor = {
         "project": "프로젝트",
         "shot": "샷",
@@ -172,39 +190,22 @@ function openModal(kind) {
     input.focus()
     let apply = document.getElementById("modal-apply")
     apply.onclick = function() {
-        try {
-            closeModal()
-            createItem(kind)
-        } catch(err) {
-            console.log(err)
-            notify(err.message)
+        closeModal()
+        let name = document.getElementById("modal-input").value
+        if (!name) {
+            notify("생성할 항목의 이름을 설정하지 않았습니다.")
+            return
         }
-    }
-}
-
-exports.createItemEv = function(kind) {
-    try {
-        createItem(kind)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
-}
-
-function createItem(kind) {
-    let name = document.getElementById("modal-input").value
-    if (!name) {
-        notify("생성할 항목의 이름을 설정하지 않았습니다.")
-        return
-    }
-    if (kind == "project") {
-        createProjectEv(name)
-    } else if (kind == "shot") {
-        createShotEv(currentProject(), name)
-    } else if (kind == "task") {
-        createTaskEv(currentProject(), currentShot(), name)
-    } else if (kind == "version") {
-        createElementEv(currentProject(), currentShot(), currentTask(), name)
+        if (kind == "project") {
+            createProjectEv(name)
+        } else if (kind == "shot") {
+            createShotEv(currentProject(), name)
+        } else if (kind == "task") {
+            createTaskEv(currentProject(), currentShot(), name)
+        } else if (kind == "element") {
+            let prog = document.getElementById("modal-prog-input").value
+            createElementEv(currentProject(), currentShot(), currentTask(), name, prog)
+        }
     }
 }
 

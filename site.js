@@ -269,10 +269,11 @@ function taskPrograms(prj, shot, task) {
     }
     let shotPrograms = projectPrograms[shot]
     if (!shotPrograms[task]) {
-        throw Error(task + " 태스크의 프로그램 정보가 등록되어 있지 않습니다.")
+        throw Error("사이트에 " + task + " 태스크가 정의되어 있지 않습니다.")
     }
     return shotPrograms[task]
 }
+exports.taskPrograms = taskPrograms
 
 function program(prj, shot, task, prog) {
     let programs = taskPrograms(prj, shot, task)
