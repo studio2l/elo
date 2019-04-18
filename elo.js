@@ -528,14 +528,37 @@ function reloadElements(prj, shot, task) {
         div.getElementsByClassName("item-pin")[0].textContent = e.program
         div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, "") })
         div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, lastver) })
+        let toggleVersion = document.createElement("div")
+        toggleVersion.textContent = "▷"
+        toggleVersion.style.marginRight = "0.5em"
+        let hideVersion = true
+        toggleVersion.addEventListener("click", function() {
+            hideVersion = !hideVersion
+            if (hideVersion) {
+                toggleVersion.textContent = "▷"
+            } else {
+                toggleVersion.textContent = "▽"
+            }
+            let vers = document.getElementsByClassName("element-" + elem + "-versions")
+            for (let v of vers) {
+                if (hideVersion) {
+                    v.style.display = "none"
+                } else {
+                    v.style.display = "flex"
+                }
+            }
+        })
+        div.insertBefore(toggleVersion, div.firstChild)
         box.append(div)
         for (let ver of e.versions.reverse()) {
             let frag = document.importNode(tmpl.content, true)
             let div = frag.querySelector("div")
+            div.classList.add("element-" + elem + "-versions")
             div.id = "element-" + elem + "-" + ver
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, ver) })
             div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, ver) })
+            div.style.display = "none"
             box.append(div)
         }
     }
