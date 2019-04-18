@@ -516,23 +516,24 @@ function reloadElements(prj, shot, task) {
     }
     let box = document.getElementById("element-box")
     box.innerText = ""
-    let tmpl = document.getElementById("element-item-tmpl")
+    let tmpl = document.getElementById("item-tmpl")
     let elems = site.elementsOf(prj, shot, task)
     for (let elem in elems) {
         e = elems[elem]
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "element-" + elem
-        div.getElementsByClassName("item-val")[0].textContent = elem
-        div.getElementsByClassName("prog")[0].textContent = e.program
+        let lastver = e.versions[e.versions.length - 1]
+        div.getElementsByClassName("item-val")[0].textContent = elem + " [" + lastver + "]"
+        div.getElementsByClassName("item-pin")[0].textContent = e.program
         div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, "") })
+        div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, lastver) })
         box.append(div)
-        for (let ver of e.versions) {
+        for (let ver of e.versions.reverse()) {
             let frag = document.importNode(tmpl.content, true)
             let div = frag.querySelector("div")
             div.id = "element-" + elem + "-" + ver
             div.getElementsByClassName("item-val")[0].textContent = ver
-            div.getElementsByClassName("prog")[0].textContent = "열기"
             div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, ver) })
             div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, ver) })
             box.append(div)
