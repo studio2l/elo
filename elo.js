@@ -521,7 +521,8 @@ function reloadElements(prj, shot, task) {
         toggleVersion.textContent = "▷"
         toggleVersion.style.width = "1.5em"
         let hideVersion = true
-        toggleVersion.addEventListener("click", function() {
+        toggleVersion.addEventListener("click", function(ev) {
+            ev.stopPropagation()
             hideVersion = !hideVersion
             if (hideVersion) {
                 toggleVersion.textContent = "▷"
@@ -536,6 +537,9 @@ function reloadElements(prj, shot, task) {
                     v.style.display = "flex"
                 }
             }
+        })
+        toggleVersion.addEventListener("dblclick", function(ev) {
+            ev.stopPropagation()
         })
         div.insertBefore(toggleVersion, div.firstChild)
         box.append(div)
