@@ -201,7 +201,7 @@ function openModal(kind) {
                 createItem()
             } catch(err) {
                 notify(err.message)
-                throw Error(err)
+                throw err
             }
         }
     }
@@ -212,7 +212,7 @@ function openModal(kind) {
             createItem()
         } catch(err) {
             notify(err.message)
-            throw Error(err)
+            throw err
         }
     }
 }
