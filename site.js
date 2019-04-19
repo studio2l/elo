@@ -242,9 +242,9 @@ sitePrograms = {
                             proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
                         } catch(err) {
                             if (err.errno == "ENOENT") {
-                                throw Error(prog + " 씬 생성을 위한 'hython' 명령어가 없습니다.")
+                                throw Error("houdini 씬 생성을 위한 'hython' 명령어가 없습니다.")
                             }
-                            throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
+                            throw Error("houdini 씬 생성중 에러가 났습니다: " + err.message)
                         }
                     },
                     "openVersion": function(prj, shot, task, elem, ver) {
