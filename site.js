@@ -250,7 +250,7 @@ sitePrograms = {
                     "openVersion": function(prj, shot, task, elem, ver) {
                         let scenedir = taskPath(prj, shot, task)
                         let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + ".hip"
-                        proc.execFileSync("houdini", [scene])
+                        proc.execFile("houdini", [scene])
                     },
                 },
             },
