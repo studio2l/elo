@@ -180,14 +180,7 @@ function createElement(prj, shot, task, elem, prog) {
         throw Error("프로그램을 선택하지 않았습니다.")
     }
     let p = program(prj, shot, task, prog)
-    try {
-        p.createElement(prj, shot, task, elem)
-    } catch(err) {
-        if (err.errno == "ENOENT") {
-            throw Error(prog + " 씬 생성을 위한 " + cmd + " 명령어가 없습니다.")
-        }
-        throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
-    }
+    p.createElement(prj, shot, task, elem)
 }
 exports.createElement = createElement
 
@@ -245,7 +238,14 @@ sitePrograms = {
                     "createElement": function(prj, shot, task, elem) {
                         let scenedir = taskPath(prj, shot, task)
                         let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + ".hip"
-                        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
+                        try {
+                            proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
+                        } catch(err) {
+                            if (err.errno == "ENOENT") {
+                                throw Error(prog + " 씬 생성을 위한 'hython' 명령어가 없습니다.")
+                            }
+                            throw Error(prog + " 씬 생성중 에러가 났습니다: " + err.message)
+                        }
                     },
                     "openVersion": function(prj, shot, task, elem, ver) {
                         let scenedir = taskPath(prj, shot, task)
