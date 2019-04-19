@@ -184,7 +184,8 @@ function createElement(prj, shot, task, elem, prog) {
 }
 exports.createElement = createElement
 
-function elemsInDir(dir, prog, ext) {
+function elemsInDir(prj, shot, task, prog, ext) {
+    let dir = taskPath(prj, shot, task)
     let elems = {}
     let files = fs.readdirSync(dir)
     for (let f of files) {
@@ -195,11 +196,16 @@ function elemsInDir(dir, prog, ext) {
             continue
         }
         f = f.substring(0, f.length - ext.length)
-        let ws = f.split("_")
-        if (ws.length != 4) {
+        prefix = prj + "_" + shot + "_"
+        if (!f.startsWith(prefix)) {
             continue
         }
-        let [prj, shot, elem, version] = ws
+        f = f.substring(prefix.length, f.length)
+        let ws = f.split("_")
+        if (ws.length != 2) {
+            continue
+        }
+        let [elem, version] = ws
         if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
             continue
         }
@@ -231,8 +237,7 @@ sitePrograms = {
             "fx": {
                 "houdini": {
                     "listElements": function(prj, shot, task) {
-                        let scenedir = taskPath(prj, shot, task)
-                        let elems = elemsInDir(scenedir, "houdini", ".hip")
+                        let elems = elemsInDir(prj, shot, task, "houdini", ".hip")
                         return elems
                     },
                     "createElement": function(prj, shot, task, elem) {
