@@ -513,8 +513,8 @@ function reloadElements(prj, shot, task) {
         let div = frag.querySelector("div")
         div.id = "element-" + elem
         let lastver = e.versions[e.versions.length - 1]
-        div.getElementsByClassName("item-val")[0].textContent = elem + " [" + lastver + "]"
-        div.getElementsByClassName("item-pin")[0].textContent = e.program
+        div.getElementsByClassName("item-val")[0].textContent = elem
+        div.getElementsByClassName("item-pin")[0].textContent = lastver + "@" +  e.program
         div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, "") })
         div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, lastver) })
         let toggleVersion = document.createElement("div")
