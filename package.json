@@ -6,6 +6,18 @@
   "scripts": {
     "start": "electron ."
   },
+  "build": {
+    "appId": "com.2lfilm.elo",
+    "productName": "elo",
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true
+    }
+  },
   "repository": "https://github.com/studio2l/elo",
   "keywords": [
     "Electron",
@@ -17,6 +29,9 @@
   "author": "Studio 2L",
   "license": "BSD 3-Clause",
   "devDependencies": {
-    "electron": "^4.1.1"
+    "electron": "^4.1.1",
+    "electron-builder": "^20.39.0"
+  },
+  "dependencies": {  
   }
 }
