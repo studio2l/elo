@@ -23,8 +23,9 @@ function init() {
     ensureElementExist("shot-box")
     ensureElementExist("task-box")
     ensureElementExist("element-box")
+    ensureElementExist("mytask-menu")
 
-    addTaskMenuItems()
+    addMytaskMenuItems()
     reloadProjects()
 
     window.addEventListener("contextmenu", function(ev) {
@@ -241,6 +242,11 @@ function clearNotify() {
     notifier.innerText = ""
 }
 
+function myTask() {
+    let mytask = document.getElementById("mytask-menu")
+    return mytask.value
+}
+
 function createProject(prj) {
     site.createProject(prj)
     reloadProjects()
@@ -265,11 +271,15 @@ function createElement(prj, shot, task, elem, prog) {
     selectElement(prj, shot, task, elem, "")
 }
 
-function addTaskMenuItems() {
-    let menu = document.getElementById("task-menu")
+function addMytaskMenuItems() {
+    let menu = document.getElementById("mytask-menu")
     if (!menu) {
-        throw Error("task-menu가 없습니다.")
+        throw Error("mytask-menu가 없습니다.")
     }
+    let opt = document.createElement("option")
+    opt.text = "없음"
+    opt.value = ""
+    menu.add(opt)
     for (let t of site.tasks) {
         let opt = document.createElement("option")
         opt.text = t
@@ -308,6 +318,20 @@ function selectShotEv(prj, shot) {
         console.log(err)
         notify(err.message)
     }
+    reloadTasks(prj, shot)
+    let task = myTask()
+    if (!task) {
+        return
+    }
+    if (!site.tasksOf(prj, shot).includes(task)) {
+        return
+    }
+    try {
+        selectTask(prj, shot, task)
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
+    }
 }
 
 function selectShot(prj, shot) {
@@ -321,7 +345,6 @@ function selectShot(prj, shot) {
     }
     let selected = document.getElementById("shot-" + shot)
     selected.classList.add("selected")
-    reloadTasks(prj, shot)
 }
 
 function selectTaskEv(prj, shot, task) {
