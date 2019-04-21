@@ -114,12 +114,6 @@ function createTask(prj, shot, task) {
             fs.mkdirSync(sd)
         }
     }
-    let elems = defaultElements[task]
-    if (elems) {
-        for (let el of elems) {
-            createElement(prj, shot, task, el.name, el.prog)
-        }
-    }
 }
 exports.createTask = createTask
 
