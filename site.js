@@ -247,7 +247,7 @@ class Program {
     }
     createElement(prj, shot, task, elem) {
         let scenedir = taskPath(prj, shot, task)
-        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + ".hip"
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + this.ext
         try {
             this.createScene(scene)
         } catch(err) {
@@ -259,7 +259,7 @@ class Program {
     }
     openVersion(prj, shot, task, elem, ver) {
         let scenedir = taskPath(prj, shot, task)
-        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + ".hip"
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + this.ext
         try {
             this.openScene(scene)
         } catch(err) {
