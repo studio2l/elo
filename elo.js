@@ -26,6 +26,8 @@ function init() {
     ensureElementExist("mytask-menu")
 
     addMytaskMenuItems()
+    loadMyTask()
+
     reloadProjects()
 
     window.addEventListener("contextmenu", function(ev) {
@@ -253,9 +255,27 @@ function clearNotify() {
 }
 
 function myTask() {
-    let mytask = document.getElementById("mytask-menu")
-    return mytask.value
+    let menu = document.getElementById("mytask-menu")
+    return menu.value
 }
+
+function loadMyTask() {
+    let menu = document.getElementById("mytask-menu")
+    let fname = configDir() + "/mytask.json"
+    if (!fs.existsSync(fname)) {
+        menu.value = ""
+        return
+    }
+    let data = fs.readFileSync(fname)
+    menu.value = data.toString("utf8")
+}
+
+function saveMyTask() {
+    let menu = document.getElementById("mytask-menu")
+    let fname = configDir() + "/mytask.json"
+    fs.writeFileSync(fname, menu.value)
+}
+exports.saveMyTask = saveMyTask
 
 function createProject(prj) {
     site.createProject(prj)
