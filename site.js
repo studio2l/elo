@@ -208,7 +208,10 @@ class Program {
     }
     listElements(prj, shot, task) {
         let elems = {}
-        let dir = taskPath(prj, shot, task) + "/" + this.subdir
+        let dir = taskPath(prj, shot, task)
+        if (this.subdir) {
+            dir += "/" + this.subdir
+        }
         let files = fs.readdirSync(dir)
         for (let f of files) {
             if (!fs.lstatSync(dir + "/" + f).isFile()) {
