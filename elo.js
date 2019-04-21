@@ -27,7 +27,6 @@ function init() {
 
     addMytaskMenuItems()
     loadMyTask()
-    showOrHideTaskBox()
 
     reloadProjects()
 
@@ -276,24 +275,7 @@ function saveMyTask() {
     let fname = configDir() + "/mytask.json"
     fs.writeFileSync(fname, menu.value)
 }
-
-function myTaskChanged() {
-    saveMyTask()
-    showOrHideTaskBox()
-}
-exports.myTaskChanged = myTaskChanged
-
-function showOrHideTaskBox() {
-    if (myTask()) {
-        let box = document.getElementById("task-box")
-        let container = box.parentNode
-        container.style.display = "none"
-    } else {
-        let box = document.getElementById("task-box")
-        let container = box.parentNode
-        container.style.display = "flex"
-    }
-}
+exports.saveMyTask = saveMyTask
 
 function createProject(prj) {
     site.createProject(prj)
