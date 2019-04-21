@@ -188,43 +188,6 @@ function createDefaultElements(prj, shot, task) {
 }
 exports.createDefaultElements = createDefaultElements
 
-function elemsInDir(prj, shot, task, prog, ext) {
-    let dir = taskPath(prj, shot, task)
-    let elems = {}
-    let files = fs.readdirSync(dir)
-    for (let f of files) {
-        if (!fs.lstatSync(dir + "/" + f).isFile()) {
-            continue
-        }
-        if (!f.endsWith(ext)) {
-            continue
-        }
-        f = f.substring(0, f.length - ext.length)
-        prefix = prj + "_" + shot + "_"
-        if (!f.startsWith(prefix)) {
-            continue
-        }
-        f = f.substring(prefix.length, f.length)
-        let ws = f.split("_")
-        if (ws.length != 2) {
-            continue
-        }
-        let [elem, version] = ws
-        if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
-            continue
-        }
-        if (!elems[elem]) {
-            elems[elem] = {
-                "name": elem,
-                "program": prog,
-                "versions": [],
-            }
-        }
-        elems[elem].versions.push(version)
-    }
-    return elems
-}
-
 defaultElements = {
     "fx": [
         {
@@ -235,33 +198,93 @@ defaultElements = {
 }
 exports.defaultElements = defaultElements
 
+class Program {
+    constructor(name, subdir, ext, createScene, openScene) {
+        this.name = name
+        this.subdir = subdir
+        this.ext = ext
+        this.createScene = createScene
+        this.openScene = openScene
+    }
+    listElements(prj, shot, task) {
+        let elems = {}
+        let dir = taskPath(prj, shot, task) + "/" + this.subdir
+        let files = fs.readdirSync(dir)
+        for (let f of files) {
+            if (!fs.lstatSync(dir + "/" + f).isFile()) {
+                continue
+            }
+            if (!f.endsWith(this.ext)) {
+                continue
+            }
+            f = f.substring(0, f.length - this.ext.length)
+            let prefix = prj + "_" + shot + "_"
+            if (!f.startsWith(prefix)) {
+                continue
+            }
+            f = f.substring(prefix.length, f.length)
+            let ws = f.split("_")
+            if (ws.length != 2) {
+                continue
+            }
+            let [elem, version] = ws
+            if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
+                continue
+            }
+            if (!elems[elem]) {
+                elems[elem] = {
+                    "name": elem,
+                    "program": this.name,
+                    "versions": [],
+                }
+            }
+            elems[elem].versions.push(version)
+        }
+        return elems
+    }
+    createElement(prj, shot, task, elem) {
+        let scenedir = taskPath(prj, shot, task)
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + ".hip"
+        try {
+            this.createScene(scene)
+        } catch(err) {
+            if (err.errno == "ENOENT") {
+                throw Error(this.name + " 씬을 만들기 위한 명령어가 없습니다.")
+            }
+            throw Error(this.name + " 씬 생성중 에러가 났습니다: " + err.message)
+        }
+    }
+    openVersion(prj, shot, task, elem, ver) {
+        let scenedir = taskPath(prj, shot, task)
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + ".hip"
+        try {
+            this.openScene(scene)
+        } catch(err) {
+            if (err.errno == "ENOENT") {
+                throw Error(this.name + " 씬을 열기 위한 명령어가 없습니다.")
+            }
+            throw Error(this.name + " 씬 생성중 에러가 났습니다: " + err.message)
+        }
+    }
+}
+
+let FXHoudini = new Program(
+    "houdini",
+    "",
+    ".hip",
+    function(scene) { // createScene
+        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
+    },
+    function(scene) { // openScene
+        proc.execFileSync("houdini", [scene])
+    },
+)
+
 sitePrograms = {
     "": {
         "": {
             "fx": {
-                "houdini": {
-                    "listElements": function(prj, shot, task) {
-                        let elems = elemsInDir(prj, shot, task, "houdini", ".hip")
-                        return elems
-                    },
-                    "createElement": function(prj, shot, task, elem) {
-                        let scenedir = taskPath(prj, shot, task)
-                        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + ".hip"
-                        try {
-                            proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
-                        } catch(err) {
-                            if (err.errno == "ENOENT") {
-                                throw Error("houdini 씬 생성을 위한 'hython' 명령어가 없습니다.")
-                            }
-                            throw Error("houdini 씬 생성중 에러가 났습니다: " + err.message)
-                        }
-                    },
-                    "openVersion": function(prj, shot, task, elem, ver) {
-                        let scenedir = taskPath(prj, shot, task)
-                        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + ".hip"
-                        proc.execFile("houdini", [scene])
-                    },
-                },
+                "houdini": FXHoudini,
             },
         },
     },
