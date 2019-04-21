@@ -152,6 +152,12 @@ exports.openModalEv = function(kind) {
         notify("아직 태스크를 선택하지 않았습니다.")
         return
     }
+    if (kind == "element" && Object.keys(site.elementsOf(currentProject(), currentShot(), currentTask())).length == 0) {
+        site.createDefaultElements(currentProject(), currentShot(), currentTask())
+        reloadElements(currentProject(), currentShot(), currentTask())
+        return
+    }
+
     try {
         openModal(kind)
     } catch(err) {
@@ -293,12 +299,7 @@ function createTask(prj, shot, task) {
     site.createTask(prj, shot, task)
     reloadTasks(currentProject(), currentShot())
     selectTask(prj, shot, task)
-    let elems = defaultElements[task]
-    if (elems) {
-        for (let el of elems) {
-            site.createElement(prj, shot, task, el.name, el.prog)
-        }
-    }
+    site.createDefaultElements(prj, shot, task)
     reloadElements(prj, shot, task)
 }
 

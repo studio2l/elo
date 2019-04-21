@@ -178,6 +178,16 @@ function createElement(prj, shot, task, elem, prog) {
 }
 exports.createElement = createElement
 
+function createDefaultElements(prj, shot, task) {
+    let elems = defaultElements[task]
+    if (elems) {
+        for (let el of elems) {
+            createElement(prj, shot, task, el.name, el.prog)
+        }
+    }
+}
+exports.createDefaultElements = createDefaultElements
+
 function elemsInDir(prj, shot, task, prog, ext) {
     let dir = taskPath(prj, shot, task)
     let elems = {}
