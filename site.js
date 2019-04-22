@@ -279,7 +279,7 @@ let FXHoudini = new Program(
         proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
     },
     function(scene) { // openScene
-        proc.execFileSync("houdini", [scene])
+        proc.execFile("houdini", [scene])
     },
 )
 
