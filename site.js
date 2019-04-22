@@ -262,17 +262,10 @@ class Program {
             throw Error(this.name + " 씬 생성중 에러가 났습니다: " + err.message)
         }
     }
-    openVersion(prj, shot, task, elem, ver) {
+    openVersion(prj, shot, task, elem, ver, handleError) {
         let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + this.ext
-        try {
-            this.openScene(scene, this.env())
-        } catch(err) {
-            if (err.errno == "ENOENT") {
-                throw Error(this.name + " 씬을 열기 위한 명령어가 없습니다.")
-            }
-            throw Error(this.name + " 씬 생성중 에러가 났습니다: " + err.message)
-        }
+        this.openScene(scene, this.env(), handleError)
     }
 }
 
@@ -294,11 +287,11 @@ let FXHoudini = new Program(
     },
     // createScene
     function(scene, env) {
-        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`], { env: env })
+        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`], { "env": env })
     },
     // openScene
-    function(scene, env) {
-        proc.execFile("houdini", [scene], { env: env })
+    function(scene, env, handleError) {
+        proc.execFile("houdini", [scene], { "env": env }, handleError)
     },
 )
 
@@ -321,12 +314,12 @@ let FXNuke = new Program(
     // createScene
     function(scene, env) {
         // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
-        proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { env: env })
+        proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
     },
     // openScene
-    function(scene, env) {
+    function(scene, env, handleError) {
         // 누크의 bin 디렉토리가 PATH에 잡혀있어야 함.
-        proc.execFile("Nuke10.0", ["--nukex", scene], { env: env })
+        proc.execFile("Nuke10.0", ["--nukex", scene], { "env": env }, handleError)
     },
 )
 

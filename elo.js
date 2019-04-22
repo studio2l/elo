@@ -626,7 +626,16 @@ function reloadElements(prj, shot, task) {
 function openVersionEv(prj, shot, task, elem, prog, ver) {
     try {
         p = site.program(prj, shot, task, prog)
-        p.openVersion(prj, shot, task, elem, ver)
+        let handleError = function(err, stdout, stderr) {
+            if (err) {
+                if (err.errno == "ENOENT") {
+                    err = Error(p.name + " 씬을 열기 위한 명령어가 없습니다.")
+                }
+                console.log(err)
+                notify(err.message)
+            }
+        }
+        p.openVersion(prj, shot, task, elem, ver, handleError)
     } catch(err) {
         console.log(err)
         notify(err.message)
