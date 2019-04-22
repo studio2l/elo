@@ -199,10 +199,11 @@ defaultElements = {
 exports.defaultElements = defaultElements
 
 class Program {
-    constructor(name, subdir, ext, createScene, openScene) {
+    constructor(name, subdir, ext, env, createScene, openScene) {
         this.name = name
         this.subdir = subdir
         this.ext = ext
+        this.env = env
         this.createScene = createScene
         this.openScene = openScene
     }
@@ -253,7 +254,7 @@ class Program {
         let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + this.ext
         try {
-            this.createScene(scene)
+            this.createScene(scene, this.env())
         } catch(err) {
             if (err.errno == "ENOENT") {
                 throw Error(this.name + " 씬을 만들기 위한 명령어가 없습니다.")
@@ -265,7 +266,7 @@ class Program {
         let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + this.ext
         try {
-            this.openScene(scene)
+            this.openScene(scene, this.env())
         } catch(err) {
             if (err.errno == "ENOENT") {
                 throw Error(this.name + " 씬을 열기 위한 명령어가 없습니다.")
@@ -282,13 +283,22 @@ let FXHoudini = new Program(
     "",
     // ext
     ".hip",
+    // env
+    function() {
+        if (process.platform == "win32") {
+            let env = cloneEnv()
+            env.PATH = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin;" + env.PATH
+            return env
+        }
+        return process.env
+    },
     // createScene
-    function(scene) {
-        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
+    function(scene, env) {
+        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`], { env: env })
     },
     // openScene
-    function(scene) {
-        proc.execFile("houdini", [scene])
+    function(scene, env) {
+        proc.execFile("houdini", [scene], { env: env })
     },
 )
 
@@ -299,15 +309,24 @@ let FXNuke = new Program(
     "precomp",
     // ext
     ".nk",
+    // env
+    function() {
+        if (process.platform == "win32") {
+            let env = cloneEnv()
+            env.PATH = "C:\\Program Files\\Nuke 10.0v3\\;" + env.PATH
+            return env
+        }
+        return process.env
+    },
     // createScene
-    function(scene) {
+    function(scene, env) {
         // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
-        proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`])
+        proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { env: env })
     },
     // openScene
-    function(scene) {
+    function(scene, env) {
         // 누크의 bin 디렉토리가 PATH에 잡혀있어야 함.
-        proc.execFile("Nuke10.0", ["--nukex", scene])
+        proc.execFile("Nuke10.0", ["--nukex", scene], { env: env })
     },
 )
 
@@ -378,4 +397,12 @@ function createDirs(parentd, dirs) {
         }
         fs.mkdirSync(child, { recursive: true })
     }
+}
+
+function cloneEnv() {
+    let env = {}
+    for (let e in process.env) {
+        env[e] = process.env[e]
+    }
+    return env
 }
