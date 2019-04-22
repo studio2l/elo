@@ -272,14 +272,38 @@ class Program {
 }
 
 let FXHoudini = new Program(
+    // name
     "houdini",
+    // subdir
     "",
+    // ext
     ".hip",
-    function(scene) { // createScene
+    // createScene
+    function(scene) {
         proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`])
     },
-    function(scene) { // openScene
+    // openScene
+    function(scene) {
         proc.execFile("houdini", [scene])
+    },
+)
+
+let FXNuke = new Program(
+    // name
+    "nuke",
+    // subdir
+    "precomp",
+    // ext
+    ".nk",
+    // createScene
+    function(scene) {
+        // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
+        proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`])
+    },
+    // openScene
+    function(scene) {
+        // 누크의 bin 디렉토리가 PATH에 잡혀있어야 함.
+        proc.execFile("Nuke10.0", "-x", [scene])
     },
 )
 
@@ -288,6 +312,7 @@ sitePrograms = {
         "": {
             "fx": {
                 "houdini": FXHoudini,
+                "nuke": FXNuke,
             },
         },
     },
