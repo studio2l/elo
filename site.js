@@ -303,7 +303,7 @@ let FXNuke = new Program(
     // openScene
     function(scene) {
         // 누크의 bin 디렉토리가 PATH에 잡혀있어야 함.
-        proc.execFile("Nuke10.0", "-x", [scene])
+        proc.execFile("Nuke10.0", "--nukex", [scene])
     },
 )
 
