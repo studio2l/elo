@@ -153,7 +153,12 @@ exports.openModalEv = function(kind) {
         return
     }
     if (kind == "element" && Object.keys(site.elementsOf(currentProject(), currentShot(), currentTask())).length == 0) {
-        site.createDefaultElements(currentProject(), currentShot(), currentTask())
+        try {
+            site.createDefaultElements(currentProject(), currentShot(), currentTask())
+        } catch(err) {
+            console.log(err)
+            notify(err.message)
+        }
         reloadElements(currentProject(), currentShot(), currentTask())
         return
     }
@@ -569,7 +574,7 @@ function reloadElements(prj, shot, task) {
     let tmpl = document.getElementById("item-tmpl")
     let elems = site.elementsOf(prj, shot, task)
     for (let elem in elems) {
-        e = elems[elem]
+        let e = elems[elem]
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "element-" + elem
