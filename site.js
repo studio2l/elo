@@ -206,12 +206,16 @@ class Program {
         this.createScene = createScene
         this.openScene = openScene
     }
-    listElements(prj, shot, task) {
-        let elems = {}
+    sceneDir(prj, shot, task) {
         let dir = taskPath(prj, shot, task)
         if (this.subdir) {
             dir += "/" + this.subdir
         }
+        return dir
+    }
+    listElements(prj, shot, task) {
+        let elems = {}
+        let dir = this.sceneDir(prj, shot, task)
         let files = fs.readdirSync(dir)
         for (let f of files) {
             if (!fs.lstatSync(dir + "/" + f).isFile()) {
@@ -246,7 +250,7 @@ class Program {
         return elems
     }
     createElement(prj, shot, task, elem) {
-        let scenedir = taskPath(prj, shot, task)
+        let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + this.ext
         try {
             this.createScene(scene)
@@ -258,7 +262,7 @@ class Program {
         }
     }
     openVersion(prj, shot, task, elem, ver) {
-        let scenedir = taskPath(prj, shot, task)
+        let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + this.ext
         try {
             this.openScene(scene)
