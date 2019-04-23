@@ -345,7 +345,7 @@ function addMytaskMenuItems() {
     opt.text = "없음"
     opt.value = ""
     menu.add(opt)
-    for (let t of site.tasks) {
+    for (let t of site.tasks()) {
         let opt = document.createElement("option")
         opt.text = t
         menu.add(opt)

@@ -138,17 +138,14 @@ function createTask(prj, shot, task) {
 }
 exports.createTask = createTask
 
-tasks = [
-    "model",
-    "track",
-    "rig",
-    "ani",
-    "light",
-    "fx",
-    "matte",
-    "motion",
-    "comp",
-]
+function tasks() {
+    // 생성하거나 실행할 수 있는 프로그램이 정의된 태스크 전체를 반환한다.
+    let ts = Array()
+    for (let task in programs) {
+        ts.push(task)
+    }
+    return ts
+}
 exports.tasks = tasks
 
 taskDirs = {
