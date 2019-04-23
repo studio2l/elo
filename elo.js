@@ -183,7 +183,7 @@ function openModal(kind) {
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.taskPrograms(currentProject(), currentShot(), currentTask())
+            progs = site.programsOf(currentProject(), currentShot(), currentTask())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -624,22 +624,21 @@ function reloadElements(prj, shot, task) {
 }
 
 function openVersionEv(prj, shot, task, elem, prog, ver) {
-    try {
-        p = site.program(prj, shot, task, prog)
-        let handleError = function(err, stdout, stderr) {
-            if (err) {
-                if (err.errno == "ENOENT") {
-                    err = Error(p.name + " 씬을 열기 위한 명령어가 없습니다.")
-                }
-                console.log(err)
-                notify(err.message)
-            }
-        }
-        p.openVersion(prj, shot, task, elem, ver, handleError)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
+    let progs = site.programsOf(prj, shot, task, prog)
+    let p = progs[prog]
+    if (!p) {
+        notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
     }
+    let handleError = function(err, stdout, stderr) {
+        if (err) {
+            if (err.errno == "ENOENT") {
+                err = Error(p.name + " 씬을 열기 위한 명령어가 없습니다.")
+            }
+            console.log(err)
+            notify(err.message)
+        }
+    }
+    p.openVersion(prj, shot, task, elem, ver, handleError)
 }
 
 function clearBox(id) {

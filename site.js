@@ -146,7 +146,7 @@ exports.taskDirs = taskDirs
 
 function elementsOf(prj, shot, task) {
     let taskdir = taskPath(prj, shot, task)
-    let progs = taskPrograms(prj, shot, task)
+    let progs = programsOf(prj, shot, task)
     if (!progs) {
         return {}
     }
@@ -173,7 +173,8 @@ function createElement(prj, shot, task, elem, prog) {
     if (!prog) {
         throw Error("프로그램을 선택하지 않았습니다.")
     }
-    let p = program(prj, shot, task, prog)
+    let progs = programsOf(prj, shot, task)
+    let p = progs[prog]
     p.createElement(prj, shot, task, elem)
 }
 exports.createElement = createElement
@@ -323,41 +324,22 @@ let FXNuke = new Program(
     },
 )
 
-sitePrograms = {
-    "": {
-        "": {
-            "fx": {
-                "houdini": FXHoudini,
-                "nuke": FXNuke,
-            },
-        },
+programs = {
+    "fx": {
+        "houdini": FXHoudini,
+        "nuke": FXNuke,
     },
 }
 
-function taskPrograms(prj, shot, task) {
-    if (!sitePrograms[prj]) {
-        prj = ""
-    }
-    let projectPrograms = sitePrograms[prj]
-    if (!projectPrograms[shot]) {
-        shot = ""
-    }
-    let shotPrograms = projectPrograms[shot]
-    if (!shotPrograms[task]) {
+function programsOf(prj, shot, task) {
+    // prj와 shot은 아직 사용하지 않는다.
+    let prog = programs[task]
+    if (!prog) {
         throw Error("사이트에 " + task + " 태스크가 정의되어 있지 않습니다.")
     }
-    return shotPrograms[task]
+    return prog
 }
-exports.taskPrograms = taskPrograms
-
-function program(prj, shot, task, prog) {
-    let programs = taskPrograms(prj, shot, task)
-    if (!programs[prog]) {
-        throw Error(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
-    }
-    return programs[prog]
-}
-exports.program = program
+exports.programsOf = programsOf
 
 function childDirs(d) {
     if (!fs.existsSync(d)) {
