@@ -147,9 +147,11 @@ exports.openModalEv = function(kind) {
     }
     if (kind == "element" && !currentTask()) {
         let mytask = myTask()
-        if (mytask) {
+        let prj = currentProject()
+        let shot = currentShot()
+        if (prj && shot && mytask) {
             try {
-                createTask(currentProject(), currentShot(), mytask)
+                createTask(prj, shot, mytask)
             } catch(err) {
                 console.log(err)
                 notify(err.message)
