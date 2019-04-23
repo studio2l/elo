@@ -9,6 +9,8 @@ let projectRoot = ""
 let pinnedProject = {}
 let pinnedShot = {}
 
+// init은 elo를 초기화 한다.
+// 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
 function init() {
     projectRoot = site.projectRoot()
     if (!projectRoot) {
@@ -122,6 +124,8 @@ function init() {
     })
 }
 
+// ensureElementExist는 해당 HTML 엘리먼트가 존재하는지 검사한다.
+// 존재하지 않는다면 에러를 낸다.
 function ensureElementExist(id) {
     let el = document.getElementById(id)
     if (!el) {
@@ -129,6 +133,9 @@ function ensureElementExist(id) {
     }
 }
 
+// openModalEv는 사용자가 항목 추가 버튼을 눌렀을 때 그에 맞는 모달 창을 연다.
+// 예외적으로 자동으로 생성할 수 있다고 판단하는 몇 몇의 경우에는 창은 열리지 않고
+// 해당 항목을 자동으로 만든다.
 exports.openModalEv = function(kind) {
     if (kind == "shot" && !currentProject()) {
         notify("아직 프로젝트를 선택하지 않았습니다.")
@@ -171,6 +178,7 @@ exports.openModalEv = function(kind) {
     }
 }
 
+// openModal은 생성할 항목의 종류에 맞는 모달 창을 연다.
 function openModal(kind) {
     let m = document.getElementById("modal")
     m.style.display = "block"
@@ -241,6 +249,7 @@ function openModal(kind) {
     }
 }
 
+// closeModalEv는 모달 사용중 사용자가 닫음 버튼을 눌렀을 때 모달을 닫는다.
 exports.closeModalEv = function() {
     try {
         closeModal()
@@ -250,26 +259,31 @@ exports.closeModalEv = function() {
     }
 }
 
+// closeModal은 모달을 보이지 않도록 한다.
 function closeModal() {
     let m = document.getElementById("modal")
     m.style.display = "none"
 }
 
+// notify는 아래쪽 표시줄에 text를 표시한다.
 function notify(text) {
     let notifier = document.getElementById("notifier")
     notifier.innerText = text
 }
 
+// clearNotify는 아래쪽 표시줄에 기존에 표시된 내용을 지운다.
 function clearNotify() {
     let notifier = document.getElementById("notifier")
     notifier.innerText = ""
 }
 
+// myTask는 현재 내 태스크로 설정된 값을 반환한다.
 function myTask() {
     let menu = document.getElementById("mytask-menu")
     return menu.value
 }
 
+// loadMyTask는 설정 디렉토리에 저장된 내 태스크 값을 불러온다.
 function loadMyTask() {
     let menu = document.getElementById("mytask-menu")
     let fname = configDir() + "/mytask.json"
@@ -281,6 +295,7 @@ function loadMyTask() {
     menu.value = data.toString("utf8")
 }
 
+// saveMyTask는 내 태스크로 설정된 값을 설정 디렉토리에 저장한다.
 function saveMyTask() {
     let menu = document.getElementById("mytask-menu")
     let fname = configDir() + "/mytask.json"
@@ -288,18 +303,21 @@ function saveMyTask() {
 }
 exports.saveMyTask = saveMyTask
 
+// createProject는 하나의 프로젝트를 생성한다.
 function createProject(prj) {
     site.createProject(prj)
     reloadProjects()
     selectProject(prj)
 }
 
+// createShot은 하나의 샷을 생성한다.
 function createShot(prj, shot) {
     site.createShot(prj, shot)
     reloadShots(currentProject())
     selectShot(prj, shot)
 }
 
+// createTask는 하나의 태스크를 생성한다.
 function createTask(prj, shot, task) {
     site.createTask(prj, shot, task)
     reloadTasks(currentProject(), currentShot())
@@ -308,12 +326,14 @@ function createTask(prj, shot, task) {
     reloadElements(prj, shot, task)
 }
 
+// createElement는 하나의 요소를 생성한다.
 function createElement(prj, shot, task, elem, prog) {
     site.createElement(prj, shot, task, elem, prog)
     reloadElements(currentProject(), currentShot(), currentTask())
     selectElement(prj, shot, task, elem, "")
 }
 
+// addMytaskMenuItems는 사용가능한 태스크들을 내 태스크 메뉴에 추가한다.
 function addMytaskMenuItems() {
     let menu = document.getElementById("mytask-menu")
     if (!menu) {
@@ -330,6 +350,7 @@ function addMytaskMenuItems() {
     }
 }
 
+// selectProjectEv는 사용자가 프로젝트를 선택했을 때 그에 맞는 샷 리스트를 보인다.
 function selectProjectEv(prj) {
     try {
         selectProject(prj)
@@ -339,6 +360,7 @@ function selectProjectEv(prj) {
     }
 }
 
+// selectProject는 사용자가 프로젝트를 선택했을 때 그에 맞는 샷 리스트를 보인다.
 function selectProject(prj) {
     clearNotify()
     clearShots()
@@ -354,6 +376,8 @@ function selectProject(prj) {
     reloadShots(prj)
 }
 
+// selectShotEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
+// 추가로 내 태스크가 설정되어 있다면 그 태스크를 자동으로 선택해 준다.
 function selectShotEv(prj, shot) {
     try {
         selectShot(prj, shot)
@@ -377,6 +401,8 @@ function selectShotEv(prj, shot) {
     }
 }
 
+// selectShot은 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
+// 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
 function selectShot(prj, shot) {
     clearNotify()
     clearTasks()
@@ -390,6 +416,7 @@ function selectShot(prj, shot) {
     selected.classList.add("selected")
 }
 
+// selectTaskEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectTaskEv(prj, shot, task) {
     try {
         selectTask(prj, shot, task)
@@ -399,6 +426,7 @@ function selectTaskEv(prj, shot, task) {
     }
 }
 
+// selectTask는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectTask(prj, shot, task) {
     clearNotify()
     clearElements()
@@ -412,6 +440,7 @@ function selectTask(prj, shot, task) {
     reloadElements(prj, shot, task)
 }
 
+// selectElementEv는 요소를 선택했을 때 그 선택을 표시한다.
 function selectElementEv(prj, shot, task, elem, ver) {
     try {
         selectElement(prj, shot, task, elem, ver)
@@ -421,6 +450,7 @@ function selectElementEv(prj, shot, task, elem, ver) {
     }
 }
 
+// selectElement는 요소를 선택했을 때 그 선택을 표시한다.
 function selectElement(prj, shot, task, elem, ver) {
     clearNotify()
     let box = document.getElementById("element-box")
@@ -436,22 +466,27 @@ function selectElement(prj, shot, task, elem, ver) {
     selected.classList.add("selected")
 }
 
+// currentProject는 현재 선택된 프로젝트 이름을 반환한다.
 function currentProject() {
     return selectedItemValue("project-box")
 }
 
+// currentShot은 현재 선택된 샷 이름을 반환한다.
 function currentShot() {
     return selectedItemValue("shot-box")
 }
 
+// currentTask는 현재 선택된 태스크 이름을 반환한다.
 function currentTask() {
     return selectedItemValue("task-box")
 }
 
+// currentElement는 현재 선택된 엘리먼트 이름을 반환한다.
 function currentElement() {
     return selectedItemValue("element-box")
 }
 
+// selectedItemValue는 특정 'item-box' HTML 요소에서 선틱된 값을 반환한다.
 function selectedItemValue(boxId) {
     let box = document.getElementById(boxId)
     if (!box) {
@@ -469,6 +504,7 @@ function selectedItemValue(boxId) {
     return null
 }
 
+// itemValue는 특정 'item' HTML 요소에 저장된 값을 반환한다.
 function itemValue(item) {
     let el = item.getElementsByClassName("item-val")
     if (!el) {
@@ -477,6 +513,7 @@ function itemValue(item) {
     return el[0].textContent
 }
 
+// reloadProjects는 프로젝트를 다시 부른다.
 function reloadProjects() {
     let box = document.getElementById("project-box")
     box.innerText = ""
@@ -506,6 +543,7 @@ function reloadProjects() {
     }
 }
 
+// reloadShots는 해당 프로젝트의 샷을 다시 부른다.
 function reloadShots(prj) {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
@@ -539,6 +577,7 @@ function reloadShots(prj) {
     }
 }
 
+// reloadTasks는 해당 샷의 태스크를 다시 부른다.
 function reloadTasks(prj, shot) {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
@@ -559,6 +598,7 @@ function reloadTasks(prj, shot) {
     }
 }
 
+// reloadElements는 해당 태스크의 요소를 다시 부른다.
 function reloadElements(prj, shot, task) {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
@@ -623,6 +663,7 @@ function reloadElements(prj, shot, task) {
     }
 }
 
+// openVersionEv는 해당 요소의 한 버전을 연다.
 function openVersionEv(prj, shot, task, elem, prog, ver) {
     let progs = site.programsOf(prj, shot, task, prog)
     let p = progs[prog]
@@ -641,6 +682,7 @@ function openVersionEv(prj, shot, task, elem, prog, ver) {
     p.openVersion(prj, shot, task, elem, ver, handleError)
 }
 
+// clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
 function clearBox(id) {
     let box = document.getElementById(id)
     if (!box) {
@@ -649,28 +691,34 @@ function clearBox(id) {
     box.innerText = ""
 }
 
+// clearShots는 샷 박스의 내용을 지운다.
 function clearShots() {
     clearBox("shot-box")
 }
 
+// clearTasks는 태스크 박스의 내용을 지운다.
 function clearTasks() {
     clearBox("task-box")
 }
 
+// clearElements는 요소 박스의 내용을 지운다.
 function clearElements() {
     clearBox("element-box")
 }
 
+// configDir은 elo의 설정 디렉토리 경로를 반환한다.
 function configDir() {
     return user.configDir() + "/elo"
 }
 
+// ensureDirExist는 해당 디렉토리가 없을 때 생성한다.
 function ensureDirExist(dir) {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir)
     }
 }
 
+// loadPinnedProject는 사용자가 상단에 고정한 프로젝트를 설정 디렉토리에서 찾아 부른다.
 function loadPinnedProject() {
     let fname = configDir() + "/pinned_project.json"
     if (!fs.existsSync(fname)) {
@@ -681,6 +729,8 @@ function loadPinnedProject() {
     pinnedProject = JSON.parse(data)
 }
 
+// pinProject는 특정 프로젝트를 상단에 고정한다.
+// 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
 function pinProject(prj) {
     pinnedProject[prj] = true
     let fname = configDir() + "/pinned_project.json"
@@ -688,6 +738,8 @@ function pinProject(prj) {
     fs.writeFileSync(fname, data)
 }
 
+// unpinProject는 특정 프로젝트의 상단 고정을 푼다.
+// 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
 function unpinProject(prj) {
     delete pinnedProject[prj]
     let fname = configDir() + "/pinned_project.json"
@@ -695,6 +747,7 @@ function unpinProject(prj) {
     fs.writeFileSync(fname, data)
 }
 
+// loadPinnedShot은 사용자가 상단에 고정한 샷을 설정 디렉토리에서 찾아 부른다.
 function loadPinnedShot() {
     let fname = configDir() + "/pinned_shot.json"
     if (!fs.existsSync(fname)) {
@@ -705,6 +758,8 @@ function loadPinnedShot() {
     pinnedShot = JSON.parse(data)
 }
 
+// pinShot은 특정 샷을 상단에 고정한다.
+// 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
 function pinShot(prj, shot) {
     if (!pinnedShot[prj]) {
         pinnedShot[prj] = {}
@@ -715,6 +770,8 @@ function pinShot(prj, shot) {
     fs.writeFileSync(fname, data)
 }
 
+// unpinShot은 특정 샷의 상단 고정을 푼다.
+// 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
 function unpinShot(prj, shot) {
     delete pinnedShot[prj][shot]
     if (Object.keys(pinnedShot[prj]).length == 0) {
@@ -725,6 +782,7 @@ function unpinShot(prj, shot) {
     fs.writeFileSync(fname, data)
 }
 
+// 초기화 실행
 try {
     init()
 } catch(err) {
