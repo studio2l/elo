@@ -94,7 +94,7 @@ function init() {
                 click: function() {
                     try {
                         pinShot(prj, shot)
-                        reloadShots(prj)
+                        reloadShots()
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -106,7 +106,7 @@ function init() {
                 click: function() {
                     try {
                         unpinShot(prj, shot)
-                        reloadShots(prj)
+                        reloadShots()
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -166,7 +166,7 @@ exports.openModalEv = function(kind) {
             console.log(err)
             notify(err.message)
         }
-        reloadElements(currentProject(), currentShot(), currentTask())
+        reloadElements()
         return
     }
 
@@ -313,24 +313,24 @@ function createProject(prj) {
 // createShot은 하나의 샷을 생성한다.
 function createShot(prj, shot) {
     site.createShot(prj, shot)
-    reloadShots(currentProject())
-    selectShot(prj, shot)
+    reloadShots()
+    selectShot(shot)
 }
 
 // createTask는 하나의 태스크를 생성한다.
 function createTask(prj, shot, task) {
     site.createTask(prj, shot, task)
-    reloadTasks(currentProject(), currentShot())
-    selectTask(prj, shot, task)
+    reloadTasks()
+    selectTask(task)
     site.createDefaultElements(prj, shot, task)
-    reloadElements(prj, shot, task)
+    reloadElements()
 }
 
 // createElement는 하나의 요소를 생성한다.
 function createElement(prj, shot, task, elem, prog) {
     site.createElement(prj, shot, task, elem, prog)
-    reloadElements(currentProject(), currentShot(), currentTask())
-    selectElement(prj, shot, task, elem, "")
+    reloadElements()
+    selectElement(elem, "")
 }
 
 // addMytaskMenuItems는 사용가능한 태스크들을 내 태스크 메뉴에 추가한다.
@@ -373,28 +373,29 @@ function selectProject(prj) {
     }
     let selected = document.getElementById("project-" + prj)
     selected.classList.add("selected")
-    reloadShots(prj)
+    reloadShots()
 }
 
 // selectShotEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
 // 추가로 내 태스크가 설정되어 있다면 그 태스크를 자동으로 선택해 준다.
-function selectShotEv(prj, shot) {
+function selectShotEv(shot) {
     try {
-        selectShot(prj, shot)
+        selectShot(shot)
     } catch(err) {
         console.log(err)
         notify(err.message)
     }
-    reloadTasks(prj, shot)
+    reloadTasks()
     let task = myTask()
     if (!task) {
         return
     }
+    let prj = currentProject()
     if (!site.tasksOf(prj, shot).includes(task)) {
         return
     }
     try {
-        selectTask(prj, shot, task)
+        selectTask(task)
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -403,7 +404,7 @@ function selectShotEv(prj, shot) {
 
 // selectShot은 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
 // 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
-function selectShot(prj, shot) {
+function selectShot(shot) {
     clearNotify()
     clearTasks()
     clearElements()
@@ -414,12 +415,13 @@ function selectShot(prj, shot) {
     }
     let selected = document.getElementById("shot-" + shot)
     selected.classList.add("selected")
+    reloadTasks()
 }
 
 // selectTaskEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
-function selectTaskEv(prj, shot, task) {
+function selectTaskEv(task) {
     try {
-        selectTask(prj, shot, task)
+        selectTask(task)
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -427,7 +429,7 @@ function selectTaskEv(prj, shot, task) {
 }
 
 // selectTask는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
-function selectTask(prj, shot, task) {
+function selectTask(task) {
     clearNotify()
     clearElements()
     let box = document.getElementById("task-box")
@@ -437,13 +439,13 @@ function selectTask(prj, shot, task) {
     }
     let selected = document.getElementById("task-" + task)
     selected.classList.add("selected")
-    reloadElements(prj, shot, task)
+    reloadElements()
 }
 
 // selectElementEv는 요소를 선택했을 때 그 선택을 표시한다.
-function selectElementEv(prj, shot, task, elem, ver) {
+function selectElementEv(elem, ver) {
     try {
-        selectElement(prj, shot, task, elem, ver)
+        selectElement(elem, ver)
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -451,7 +453,7 @@ function selectElementEv(prj, shot, task, elem, ver) {
 }
 
 // selectElement는 요소를 선택했을 때 그 선택을 표시한다.
-function selectElement(prj, shot, task, elem, ver) {
+function selectElement(elem, ver) {
     clearNotify()
     let box = document.getElementById("element-box")
     let item = box.getElementsByClassName("selected")
@@ -544,7 +546,8 @@ function reloadProjects() {
 }
 
 // reloadShots는 해당 프로젝트의 샷을 다시 부른다.
-function reloadShots(prj) {
+function reloadShots() {
+    let prj = currentProject()
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
@@ -572,16 +575,18 @@ function reloadShots(prj) {
         if (pinned.includes(shot)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
-        div.addEventListener("click", function() { selectShotEv(prj, shot) })
+        div.addEventListener("click", function() { selectShotEv(shot) })
         box.append(div)
     }
 }
 
 // reloadTasks는 해당 샷의 태스크를 다시 부른다.
-function reloadTasks(prj, shot) {
+function reloadTasks() {
+    let prj = currentProject()
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let shot = currentShot()
     if (!shot) {
         throw Error("선택된 샷이 없습니다.")
     }
@@ -593,19 +598,22 @@ function reloadTasks(prj, shot) {
         let div = frag.querySelector("div")
         div.id = "task-" + t
         div.getElementsByClassName("item-val")[0].textContent = t
-        div.addEventListener("click", function() { selectTaskEv(prj, shot, t) })
+        div.addEventListener("click", function() { selectTaskEv(t) })
         box.append(div)
     }
 }
 
 // reloadElements는 해당 태스크의 요소를 다시 부른다.
-function reloadElements(prj, shot, task) {
+function reloadElements() {
+    let prj = currentProject()
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let shot = currentShot()
     if (!shot) {
         throw Error("선택된 샷이 없습니다.")
     }
+    let task = currentTask()
     if (!task) {
         throw Error("선택된 태스크가 없습니다.")
     }
@@ -621,7 +629,7 @@ function reloadElements(prj, shot, task) {
         let lastver = e.versions[e.versions.length - 1]
         div.getElementsByClassName("item-val")[0].textContent = elem
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.program
-        div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, "") })
+        div.addEventListener("click", function() { selectElementEv(elem, "") })
         div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, lastver) })
         let toggleVersion = document.createElement("div")
         toggleVersion.textContent = "▷"
@@ -655,7 +663,7 @@ function reloadElements(prj, shot, task) {
             div.classList.add("element-" + elem + "-versions")
             div.id = "element-" + elem + "-" + ver
             div.getElementsByClassName("item-val")[0].textContent = ver
-            div.addEventListener("click", function() { selectElementEv(prj, shot, task, elem, ver) })
+            div.addEventListener("click", function() { selectElementEv(elem, ver) })
             div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, ver) })
             div.style.display = "none"
             box.append(div)
