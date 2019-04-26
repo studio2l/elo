@@ -325,7 +325,7 @@ let FXNuke = new Program(
     function() {
         if (process.platform == "win32") {
             let env = cloneEnv()
-            env.PATH = "C:\\Program Files\\Nuke 10.0v3\\;" + env.PATH
+            env.PATH = "C:\\Program Files\\Nuke10.0v3;" + env.PATH
             return env
         }
         return process.env
