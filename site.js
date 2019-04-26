@@ -22,12 +22,28 @@
 const fs = require("fs")
 const proc = require("child_process")
 
+function init() {
+    let prjRoot = projectRoot()
+    if (!prjRoot) {
+        throw Error("Elo를 사용하시기 전, 우선 PROJECT_ROOT 또는 SITE_ROOT 환경변수를 설정해 주세요.")
+    }
+    if (!fs.existsSync(prjRoot)) {
+        fs.mkdirSync(prjRoot)
+    }
+}
+exports.init = init
+
 // 루트
 
 function projectRoot() {
-    return process.env.PROJECT_ROOT
+    if (process.env.PROJECT_ROOT) {
+        return process.env.PROJECT_ROOT
+    }
+    if (process.env.SITE_ROOT) {
+        return process.env.SITE_ROOT + "/project"
+    }
+    return null
 }
-exports.projectRoot = projectRoot
 
 // 프로젝트
 

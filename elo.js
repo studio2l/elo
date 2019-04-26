@@ -12,11 +12,8 @@ let pinnedShot = {}
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
 function init() {
-    projectRoot = site.projectRoot()
-    if (!projectRoot) {
-        throw Error("Elo를 사용하시기 전, 우선 PROJECT_ROOT 환경변수를 설정해 주세요.")
-    }
-    ensureDirExist(projectRoot)
+    site.init()
+
     ensureDirExist(configDir())
     loadPinnedProject()
     loadPinnedShot()
