@@ -113,7 +113,7 @@ exports.createShot = createShot
 
 shotDirs = [
     "plate",
-    "src",
+    "source",
     "ref",
     "pub",
     "pub/cam",
