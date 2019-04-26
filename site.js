@@ -287,8 +287,14 @@ class Program {
     createElement(prj, shot, task, elem) {
         let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + "v001" + this.ext
+        let sceneEnv = {
+            "PRJ": prj,
+            "SHOT": shot,
+            "TASK": task,
+            "ELEM": elem,
+        }
         try {
-            this.createScene(scene, this.env())
+            this.createScene(scene, this.env(), sceneEnv)
         } catch(err) {
             if (err.errno == "ENOENT") {
                 throw Error(this.name + " 씬을 만들기 위한 명령어가 없습니다.")
@@ -320,8 +326,16 @@ let FXHoudini = new Program(
         return process.env
     },
     // createScene
-    function(scene, env) {
-        proc.execFileSync("hython", ["-c", `hou.hipFile.save('${scene}')`], { "env": env })
+    function(scene, env, sceneEnv) {
+        let initScript = ""
+        for (let e in sceneEnv) {
+            let v = sceneEnv[e]
+            initScript += "\n"
+            initScript += `hou.hscript("set -g ${e}=${v}")`
+        }
+        initScript += "\n"
+        initScript += `hou.hipFile.save('${scene}')`
+        proc.execFileSync("hython", ["-c", initScript], { "env": env })
     },
     // openScene
     function(scene, env, handleError) {
