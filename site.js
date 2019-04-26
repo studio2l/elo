@@ -245,7 +245,7 @@ class Program {
                 continue
             }
             f = f.substring(0, f.length - this.ext.length)
-            let prefix = prj + "_" + shot + "_"
+            let prefix = prj + "_" + shot + "_" + task + "_"
             if (!f.startsWith(prefix)) {
                 continue
             }
@@ -271,7 +271,7 @@ class Program {
     }
     createElement(prj, shot, task, elem) {
         let scenedir = this.sceneDir(prj, shot, task)
-        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + "v001" + this.ext
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + "v001" + this.ext
         try {
             this.createScene(scene, this.env())
         } catch(err) {
@@ -283,7 +283,7 @@ class Program {
     }
     openVersion(prj, shot, task, elem, ver, handleError) {
         let scenedir = this.sceneDir(prj, shot, task)
-        let scene = scenedir + "/" + prj + "_" + shot + "_" + elem + "_" + ver + this.ext
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + ver + this.ext
         this.openScene(scene, this.env(), handleError)
     }
 }
