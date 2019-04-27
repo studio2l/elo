@@ -742,6 +742,7 @@ function reloadElements() {
     }
 }
 
+// toggleVersionVisibility는 특정 요소의 버전을 보이거나 숨긴다.
 function toggleVersionVisibility(elem) {
     let div = document.getElementById("element-" + elem)
     let toggle = div.getElementsByClassName("toggle")[0]
