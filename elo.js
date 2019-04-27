@@ -28,6 +28,7 @@ function init() {
     loadMyTask()
 
     reloadProjects()
+    loadSelected()
 
     window.addEventListener("contextmenu", function(ev) {
         ev.preventDefault()
@@ -302,6 +303,67 @@ function saveMyTask() {
 }
 exports.saveMyTask = saveMyTask
 
+// loadSelected는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
+function loadSelected() {
+    let fname = configDir() + "/selected.json"
+    if (!fs.existsSync(fname)) {
+        return
+    }
+    let data = JSON.parse(fs.readFileSync(fname))
+    if (!data.project) {
+        return
+    }
+    try {
+        selectProject(data.project)
+    } catch(err) {
+        console.log(err)
+        return
+    }
+    if (!data.shot) {
+        return
+    }
+    try {
+        selectShot(data.shot)
+    } catch(err) {
+        console.log(err)
+        return
+    }
+    if (!data.task) {
+        return
+    }
+    try {
+        selectTask(data.task)
+    } catch(err) {
+        console.log(err)
+        return
+    }
+    if (!data.element) {
+        return
+    }
+    try {
+        selectElement(data.element, data.version)
+        if (data.version) {
+            toggleVersionVisibility(data.element)
+        }
+    } catch(err) {
+        console.log(err)
+        return
+    }
+}
+
+// saveSelected는 현재 선택된 항목들을 파일로 저장한다.
+function saveSelected() {
+    let data = JSON.stringify({
+        "project": currentProject(),
+        "shot": currentShot(),
+        "task": currentTask(),
+        "element": currentElement(),
+        "version": currentVersion(),
+    })
+    let fname = configDir() + "/selected.json"
+    fs.writeFileSync(fname, data)
+}
+
 // createProject는 하나의 프로젝트를 생성한다.
 function createProject(prj) {
     site.createProject(prj)
@@ -353,6 +415,7 @@ function addMytaskMenuItems() {
 function selectProjectEv(prj) {
     try {
         selectProject(prj)
+        saveSelected()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -380,21 +443,7 @@ function selectProject(prj) {
 function selectShotEv(shot) {
     try {
         selectShot(shot)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
-    reloadTasks()
-    let task = myTask()
-    if (!task) {
-        return
-    }
-    let prj = currentProject()
-    if (!site.tasksOf(prj, shot).includes(task)) {
-        return
-    }
-    try {
-        selectTask(task)
+        saveSelected()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -415,12 +464,28 @@ function selectShot(shot) {
     let selected = document.getElementById("shot-" + shot)
     selected.classList.add("selected")
     reloadTasks()
+
+    let task = myTask()
+    if (!task) {
+        return
+    }
+    let prj = currentProject()
+    if (!site.tasksOf(prj, shot).includes(task)) {
+        return
+    }
+    try {
+        selectTask(task)
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
+    }
 }
 
 // selectTaskEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectTaskEv(task) {
     try {
         selectTask(task)
+        saveSelected()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -445,6 +510,7 @@ function selectTask(task) {
 function selectElementEv(elem, ver) {
     try {
         selectElement(elem, ver)
+        saveSelected()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -484,7 +550,24 @@ function currentTask() {
 
 // currentElement는 현재 선택된 엘리먼트 이름을 반환한다.
 function currentElement() {
-    return selectedItemValue("element-box")
+    let val = selectedItemValue("element-box")
+    if (!val) {
+        return null
+    }
+    return val.split("-")[0]
+}
+
+// currentVersion은 현재 선택된 버전을 반환한다.
+function currentVersion() {
+    let val = selectedItemValue("element-box")
+    if (!val) {
+        return null
+    }
+    let vals = val.split("-")
+    if (vals.length == 1) {
+        return ""
+    }
+    return vals[1]
 }
 
 // selectedItemValue는 특정 'item-box' HTML 요소에서 선틱된 값을 반환한다.
@@ -507,11 +590,7 @@ function selectedItemValue(boxId) {
 
 // itemValue는 특정 'item' HTML 요소에 저장된 값을 반환한다.
 function itemValue(item) {
-    let el = item.getElementsByClassName("item-val")
-    if (!el) {
-        throw Error("item-val이 없습니다.")
-    }
-    return el[0].textContent
+    return item.dataset.val
 }
 
 // reloadProjects는 프로젝트를 다시 부른다.
@@ -534,6 +613,7 @@ function reloadProjects() {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "project-" + prj
+        div.dataset.val = prj
         div.classList.add("pinnable-item")
         div.getElementsByClassName("item-val")[0].textContent = prj
         if (pinned.includes(prj)) {
@@ -569,6 +649,7 @@ function reloadShots() {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "shot-" + shot
+        div.dataset.val = shot
         div.classList.add("pinnable-item")
         div.getElementsByClassName("item-val")[0].textContent = shot
         if (pinned.includes(shot)) {
@@ -596,6 +677,7 @@ function reloadTasks() {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "task-" + t
+        div.dataset.val = t
         div.getElementsByClassName("item-val")[0].textContent = t
         div.addEventListener("click", function() { selectTaskEv(t) })
         box.append(div)
@@ -625,47 +707,60 @@ function reloadElements() {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "element-" + elem
+        div.dataset.val = elem
         let lastver = e.versions[e.versions.length - 1]
         div.getElementsByClassName("item-val")[0].textContent = elem
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.program
         div.addEventListener("click", function() { selectElementEv(elem, "") })
         div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, lastver) })
-        let toggleVersion = document.createElement("div")
-        toggleVersion.textContent = "▷"
-        toggleVersion.style.width = "1.5em"
-        let hideVersion = true
-        toggleVersion.addEventListener("click", function(ev) {
+        let toggle = document.createElement("div")
+        toggle.classList.add("toggle")
+        toggle.textContent = "▷"
+        toggle.style.width = "1.5em"
+        toggle.dataset.hideVersions = "t"
+        toggle.addEventListener("click", function(ev) {
             ev.stopPropagation()
-            hideVersion = !hideVersion
-            if (hideVersion) {
-                toggleVersion.textContent = "▷"
-            } else {
-                toggleVersion.textContent = "▽"
-            }
-            let vers = document.getElementsByClassName("element-" + elem + "-versions")
-            for (let v of vers) {
-                if (hideVersion) {
-                    v.style.display = "none"
-                } else {
-                    v.style.display = "flex"
-                }
-            }
+            toggleVersionVisibility(elem)
         })
-        toggleVersion.addEventListener("dblclick", function(ev) {
+        toggle.addEventListener("dblclick", function(ev) {
             ev.stopPropagation()
         })
-        div.insertBefore(toggleVersion, div.firstChild)
+        div.insertBefore(toggle, div.firstChild)
         box.append(div)
         for (let ver of e.versions.reverse()) {
             let frag = document.importNode(tmpl.content, true)
             let div = frag.querySelector("div")
             div.classList.add("element-" + elem + "-versions")
             div.id = "element-" + elem + "-" + ver
+            div.dataset.val = elem + "-" + ver
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectElementEv(elem, ver) })
             div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, ver) })
             div.style.display = "none"
             box.append(div)
+        }
+    }
+}
+
+function toggleVersionVisibility(elem) {
+    let div = document.getElementById("element-" + elem)
+    let toggle = div.getElementsByClassName("toggle")[0]
+    if (toggle.dataset.hideVersions == "t") {
+        toggle.dataset.hideVersions = "f"
+    } else {
+        toggle.dataset.hideVersions = "t"
+    }
+    if (toggle.dataset.hideVersions == "t") {
+        toggle.textContent = "▷"
+    } else {
+        toggle.textContent = "▽"
+    }
+    let vers = document.getElementsByClassName("element-" + elem + "-versions")
+    for (let v of vers) {
+        if (toggle.dataset.hideVersions == "t") {
+            v.style.display = "none"
+        } else {
+            v.style.display = "flex"
         }
     }
 }
