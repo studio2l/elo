@@ -101,7 +101,6 @@ exports.projectDirs = projectDirs
 function shotPath(prj, shot) {
     return projectPath(prj) + "/shot/" + shot
 }
-exports.shotPath = shotPath
 
 // shotsOf는 특정 프로젝트의 샷들을 반환한다.
 function shotsOf(prj) {
@@ -141,7 +140,6 @@ exports.shotDirs = shotDirs
 function taskPath(prj, shot, task) {
     return shotPath(prj, shot) + "/task/" + task
 }
-exports.taskPath = taskPath
 
 // tasksOf는 특정 샷의 태스크들을 반환한다.
 function tasksOf(prj, shot) {
