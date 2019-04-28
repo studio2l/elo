@@ -60,9 +60,12 @@ body {
 
 .item {
 	cursor: pointer;
-	padding: 0.3rem 0.5rem;
 	background-color: #BDBDBD;
 	border-bottom: solid 1px #606268;
+}
+
+.item div {
+	padding: 0.3rem 0.5rem;
 }
 
 .selected {

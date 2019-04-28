@@ -716,7 +716,6 @@ function reloadElements() {
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
         toggle.textContent = "▷"
-        toggle.style.width = "1.5em"
         toggle.dataset.hideVersions = "t"
         toggle.addEventListener("click", function(ev) {
             ev.stopPropagation()
