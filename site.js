@@ -12,11 +12,11 @@
 // tasksOf(prj, shot) => []string
 // createTask(prj, shot, task)
 //
-// elementsOf(prj, shot, task) => []Element
+// elementsOf(prj, shot, task) => [string]Element
 // createElement(prj, shot, task, elem, prog)
 // createDefaultElements(prj, shot, task)
 //
-// programsOf(prj, shot, task) => []Program
+// programsOf(prj, shot, task) => [string]Program
 //
 
 const fs = require("fs")
