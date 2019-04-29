@@ -314,14 +314,10 @@ class Program {
     createElement(prj, shot, task, elem) {
         let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + "v001" + this.ext
-        let sceneEnv = {
-            "PRJ": prj,
-            "SHOT": shot,
-            "TASK": task,
-            "ELEM": elem,
-        }
+        let env = this.env()
+        let sceneEnv = sceneEnviron(prj, shot, task, elem)
         try {
-            this.createScene(scene, this.env(), sceneEnv)
+            this.createScene(scene, env, sceneEnv)
         } catch(err) {
             if (err.errno == "ENOENT") {
                 throw Error(this.name + " 씬을 만들기 위한 명령어가 없습니다.")
@@ -330,13 +326,33 @@ class Program {
         }
     }
     // openVersion은 해당 엘리먼트의 해당 버전을 연다.
+    // 씬을 열기 전 작업과 관련된 환경변수를 설정한다.
     // 버전을 열 때 프로그램에서 떼어내야만 elo가 멈추지 않는다.
     // 따라서 프로그램 실행에서 에러가 났을 때 처리 방법도 이 함수에 함께 전달해야 한다.
     openVersion(prj, shot, task, elem, ver, handleError) {
         let scenedir = this.sceneDir(prj, shot, task)
         let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + ver + this.ext
-        this.openScene(scene, this.env(), handleError)
+        let env = this.env()
+        let sceneEnv = sceneEnviron(prj, shot, task, elem)
+        for (let e in sceneEnv) {
+            env[e] = sceneEnv[e]
+        }
+        this.openScene(scene, env, handleError)
     }
+}
+
+// sceneEnviron은 해당 요소 작업에 필요한 환경변수들을 반환한다.
+function sceneEnviron(prj, shot, task, elem) {
+    let env = {
+        "PRJ": prj,
+        "SHOT": shot,
+        "TASK": task,
+        "ELEM": elem,
+        "PRJDIR": projectPath(prj),
+        "SHOTDIR": shotPath(prj, shot),
+        "TASKDIR": taskPath(prj, shot, task),
+    }
+    return env
 }
 
 // FXHoudini는 FX팀용 Houdini이다.
