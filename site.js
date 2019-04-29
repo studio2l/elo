@@ -392,7 +392,7 @@ let FXNuke = new Program(
         return process.env
     },
     // createScene
-    function(scene, env) {
+    function(scene, env, sceneEnv) {
         // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
         proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
     },
