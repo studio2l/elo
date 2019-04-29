@@ -122,8 +122,9 @@ exports.createShot = createShot
 
 // shotDirs는 사이트의 샷 디렉토리 구조를 정의한다.
 shotDirs = [
-    "plate",
-    "source",
+    "scan",
+    "scan/base",
+    "scan/source",
     "ref",
     "pub",
     "pub/cam",
@@ -185,6 +186,10 @@ taskDirs = {
         "preview",
         "render",
         "temp",
+    ],
+    "comp": [
+        "render",
+        "source",
     ],
 }
 exports.taskDirs = taskDirs
@@ -249,6 +254,12 @@ defaultElements = {
         {
             "name": "main",
             "prog": "houdini",
+        },
+    ],
+    "comp": [
+        {
+            "name": "main",
+            "prog": "nuke",
         },
     ],
 }
@@ -355,75 +366,84 @@ function sceneEnviron(prj, shot, task, elem) {
     return env
 }
 
-// FXHoudini는 FX팀용 Houdini이다.
-let FXHoudini = new Program(
-    // name
-    "houdini",
-    // subdir
-    "",
-    // ext
-    ".hip",
-    // env
-    function() {
-        if (process.platform == "win32") {
-            let env = cloneEnv()
-            env.PATH = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin;" + env.PATH
-            return env
-        }
-        return process.env
-    },
-    // createScene
-    function(scene, env, sceneEnv) {
-        let initScript = ""
-        for (let e in sceneEnv) {
-            let v = sceneEnv[e]
+// NewHoudiniAt은 지정된 위치에 후디니 프로그램을 생성한다.
+function NewHoudiniAt(subdir) {
+    let houdini = new Program(
+        // name
+        "houdini",
+        // subdir
+        subdir,
+        // ext
+        ".hip",
+        // env
+        function() {
+            if (process.platform == "win32") {
+                let env = cloneEnv()
+                env.PATH = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin;" + env.PATH
+                return env
+            }
+            return process.env
+        },
+        // createScene
+        function(scene, env, sceneEnv) {
+            let initScript = ""
+            for (let e in sceneEnv) {
+                let v = sceneEnv[e]
+                initScript += "\n"
+                initScript += `hou.hscript("set -g ${e}=${v}")`
+            }
             initScript += "\n"
-            initScript += `hou.hscript("set -g ${e}=${v}")`
-        }
-        initScript += "\n"
-        initScript += `hou.hipFile.save('${scene}')`
-        proc.execFileSync("hython", ["-c", initScript], { "env": env })
-    },
-    // openScene
-    function(scene, env, handleError) {
-        proc.execFile("houdini", [scene], { "env": env }, handleError)
-    },
-)
+            initScript += `hou.hipFile.save('${scene}')`
+            proc.execFileSync("hython", ["-c", initScript], { "env": env })
+        },
+        // openScene
+        function(scene, env, handleError) {
+            proc.execFile("houdini", [scene], { "env": env }, handleError)
+        },
+    )
+    return houdini
+}
 
-// FXNuke는 FX팀용 Nuke다.
-let FXNuke = new Program(
-    // name
-    "nuke",
-    // subdir
-    "precomp",
-    // ext
-    ".nk",
-    // env
-    function() {
-        if (process.platform == "win32") {
-            let env = cloneEnv()
-            env.PATH = "C:\\Program Files\\Nuke10.0v3;" + env.PATH
-            return env
-        }
-        return process.env
-    },
-    // createScene
-    function(scene, env, sceneEnv) {
-        // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
-        proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
-    },
-    // openScene
-    function(scene, env, handleError) {
-        // 누크의 bin 디렉토리가 PATH에 잡혀있어야 함.
-        proc.execFile("Nuke10.0", ["--nukex", scene], { "env": env }, handleError)
-    },
-)
+// NewNukeAt은 지정된 위치에 누크 프로그램을 생성한다.
+function NewNukeAt(subdir) {
+    let nuke = new Program(
+        // name
+        "nuke",
+        // subdir
+        subdir,
+        // ext
+        ".nk",
+        // env
+        function() {
+            if (process.platform == "win32") {
+                let env = cloneEnv()
+                env.PATH = "C:\\Program Files\\Nuke10.0v3;" + env.PATH
+                return env
+            }
+            return process.env
+        },
+        // createScene
+        function(scene, env, sceneEnv) {
+            // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
+            proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
+        },
+        // openScene
+        function(scene, env, handleError) {
+            // 누크의 bin 디렉토리가 PATH에 잡혀있어야 함.
+            proc.execFile("Nuke10.0", ["--nukex", scene], { "env": env }, handleError)
+        },
+    )
+    return nuke
+}
 
 // programs는 사이트의 태스크별 프로그램 정보를 담고 있다.
 programs = {
     "fx": {
-        "houdini": FXHoudini,
-        "nuke": FXNuke,
+        "houdini": NewHoudiniAt(""),
+        "nuke": NewNukeAt("precomp"),
+    },
+    "comp": {
+        "nuke": NewNukeAt(""),
     },
 }
 
