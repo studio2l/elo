@@ -4,13 +4,16 @@
 //
 // projects() => []string
 // createProject(prj)
+// projectDir(prj)
 //
 // shotsOf(prj) => []string
 // createShot(prj, shot)
+// shotDir(prj, shot)
 //
 // tasks() => []string
 // tasksOf(prj, shot) => []string
 // createTask(prj, shot, task)
+// taskDir(prj, shot)
 //
 // elementsOf(prj, shot, task) => [string]Element
 // createElement(prj, shot, task, elem, prog)
@@ -50,11 +53,11 @@ function projectRoot() {
 
 // 프로젝트
 
-// projectPath는 해당 프로젝트의 디렉토리 경로를 반환한다.
-function projectPath(prj) {
+// projectDir은 해당 프로젝트의 디렉토리 경로를 반환한다.
+function projectDir(prj) {
     return projectRoot() + "/" + prj
 }
-exports.projectPath = projectPath
+exports.projectDir = projectDir
 
 // projects는 사이트의 프로젝트들을 반환한다.
 function projects() {
@@ -65,7 +68,7 @@ exports.projects = projects
 
 // createProject는 프로젝트를 생성한다. 생성할 권한이 없다면 에러가 난다.
 function createProject(prj) {
-    let prjDir = projectPath(prj)
+    let prjDir = projectDir(prj)
     if (fs.existsSync(prjDir)) {
         throw Error("프로젝트 디렉토리가 이미 존재합니다.")
     }
@@ -97,21 +100,22 @@ exports.projectDirs = projectDirs
 
 // 샷
 
-// shotPath는 해당 샷의 디렉토리 경로를 반환한다.
-function shotPath(prj, shot) {
-    return projectPath(prj) + "/shot/" + shot
+// shotDir은 해당 샷의 디렉토리 경로를 반환한다.
+function shotDir(prj, shot) {
+    return projectDir(prj) + "/shot/" + shot
 }
+exports.shotDir = shotDir
 
 // shotsOf는 특정 프로젝트의 샷들을 반환한다.
 function shotsOf(prj) {
-    let d = projectPath(prj) + "/shot"
+    let d = projectDir(prj) + "/shot"
     return childDirs(d)
 }
 exports.shotsOf = shotsOf
 
 // createShot은 특정 프로젝트에 샷을 생성한다. 생성할 권한이 없다면 에러가 난다.
 function createShot(prj, shot) {
-    let d = shotPath(prj, shot)
+    let d = shotDir(prj, shot)
     if (fs.existsSync(d)) {
         throw Error("샷 디렉토리가 이미 존재합니다.")
     }
@@ -137,21 +141,22 @@ exports.shotDirs = shotDirs
 
 // 태스크
 
-// taskPath는 해당 태스크의 디렉토리 경로를 반환한다.
-function taskPath(prj, shot, task) {
-    return shotPath(prj, shot) + "/task/" + task
+// taskDir은 해당 태스크의 디렉토리 경로를 반환한다.
+function taskDir(prj, shot, task) {
+    return shotDir(prj, shot) + "/task/" + task
 }
+exports.taskDir = taskDir
 
 // tasksOf는 특정 샷의 태스크들을 반환한다.
 function tasksOf(prj, shot) {
-    let d = shotPath(prj, shot) + "/task"
+    let d = shotDir(prj, shot) + "/task"
     return childDirs(d)
 }
 exports.tasksOf = tasksOf
 
 // createTask는 특정 샷에 태스크를 생성한다. 생성할 권한이 없다면 에러가 난다.
 function createTask(prj, shot, task) {
-    let d = taskPath(prj, shot, task)
+    let d = taskDir(prj, shot, task)
     if (fs.existsSync(d)) {
         throw Error("태스크 디렉토리가 이미 존재합니다.")
     }
@@ -199,7 +204,7 @@ exports.taskDirs = taskDirs
 // elementsOf는 특정 태스크의 요소들을 반환한다.
 // 반환값은 '[요소 이름]요소' 형식의 오브젝트이다.
 function elementsOf(prj, shot, task) {
-    let taskdir = taskPath(prj, shot, task)
+    let taskdir = taskDir(prj, shot, task)
     let progs = programsOf(prj, shot, task)
     if (!progs) {
         return {}
@@ -220,7 +225,7 @@ function createElement(prj, shot, task, elem, prog) {
     if (!tasksOf(prj, shot).includes(task)) {
         throw Error("해당 태스크가 없습니다.")
     }
-    let taskdir = taskPath(prj, shot, task)
+    let taskdir = taskDir(prj, shot, task)
     if (!taskdir) {
         throw Error("태스크 디렉토리가 없습니다.")
     }
@@ -278,7 +283,7 @@ class Program {
     // sceneDir은 특정 프로젝트, 샷, 태스크라는 조건에서 해당 프로그램의 씬 디렉토리 경로를 반환한다.
     sceneDir(prj, shot, task) {
         // 아직 프로젝트, 샷은 씬 디렉토리 경로에 영향을 미치지 않지만 추후 사용할 가능성이 있다.
-        let dir = taskPath(prj, shot, task)
+        let dir = taskDir(prj, shot, task)
         if (this.subdir) {
             dir += "/" + this.subdir
         }
@@ -313,7 +318,7 @@ class Program {
             if (!elems[elem]) {
                 elems[elem] = {
                     "name": elem,
-                    "program": this.name,
+                    "program": this,
                     "versions": [],
                 }
             }

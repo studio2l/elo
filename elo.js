@@ -80,6 +80,18 @@ function init() {
             } else {
                 projectMenu.append(pinProjectMenuItem)
             }
+            let openProjectDir = new MenuItem({
+                label: "디렉토리 열기",
+                click: function() {
+                    try {
+                        openDir(site.projectDir(prj))
+                    } catch(err) {
+                        console.log(err)
+                        notify(err.message)
+                    }
+                }
+            })
+            projectMenu.append(openProjectDir)
             projectMenu.popup(remote.getCurrentWindow())
             return
         }
@@ -116,7 +128,61 @@ function init() {
             } else {
                 shotMenu.append(pinShotMenuItem)
             }
+            let openShotDir = new MenuItem({
+                label: "디렉토리 열기",
+                click: function() {
+                    try {
+                        openDir(site.shotDir(prj, shot))
+                    } catch(err) {
+                        console.log(err)
+                        notify(err.message)
+                    }
+                }
+            })
+            shotMenu.append(openShotDir)
             shotMenu.popup(remote.getCurrentWindow())
+            return
+        }
+        if (parentById(ev, "task-box")) {
+            let prj = currentProject()
+            let shot = currentShot()
+            let task = parentByClassName(ev, "item").id.split("-")[1]
+            let taskMenu = new Menu()
+            let openTaskDir = new MenuItem({
+                label: "디렉토리 열기",
+                click: function() {
+                    try {
+                        openDir(site.taskDir(prj, shot, task))
+                    } catch(err) {
+                        console.log(err)
+                        notify(err.message)
+                    }
+                }
+            })
+            taskMenu.append(openTaskDir)
+            taskMenu.popup(remote.getCurrentWindow())
+            return
+        }
+        if (parentById(ev, "element-box")) {
+            let prj = currentProject()
+            let shot = currentShot()
+            let task = currentTask()
+            let div = parentByClassName(ev, "item")
+            let dir = div.dataset.dir
+            let elemMenu = new Menu()
+            let openElemDir = new MenuItem({
+                label: "디렉토리 열기",
+                click: function() {
+                    try {
+                        openDir(dir)
+                    } catch(err) {
+                        console.log(err)
+                        notify(err.message)
+                    }
+                }
+            })
+            elemMenu.append(openElemDir)
+            elemMenu.popup(remote.getCurrentWindow())
             return
         }
     })
@@ -708,11 +774,12 @@ function reloadElements() {
         let div = frag.querySelector("div")
         div.id = "element-" + elem
         div.dataset.val = elem
+        div.dataset.dir = e.program.sceneDir(prj, shot, task)
         let lastver = e.versions[e.versions.length - 1]
         div.getElementsByClassName("item-val")[0].textContent = elem
-        div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.program
+        div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.program.name
         div.addEventListener("click", function() { selectElementEv(elem, "") })
-        div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, lastver) })
+        div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program.name, lastver) })
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
         toggle.textContent = "▷"
@@ -732,9 +799,10 @@ function reloadElements() {
             div.classList.add("element-" + elem + "-versions")
             div.id = "element-" + elem + "-" + ver
             div.dataset.val = elem + "-" + ver
+            div.dataset.dir = e.program.sceneDir(prj, shot, task)
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectElementEv(elem, ver) })
-            div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program, ver) })
+            div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program.name, ver) })
             div.style.display = "none"
             box.append(div)
         }
@@ -882,6 +950,40 @@ function unpinShot(prj, shot) {
     let fname = configDir() + "/pinned_shot.json"
     let data = JSON.stringify(pinnedShot)
     fs.writeFileSync(fname, data)
+}
+
+// openDir은 받은 디렉토리 경로를 연다.
+// 만일 해당 디렉토리가 존재하지 않는다면 에러를 낸다.
+function openDir(dir) {
+    if (!fs.existsSync(dir)) {
+        throw Error(d + "디렉토리가 존재하지 않습니다.")
+    }
+    if (process.platform == "win32") {
+        proc.execFile("open", dir)
+    } else {
+        // 리눅스 - 배포판에 맞는 파일탐색기 명령을 찾는다.
+        let maybeCmds = ["thunar", "nautilus"]
+        for (let cmd of maybeCmds) {
+            try {
+                proc.execFileSync("which", [cmd])
+            } catch(err) {
+                if (err.errno == "ENOENT") {
+                    throw Error("which 명령어가 없습니다.")
+                }
+                // 해당 명령어 없음
+                continue
+            }
+            let handleError = function(err, stdout, stderr) {
+                if (err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            }
+            proc.execFile(cmd, [dir], null, handleError)
+            return
+        }
+    }
+    throw Error("파일 탐색기를 찾지 못했습니다.")
 }
 
 // 초기화 실행
