@@ -43,10 +43,10 @@ exports.init = init
 // 만일 아직 잡혀있지 않다면 null을 반환한다.
 function projectRoot() {
     if (process.env.PROJECT_ROOT) {
-        return process.env.PROJECT_ROOT
+        return process.env.PROJECT_ROOT.replace(/\\/g, "/")
     }
     if (process.env.SITE_ROOT) {
-        return process.env.SITE_ROOT + "/project"
+        return process.env.SITE_ROOT.replace(/\\/g, "/") + "/project"
     }
     return null
 }
