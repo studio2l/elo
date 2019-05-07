@@ -73,30 +73,39 @@ function createProject(prj) {
         throw Error("프로젝트 디렉토리가 이미 존재합니다.")
     }
     fs.mkdirSync(prjDir, { recursive: true })
-    createDirs(prjDir, projectDirs)
+    for (let perm in projectDirs) {
+        let dirs = projectDirs[perm]
+        createDirs(prjDir, dirs, perm)
+    }
 }
 exports.createProject = createProject
 
 // projectDirs는 사이트의 프로젝트 디렉토리 구조를 정의한다.
-projectDirs = [
-    "asset",
-    "doc",
-    "doc/cglist",
-    "doc/credit",
-    "doc/droid",
-    "edit",
-    "ref",
-    "lut",
-    "source",
-    "scan",
-    "review",
-    "output",
-    "vendor",
-    "vendor/input",
-    "vendor/output",
-    "shot",
-]
-exports.projectDirs = projectDirs
+let projectDirs = {
+    "0755": [
+        "asset",
+        "doc",
+        "doc/cglist",
+        "doc/credit",
+        "doc/droid",
+        "edit",
+        "ref",
+        "lut",
+        "source",
+        "scan",
+        "vendor",
+        "vendor/input",
+        "vendor/output",
+    ],
+    "0775": [
+        "asset/char",
+        "asset/bg",
+        "asset/prop",
+        "review",
+        "output",
+        "shot",
+    ],
+}
 
 // 샷
 
@@ -120,24 +129,28 @@ function createShot(prj, shot) {
         throw Error("샷 디렉토리가 이미 존재합니다.")
     }
     fs.mkdirSync(d, { recursive: true })
-    createDirs(d, shotDirs)
+    for (let perm in shotDirs) {
+        let dirs = shotDirs[perm]
+        createDirs(d, dirs, perm)
+    }
 }
 exports.createShot = createShot
 
 // shotDirs는 사이트의 샷 디렉토리 구조를 정의한다.
-shotDirs = [
-    "scan",
-    "scan/base",
-    "scan/source",
-    "ref",
-    "pub",
-    "pub/cam",
-    "pub/geo",
-    "pub/char",
-    "task",
-    "render",
-]
-exports.shotDirs = shotDirs
+shotDirs = {
+    "0755": [
+        "scan",
+        "scan/base",
+        "scan/source",
+        "ref",
+        "pub",
+        "pub/cam",
+        "pub/geo",
+        "pub/char",
+        "task",
+        "render",
+    ],
+}
 
 // 태스크
 
@@ -162,11 +175,12 @@ function createTask(prj, shot, task) {
     }
     fs.mkdirSync(d, { recursive: true })
     let subdirs = taskDirs[task]
-    if (subdirs) {
-        for (let s of subdirs) {
-            let sd = d + "/" + s
-            fs.mkdirSync(sd)
-        }
+    if (!subdirs) {
+        return
+    }
+    for (let perm in subdirs) {
+        let dirs = subdirs[perm]
+        createDirs(d, dirs, perm)
     }
 }
 exports.createTask = createTask
@@ -184,18 +198,22 @@ exports.tasks = tasks
 
 // taskDirs는 사이트의 태스크별 디렉토리 구조를 정의한다.
 taskDirs = {
-    "fx": [
-        "backup",
-        "geo",
-        "precomp",
-        "preview",
-        "render",
-        "temp",
-    ],
-    "comp": [
-        "render",
-        "source",
-    ],
+    "fx": {
+        "0755": [
+            "backup",
+            "geo",
+            "precomp",
+            "preview",
+            "render",
+            "temp",
+        ],
+    },
+    "comp": {
+        "0755": [
+            "render",
+            "source",
+        ],
+    },
 }
 exports.taskDirs = taskDirs
 
@@ -364,9 +382,9 @@ function sceneEnviron(prj, shot, task, elem) {
         "SHOT": shot,
         "TASK": task,
         "ELEM": elem,
-        "PRJDIR": projectPath(prj),
-        "SHOTDIR": shotPath(prj, shot),
-        "TASKDIR": taskPath(prj, shot, task),
+        "PRJDIR": projectDir(prj),
+        "SHOTDIR": shotDir(prj, shot),
+        "TASKDIR": taskDir(prj, shot, task),
     }
     return env
 }
@@ -482,12 +500,15 @@ function childDirs(d) {
 
 // createDirs는 부모 디렉토리에 하위 디렉토리들을 생성한다.
 // 만일 생성하지 못한다면 에러가 난다.
-function createDirs(parentd, dirs) {
+function createDirs(parentd, dirs, perm) {
     if (!parentd) {
         throw Error("부모 디렉토리는 비어있을 수 없습니다.")
     }
     if (!dirs) {
         return
+    }
+    if (!perm) {
+        throw Error("생성할 디렉토리 권한이 정의되지 않았습니다.")
     }
     if (!fs.existsSync(parentd)) {
         // TODO: 부모 디렉토리 생성할 지 물어보기
@@ -497,7 +518,15 @@ function createDirs(parentd, dirs) {
         if (fs.existsSync(child)) {
             continue
         }
-        fs.mkdirSync(child, { recursive: true })
+        fs.mkdirSync(child, { recursive: true, mode: perm })
+        if (process.platform == "win32") {
+            // 윈도우즈에서는 위의 mode 설정이 먹히지 않기 때문에 모두에게 권한을 푼다.
+            // 리눅스의 0775와 윈도우즈의 everyone은 범위가 다르지만
+            // 윈도우즈에서 가장 간단히 권한을 설정할 수 있는 방법이다.
+            if (perm == "0777" || perm == "0775") {
+                proc.execFileSync("icacls", [child.replace(/\//g, "\\"), "/grant", "everyone:f"])
+            }
+        }
     }
 }
 
