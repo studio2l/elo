@@ -959,7 +959,8 @@ function openDir(dir) {
         throw Error(d + "디렉토리가 존재하지 않습니다.")
     }
     if (process.platform == "win32") {
-        proc.execFile("open", dir)
+        proc.execFile("explorer", [dir])
+        return
     } else {
         // 리눅스 - 배포판에 맞는 파일탐색기 명령을 찾는다.
         let maybeCmds = ["thunar", "nautilus"]
