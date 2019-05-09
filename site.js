@@ -391,8 +391,8 @@ function sceneEnviron(prj, shot, task, elem) {
     return env
 }
 
-// NewHoudiniAt은 지정된 위치에 후디니 프로그램을 생성한다.
-function NewHoudiniAt(subdir) {
+// newHoudiniAt은 지정된 위치에 후디니 프로그램을 생성한다.
+function newHoudiniAt(subdir) {
     let houdini = new Program(
         // name
         "houdini",
@@ -429,8 +429,8 @@ function NewHoudiniAt(subdir) {
     return houdini
 }
 
-// NewNukeAt은 지정된 위치에 누크 프로그램을 생성한다.
-function NewNukeAt(subdir) {
+// newNukeAt은 지정된 위치에 누크 프로그램을 생성한다.
+function newNukeAt(subdir) {
     let nuke = new Program(
         // name
         "nuke",
@@ -464,11 +464,11 @@ function NewNukeAt(subdir) {
 // programs는 사이트의 태스크별 프로그램 정보를 담고 있다.
 programs = {
     "fx": {
-        "houdini": NewHoudiniAt(""),
-        "nuke": NewNukeAt("precomp"),
+        "houdini": newHoudiniAt(""),
+        "nuke": newNukeAt("precomp"),
     },
     "comp": {
-        "nuke": NewNukeAt(""),
+        "nuke": newNukeAt(""),
     },
 }
 
