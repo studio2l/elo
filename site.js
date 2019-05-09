@@ -184,6 +184,7 @@ function CreateTask(prj, shot, task) {
         let dirs = subdirs[perm]
         createDirs(d, dirs, perm)
     }
+    createDefaultElements(prj, shot, task)
 }
 exports.CreateTask = CreateTask
 
@@ -270,9 +271,9 @@ function CreateElement(prj, shot, task, elem, prog) {
 }
 exports.CreateElement = CreateElement
 
-// CreateDefaultElements는 특정 태스크에 미리 정의된 기본 요소들을 만든다.
+// createDefaultElements는 특정 태스크에 미리 정의된 기본 요소들을 만든다.
 // 요소를 생성할 권한이 없다면 에러가 난다.
-function CreateDefaultElements(prj, shot, task) {
+function createDefaultElements(prj, shot, task) {
     let elemsInfo = defaultElementsInfo[task]
     if (elemsInfo) {
         for (let ei of elemsInfo) {
@@ -280,7 +281,6 @@ function CreateDefaultElements(prj, shot, task) {
         }
     }
 }
-exports.CreateDefaultElements = CreateDefaultElements
 
 // defaultElementsInfo는 태스크별 기본 요소들이다.
 defaultElementsInfo = {
