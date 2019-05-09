@@ -15,7 +15,7 @@
 // Tasks() => []string
 // TasksOf(prj, shot) => []string
 // CreateTask(prj, shot, task)
-// taskDir(prj, shot)
+// TaskDir(prj, shot)
 //
 // ElementsOf(prj, shot, task) => [string]Element
 // CreateElement(prj, shot, task, elem, prog)
@@ -156,11 +156,11 @@ shotDirs = {
 
 // 태스크
 
-// taskDir은 해당 태스크의 디렉토리 경로를 반환한다.
-function taskDir(prj, shot, task) {
+// TaskDir은 해당 태스크의 디렉토리 경로를 반환한다.
+function TaskDir(prj, shot, task) {
     return ShotDir(prj, shot) + "/task/" + task
 }
-exports.taskDir = taskDir
+exports.TaskDir = TaskDir
 
 // TasksOf는 특정 샷의 태스크들을 반환한다.
 function TasksOf(prj, shot) {
@@ -171,7 +171,7 @@ exports.TasksOf = TasksOf
 
 // CreateTask는 특정 샷에 태스크를 생성한다. 생성할 권한이 없다면 에러가 난다.
 function CreateTask(prj, shot, task) {
-    let d = taskDir(prj, shot, task)
+    let d = TaskDir(prj, shot, task)
     if (fs.existsSync(d)) {
         throw Error("태스크 디렉토리가 이미 존재합니다.")
     }
@@ -224,7 +224,7 @@ exports.taskDirs = taskDirs
 // ElementsOf는 특정 태스크의 요소들을 반환한다.
 // 반환값은 '[요소 이름]요소' 형식의 오브젝트이다.
 function ElementsOf(prj, shot, task) {
-    let taskdir = taskDir(prj, shot, task)
+    let taskdir = TaskDir(prj, shot, task)
     let progs = ProgramsOf(prj, shot, task)
     if (!progs) {
         return {}
@@ -254,7 +254,7 @@ function CreateElement(prj, shot, task, elem, prog) {
     if (!TasksOf(prj, shot).includes(task)) {
         throw Error("해당 태스크가 없습니다.")
     }
-    let taskdir = taskDir(prj, shot, task)
+    let taskdir = TaskDir(prj, shot, task)
     if (!taskdir) {
         throw Error("태스크 디렉토리가 없습니다.")
     }
@@ -306,7 +306,7 @@ class Program {
     // SceneDir은 특정 프로젝트, 샷, 태스크라는 조건에서 해당 프로그램의 씬 디렉토리 경로를 반환한다.
     SceneDir(prj, shot, task) {
         // 아직 프로젝트, 샷은 씬 디렉토리 경로에 영향을 미치지 않지만 추후 사용할 가능성이 있다.
-        let dir = taskDir(prj, shot, task)
+        let dir = TaskDir(prj, shot, task)
         if (this.Subdir) {
             dir += "/" + this.Subdir
         }
@@ -386,7 +386,7 @@ function sceneEnviron(prj, shot, task, elem) {
         "ELEM": elem,
         "PRJDIR": ProjectDir(prj),
         "SHOTDIR": ShotDir(prj, shot),
-        "TASKDIR": taskDir(prj, shot, task),
+        "TASKDIR": TaskDir(prj, shot, task),
     }
     return env
 }
