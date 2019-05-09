@@ -236,6 +236,15 @@ function elementsOf(prj, shot, task) {
 }
 exports.elementsOf = elementsOf
 
+// 엘리먼트는 태스크 하위 요소이다.
+class Element {
+    constructor(name, program, versions) {
+        this.name = name
+        this.program = program
+        this.versions = versions
+    }
+}
+
 // createElement는 특정 태스크에 요소를 생성한다.
 // 요소를 생성할 때는 어떤 프로그램에 대한 요소인지도 알려주어야 한다.
 // 요소를 생성할 권한이 없다면 에러가 난다.
@@ -334,11 +343,8 @@ class Program {
                 continue
             }
             if (!elems[elem]) {
-                elems[elem] = {
-                    "name": elem,
-                    "program": this,
-                    "versions": [],
-                }
+                let vers = []
+                elems[elem] = new Element(elem, this, vers)
             }
             elems[elem].versions.push(version)
         }
