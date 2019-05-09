@@ -12,7 +12,7 @@ let pinnedShot = {}
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
 function init() {
-    site.init()
+    site.Init()
 
     ensureDirExist(configDir())
     loadPinnedProject()
@@ -84,7 +84,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.projectDir(prj))
+                        openDir(site.ProjectDir(prj))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -132,7 +132,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.shotDir(prj, shot))
+                        openDir(site.ShotDir(prj, shot))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -152,7 +152,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.taskDir(prj, shot, task))
+                        openDir(site.TaskDir(prj, shot, task))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -225,9 +225,9 @@ exports.openModalEv = function(kind) {
         notify("아직 태스크를 선택하지 않았습니다.")
         return
     }
-    if (kind == "element" && Object.keys(site.elementsOf(currentProject(), currentShot(), currentTask())).length == 0) {
+    if (kind == "element" && Object.keys(site.ElementsOf(currentProject(), currentShot(), currentTask())).length == 0) {
         try {
-            site.createDefaultElements(currentProject(), currentShot(), currentTask())
+            site.CreateDefaultElements(currentProject(), currentShot(), currentTask())
         } catch(err) {
             console.log(err)
             notify(err.message)
@@ -257,7 +257,7 @@ function openModal(kind) {
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.programsOf(currentProject(), currentShot(), currentTask())
+            progs = site.ProgramsOf(currentProject(), currentShot(), currentTask())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -432,30 +432,30 @@ function saveSelected() {
 
 // createProject는 하나의 프로젝트를 생성한다.
 function createProject(prj) {
-    site.createProject(prj)
+    site.CreateProject(prj)
     reloadProjects()
     selectProject(prj)
 }
 
 // createShot은 하나의 샷을 생성한다.
 function createShot(prj, shot) {
-    site.createShot(prj, shot)
+    site.CreateShot(prj, shot)
     reloadShots()
     selectShot(shot)
 }
 
 // createTask는 하나의 태스크를 생성한다.
 function createTask(prj, shot, task) {
-    site.createTask(prj, shot, task)
+    site.CreateTask(prj, shot, task)
     reloadTasks()
     selectTask(task)
-    site.createDefaultElements(prj, shot, task)
+    site.CreateDefaultElements(prj, shot, task)
     reloadElements()
 }
 
 // createElement는 하나의 요소를 생성한다.
 function createElement(prj, shot, task, elem, prog) {
-    site.createElement(prj, shot, task, elem, prog)
+    site.CreateElement(prj, shot, task, elem, prog)
     reloadElements()
     selectElement(elem, "")
 }
@@ -470,7 +470,7 @@ function addMytaskMenuItems() {
     opt.text = "없음"
     opt.value = ""
     menu.add(opt)
-    for (let t of site.tasks()) {
+    for (let t of site.Tasks()) {
         let opt = document.createElement("option")
         opt.text = t
         menu.add(opt)
@@ -536,7 +536,7 @@ function selectShot(shot) {
         return
     }
     let prj = currentProject()
-    if (!site.tasksOf(prj, shot).includes(task)) {
+    if (!site.TasksOf(prj, shot).includes(task)) {
         return
     }
     try {
@@ -664,7 +664,7 @@ function reloadProjects() {
     let box = document.getElementById("project-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let prjs = site.projects()
+    let prjs = site.Projects()
     let pinned = []
     let unpinned = []
     for (let prj of prjs) {
@@ -699,7 +699,7 @@ function reloadShots() {
     let box = document.getElementById("shot-box")
     box.innerText = ""
 
-    let shots = site.shotsOf(prj)
+    let shots = site.ShotsOf(prj)
     let pinned = []
     let unpinned = []
     for (let shot of shots) {
@@ -739,7 +739,7 @@ function reloadTasks() {
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    for (let t of site.tasksOf(prj, shot)) {
+    for (let t of site.TasksOf(prj, shot)) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "task-" + t
@@ -767,19 +767,19 @@ function reloadElements() {
     let box = document.getElementById("element-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let elems = site.elementsOf(prj, shot, task)
+    let elems = site.ElementsOf(prj, shot, task)
     for (let elem in elems) {
         let e = elems[elem]
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "element-" + elem
         div.dataset.val = elem
-        div.dataset.dir = e.program.sceneDir(prj, shot, task)
-        let lastver = e.versions[e.versions.length - 1]
+        div.dataset.dir = e.Program.SceneDir(prj, shot, task)
+        let lastver = e.Versions[e.Versions.length - 1]
         div.getElementsByClassName("item-val")[0].textContent = elem
-        div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.program.name
+        div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.Program.Name
         div.addEventListener("click", function() { selectElementEv(elem, "") })
-        div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program.name, lastver) })
+        div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.Program.Name, lastver) })
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
         toggle.textContent = "▷"
@@ -793,16 +793,16 @@ function reloadElements() {
         })
         div.insertBefore(toggle, div.firstChild)
         box.append(div)
-        for (let ver of e.versions.reverse()) {
+        for (let ver of e.Versions.reverse()) {
             let frag = document.importNode(tmpl.content, true)
             let div = frag.querySelector("div")
             div.classList.add("element-" + elem + "-versions")
             div.id = "element-" + elem + "-" + ver
             div.dataset.val = elem + "-" + ver
-            div.dataset.dir = e.program.sceneDir(prj, shot, task)
+            div.dataset.dir = e.Program.SceneDir(prj, shot, task)
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectElementEv(elem, ver) })
-            div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.program.name, ver) })
+            div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.Program.Name, ver) })
             div.style.display = "none"
             box.append(div)
         }
@@ -835,7 +835,7 @@ function toggleVersionVisibility(elem) {
 
 // openVersionEv는 해당 요소의 한 버전을 연다.
 function openVersionEv(prj, shot, task, elem, prog, ver) {
-    let progs = site.programsOf(prj, shot, task, prog)
+    let progs = site.ProgramsOf(prj, shot, task, prog)
     let p = progs[prog]
     if (!p) {
         notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
@@ -849,7 +849,7 @@ function openVersionEv(prj, shot, task, elem, prog, ver) {
             notify(err.message)
         }
     }
-    p.openVersion(prj, shot, task, elem, ver, handleError)
+    p.OpenVersion(prj, shot, task, elem, ver, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.

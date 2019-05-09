@@ -2,31 +2,33 @@
 //
 // 아래는 elo.js에서 불러서 사용 가능해야 하는 함수의 리스트입니다.
 //
-// projects() => []string
-// createProject(prj)
-// projectDir(prj)
+// Init()
 //
-// shotsOf(prj) => []string
-// createShot(prj, shot)
-// shotDir(prj, shot)
+// Projects() => []string
+// CreateProject(prj)
+// ProjectDir(prj)
 //
-// tasks() => []string
-// tasksOf(prj, shot) => []string
-// createTask(prj, shot, task)
+// ShotsOf(prj) => []string
+// CreateShot(prj, shot)
+// ShotDir(prj, shot)
+//
+// Tasks() => []string
+// TasksOf(prj, shot) => []string
+// CreateTask(prj, shot, task)
 // taskDir(prj, shot)
 //
-// elementsOf(prj, shot, task) => [string]Element
-// createElement(prj, shot, task, elem, prog)
-// createDefaultElements(prj, shot, task)
+// ElementsOf(prj, shot, task) => [string]Element
+// CreateElement(prj, shot, task, elem, prog)
+// CreateDefaultElements(prj, shot, task)
 //
-// programsOf(prj, shot, task) => [string]Program
+// ProgramsOf(prj, shot, task) => [string]Program
 //
 
 const fs = require("fs")
 const proc = require("child_process")
 
-// init은 사이트 설정을 초기화한다.
-function init() {
+// Init은 사이트 설정을 초기화한다.
+function Init() {
     let prjRoot = projectRoot()
     if (!prjRoot) {
         throw Error("Elo를 사용하시기 전, 우선 PROJECT_ROOT 또는 SITE_ROOT 환경변수를 설정해 주세요.")
@@ -35,7 +37,7 @@ function init() {
         fs.mkdirSync(prjRoot)
     }
 }
-exports.init = init
+exports.Init = Init
 
 // 루트
 
@@ -53,22 +55,22 @@ function projectRoot() {
 
 // 프로젝트
 
-// projectDir은 해당 프로젝트의 디렉토리 경로를 반환한다.
-function projectDir(prj) {
+// ProjectDir은 해당 프로젝트의 디렉토리 경로를 반환한다.
+function ProjectDir(prj) {
     return projectRoot() + "/" + prj
 }
-exports.projectDir = projectDir
+exports.ProjectDir = ProjectDir
 
-// projects는 사이트의 프로젝트들을 반환한다.
-function projects() {
+// Projects는 사이트의 프로젝트들을 반환한다.
+function Projects() {
     let d = projectRoot()
     return childDirs(d)
 }
-exports.projects = projects
+exports.Projects = Projects
 
-// createProject는 프로젝트를 생성한다. 생성할 권한이 없다면 에러가 난다.
-function createProject(prj) {
-    let prjDir = projectDir(prj)
+// CreateProject는 프로젝트를 생성한다. 생성할 권한이 없다면 에러가 난다.
+function CreateProject(prj) {
+    let prjDir = ProjectDir(prj)
     if (fs.existsSync(prjDir)) {
         throw Error("프로젝트 디렉토리가 이미 존재합니다.")
     }
@@ -78,7 +80,7 @@ function createProject(prj) {
         createDirs(prjDir, dirs, perm)
     }
 }
-exports.createProject = createProject
+exports.CreateProject = CreateProject
 
 // projectDirs는 사이트의 프로젝트 디렉토리 구조를 정의한다.
 let projectDirs = {
@@ -109,22 +111,22 @@ let projectDirs = {
 
 // 샷
 
-// shotDir은 해당 샷의 디렉토리 경로를 반환한다.
-function shotDir(prj, shot) {
-    return projectDir(prj) + "/shot/" + shot
+// ShotDir은 해당 샷의 디렉토리 경로를 반환한다.
+function ShotDir(prj, shot) {
+    return ProjectDir(prj) + "/shot/" + shot
 }
-exports.shotDir = shotDir
+exports.ShotDir = ShotDir
 
-// shotsOf는 특정 프로젝트의 샷들을 반환한다.
-function shotsOf(prj) {
-    let d = projectDir(prj) + "/shot"
+// ShotsOf는 특정 프로젝트의 샷들을 반환한다.
+function ShotsOf(prj) {
+    let d = ProjectDir(prj) + "/shot"
     return childDirs(d)
 }
-exports.shotsOf = shotsOf
+exports.ShotsOf = ShotsOf
 
-// createShot은 특정 프로젝트에 샷을 생성한다. 생성할 권한이 없다면 에러가 난다.
-function createShot(prj, shot) {
-    let d = shotDir(prj, shot)
+// CreateShot은 특정 프로젝트에 샷을 생성한다. 생성할 권한이 없다면 에러가 난다.
+function CreateShot(prj, shot) {
+    let d = ShotDir(prj, shot)
     if (fs.existsSync(d)) {
         throw Error("샷 디렉토리가 이미 존재합니다.")
     }
@@ -134,7 +136,7 @@ function createShot(prj, shot) {
         createDirs(d, dirs, perm)
     }
 }
-exports.createShot = createShot
+exports.CreateShot = CreateShot
 
 // shotDirs는 사이트의 샷 디렉토리 구조를 정의한다.
 shotDirs = {
@@ -156,19 +158,19 @@ shotDirs = {
 
 // taskDir은 해당 태스크의 디렉토리 경로를 반환한다.
 function taskDir(prj, shot, task) {
-    return shotDir(prj, shot) + "/task/" + task
+    return ShotDir(prj, shot) + "/task/" + task
 }
 exports.taskDir = taskDir
 
-// tasksOf는 특정 샷의 태스크들을 반환한다.
-function tasksOf(prj, shot) {
-    let d = shotDir(prj, shot) + "/task"
+// TasksOf는 특정 샷의 태스크들을 반환한다.
+function TasksOf(prj, shot) {
+    let d = ShotDir(prj, shot) + "/task"
     return childDirs(d)
 }
-exports.tasksOf = tasksOf
+exports.TasksOf = TasksOf
 
-// createTask는 특정 샷에 태스크를 생성한다. 생성할 권한이 없다면 에러가 난다.
-function createTask(prj, shot, task) {
+// CreateTask는 특정 샷에 태스크를 생성한다. 생성할 권한이 없다면 에러가 난다.
+function CreateTask(prj, shot, task) {
     let d = taskDir(prj, shot, task)
     if (fs.existsSync(d)) {
         throw Error("태스크 디렉토리가 이미 존재합니다.")
@@ -183,10 +185,10 @@ function createTask(prj, shot, task) {
         createDirs(d, dirs, perm)
     }
 }
-exports.createTask = createTask
+exports.CreateTask = CreateTask
 
 // tasks는 사이트에 정의된 태스크들을 반환한다.
-function tasks() {
+function Tasks() {
     // 생성하거나 실행할 수 있는 프로그램이 정의된 태스크 전체를 반환한다.
     let ts = Array()
     for (let task in programs) {
@@ -194,7 +196,7 @@ function tasks() {
     }
     return ts
 }
-exports.tasks = tasks
+exports.Tasks = Tasks
 
 // taskDirs는 사이트의 태스크별 디렉토리 구조를 정의한다.
 taskDirs = {
@@ -219,37 +221,37 @@ exports.taskDirs = taskDirs
 
 // 요소
 
-// elementsOf는 특정 태스크의 요소들을 반환한다.
+// ElementsOf는 특정 태스크의 요소들을 반환한다.
 // 반환값은 '[요소 이름]요소' 형식의 오브젝트이다.
-function elementsOf(prj, shot, task) {
+function ElementsOf(prj, shot, task) {
     let taskdir = taskDir(prj, shot, task)
-    let progs = programsOf(prj, shot, task)
+    let progs = ProgramsOf(prj, shot, task)
     if (!progs) {
         return {}
     }
     let elems = {}
     for (let i in progs) {
         let p = progs[i]
-        Object.assign(elems, p.listElements(prj, shot, task))
+        Object.assign(elems, p.ListElements(prj, shot, task))
     }
     return elems
 }
-exports.elementsOf = elementsOf
+exports.ElementsOf = ElementsOf
 
 // 엘리먼트는 태스크 하위 요소이다.
 class Element {
-    constructor(name, program, versions) {
-        this.name = name
-        this.program = program
-        this.versions = versions
+    constructor(name, program) {
+        this.Name = name
+        this.Program = program
+        this.Versions = []
     }
 }
 
-// createElement는 특정 태스크에 요소를 생성한다.
+// CreateElement는 특정 태스크에 요소를 생성한다.
 // 요소를 생성할 때는 어떤 프로그램에 대한 요소인지도 알려주어야 한다.
 // 요소를 생성할 권한이 없다면 에러가 난다.
-function createElement(prj, shot, task, elem, prog) {
-    if (!tasksOf(prj, shot).includes(task)) {
+function CreateElement(prj, shot, task, elem, prog) {
+    if (!TasksOf(prj, shot).includes(task)) {
         throw Error("해당 태스크가 없습니다.")
     }
     let taskdir = taskDir(prj, shot, task)
@@ -262,73 +264,67 @@ function createElement(prj, shot, task, elem, prog) {
     if (!prog) {
         throw Error("프로그램을 선택하지 않았습니다.")
     }
-    let progs = programsOf(prj, shot, task)
+    let progs = ProgramsOf(prj, shot, task)
     let p = progs[prog]
-    p.createElement(prj, shot, task, elem)
+    p.CreateElement(prj, shot, task, elem)
 }
-exports.createElement = createElement
+exports.CreateElement = CreateElement
 
-// createDefaultElements는 특정 태스크에 미리 정의된 기본 요소들을 만든다.
+// CreateDefaultElements는 특정 태스크에 미리 정의된 기본 요소들을 만든다.
 // 요소를 생성할 권한이 없다면 에러가 난다.
-function createDefaultElements(prj, shot, task) {
-    let elems = defaultElements[task]
-    if (elems) {
-        for (let el of elems) {
-            createElement(prj, shot, task, el.name, el.prog)
+function CreateDefaultElements(prj, shot, task) {
+    let elemsInfo = defaultElementsInfo[task]
+    if (elemsInfo) {
+        for (let ei of elemsInfo) {
+            CreateElement(prj, shot, task, ei.name, ei.prog)
         }
     }
 }
-exports.createDefaultElements = createDefaultElements
+exports.CreateDefaultElements = CreateDefaultElements
 
-// defaultElements는 태스크별 기본 요소들이다.
-defaultElements = {
+// defaultElementsInfo는 태스크별 기본 요소들이다.
+defaultElementsInfo = {
     "fx": [
-        {
-            "name": "main",
-            "prog": "houdini",
-        },
+        { name: "main", prog: "houdini" },
     ],
     "comp": [
-        {
-            "name": "main",
-            "prog": "nuke",
-        },
+        { name: "main", prog: "nuke" },
     ],
 }
-exports.defaultElements = defaultElements
 
 // Program은 씬을 생성하고 실행할 프로그램이다.
 class Program {
     constructor(name, subdir, ext, env, createScene, openScene) {
-        this.name = name
-        this.subdir = subdir
-        this.ext = ext
+        this.Name = name
+        this.Subdir = subdir
+        this.Ext = ext
         this.env = env
+        // 아래는 외부에서 사용하지 않는 것 추천
         this.createScene = createScene
         this.openScene = openScene
     }
-    // sceneDir은 특정 프로젝트, 샷, 태스크라는 조건에서 해당 프로그램의 씬 디렉토리 경로를 반환한다.
-    sceneDir(prj, shot, task) {
+    // SceneDir은 특정 프로젝트, 샷, 태스크라는 조건에서 해당 프로그램의 씬 디렉토리 경로를 반환한다.
+    SceneDir(prj, shot, task) {
         // 아직 프로젝트, 샷은 씬 디렉토리 경로에 영향을 미치지 않지만 추후 사용할 가능성이 있다.
         let dir = taskDir(prj, shot, task)
-        if (this.subdir) {
-            dir += "/" + this.subdir
+        if (this.Subdir) {
+            dir += "/" + this.Subdir
         }
         return dir
     }
-    // listElements는 특정 태스크의 엘리먼트들을 찾아 반환한다.
-    listElements(prj, shot, task) {
+    // ListElements는 특정 태스크의 엘리먼트들을 찾아 반환한다.
+    ListElements(prj, shot, task) {
         let elems = {}
-        let dir = this.sceneDir(prj, shot, task)
+        let dir = this.SceneDir(prj, shot, task)
         let files = fs.readdirSync(dir)
         for (let f of files) {
             if (!fs.lstatSync(dir + "/" + f).isFile()) {
                 continue
             }
-            if (!f.endsWith(this.ext)) {
+            if (!f.endsWith(this.Ext)) {
                 continue
             }
-            f = f.substring(0, f.length - this.ext.length)
+            f = f.substring(0, f.length - this.Ext.length)
             let prefix = prj + "_" + shot + "_" + task + "_"
             if (!f.startsWith(prefix)) {
                 continue
@@ -346,32 +342,32 @@ class Program {
                 let vers = []
                 elems[elem] = new Element(elem, this, vers)
             }
-            elems[elem].versions.push(version)
+            elems[elem].Versions.push(version)
         }
         return elems
     }
-    // createElement는 해당 태스크에 엘리먼트를 생성한다. 생성할 권한이 없다면 에러가 난다.
-    createElement(prj, shot, task, elem) {
-        let scenedir = this.sceneDir(prj, shot, task)
-        let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + "v001" + this.ext
+    // CreateElement는 해당 태스크에 엘리먼트를 생성한다. 생성할 권한이 없다면 에러가 난다.
+    CreateElement(prj, shot, task, elem) {
+        let scenedir = this.SceneDir(prj, shot, task)
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + "v001" + this.Ext
         let env = this.env()
         let sceneEnv = sceneEnviron(prj, shot, task, elem)
         try {
             this.createScene(scene, env, sceneEnv)
         } catch(err) {
             if (err.errno == "ENOENT") {
-                throw Error(this.name + " 씬을 만들기 위한 명령어가 없습니다.")
+                throw Error(this.Name + " 씬을 만들기 위한 명령어가 없습니다.")
             }
-            throw Error(this.name + " 씬 생성중 에러가 났습니다: " + err.message)
+            throw Error(this.Name + " 씬 생성중 에러가 났습니다: " + err.message)
         }
     }
-    // openVersion은 해당 엘리먼트의 해당 버전을 연다.
+    // OpenVersion은 해당 엘리먼트의 해당 버전을 연다.
     // 씬을 열기 전 작업과 관련된 환경변수를 설정한다.
     // 버전을 열 때 프로그램에서 떼어내야만 elo가 멈추지 않는다.
     // 따라서 프로그램 실행에서 에러가 났을 때 처리 방법도 이 함수에 함께 전달해야 한다.
-    openVersion(prj, shot, task, elem, ver, handleError) {
-        let scenedir = this.sceneDir(prj, shot, task)
-        let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + ver + this.ext
+    OpenVersion(prj, shot, task, elem, ver, handleError) {
+        let scenedir = this.SceneDir(prj, shot, task)
+        let scene = scenedir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + ver + this.Ext
         let env = this.env()
         let sceneEnv = sceneEnviron(prj, shot, task, elem)
         for (let e in sceneEnv) {
@@ -388,8 +384,8 @@ function sceneEnviron(prj, shot, task, elem) {
         "SHOT": shot,
         "TASK": task,
         "ELEM": elem,
-        "PRJDIR": projectDir(prj),
-        "SHOTDIR": shotDir(prj, shot),
+        "PRJDIR": ProjectDir(prj),
+        "SHOTDIR": ShotDir(prj, shot),
         "TASKDIR": taskDir(prj, shot, task),
     }
     return env
@@ -476,9 +472,9 @@ programs = {
     },
 }
 
-// programsOf는 특정 태스크의 프로그램들을 반환한다.
+// ProgramsOf는 특정 태스크의 프로그램들을 반환한다.
 // 반환값은 '[프로그램 이름]프로그램' 형식의 오브젝트이다.
-function programsOf(prj, shot, task) {
+function ProgramsOf(prj, shot, task) {
     // prj와 shot은 아직 사용하지 않는다.
     let prog = programs[task]
     if (!prog) {
@@ -486,7 +482,7 @@ function programsOf(prj, shot, task) {
     }
     return prog
 }
-exports.programsOf = programsOf
+exports.ProgramsOf = ProgramsOf
 
 // childDirs는 특정 디렉토리의 하위 디렉토리들을 검색하여 반환한다.
 // 해당 디렉토리가 없거나 검사할 수 없다면 에러가 난다.
