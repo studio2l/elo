@@ -19,7 +19,6 @@
 //
 // ElementsOf(prj, shot, task) => [string]Element
 // CreateElement(prj, shot, task, elem, prog)
-// CreateDefaultElements(prj, shot, task)
 //
 // ProgramsOf(prj, shot, task) => [string]Program
 //
