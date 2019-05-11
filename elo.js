@@ -247,7 +247,7 @@ function openModal(kind) {
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.ProgramsOf(currentProject(), currentShot(), currentTask())
+            progs = site.ShotProgramsOf(currentProject(), currentShot(), currentTask())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -436,7 +436,7 @@ function createShot(prj, shot) {
 
 // createTask는 하나의 태스크를 생성한다.
 function createTask(prj, shot, task) {
-    site.CreateTask(prj, shot, task)
+    site.CreateShotTask(prj, shot, task)
     reloadTasks()
     selectTask(task)
     reloadElements()
@@ -444,7 +444,7 @@ function createTask(prj, shot, task) {
 
 // createElement는 하나의 요소를 생성한다.
 function createElement(prj, shot, task, elem, prog) {
-    site.CreateElement(prj, shot, task, elem, prog)
+    site.CreateShotElement(prj, shot, task, elem, prog)
     reloadElements()
     selectElement(elem, "")
 }
@@ -459,7 +459,7 @@ function addMytaskMenuItems() {
     opt.text = "없음"
     opt.value = ""
     menu.add(opt)
-    for (let t of site.Tasks()) {
+    for (let t of site.ShotTasks()) {
         let opt = document.createElement("option")
         opt.text = t
         menu.add(opt)
@@ -525,7 +525,7 @@ function selectShot(shot) {
         return
     }
     let prj = currentProject()
-    if (!site.TasksOf(prj, shot).includes(task)) {
+    if (!site.ShotTasksOf(prj, shot).includes(task)) {
         return
     }
     try {
@@ -728,7 +728,7 @@ function reloadTasks() {
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    for (let t of site.TasksOf(prj, shot)) {
+    for (let t of site.ShotTasksOf(prj, shot)) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "task-" + t
@@ -756,14 +756,14 @@ function reloadElements() {
     let box = document.getElementById("element-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let elems = site.ElementsOf(prj, shot, task)
+    let elems = site.ShotElementsOf(prj, shot, task)
     for (let elem in elems) {
         let e = elems[elem]
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "element-" + elem
         div.dataset.val = elem
-        div.dataset.dir = e.Program.SceneDir(prj, shot, task)
+        div.dataset.dir = e.Program.Dir
         let lastver = e.Versions[e.Versions.length - 1]
         div.getElementsByClassName("item-val")[0].textContent = elem
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.Program.Name
@@ -788,7 +788,7 @@ function reloadElements() {
             div.classList.add("element-" + elem + "-versions")
             div.id = "element-" + elem + "-" + ver
             div.dataset.val = elem + "-" + ver
-            div.dataset.dir = e.Program.SceneDir(prj, shot, task)
+            div.dataset.dir = e.Program.Dir
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectElementEv(elem, ver) })
             div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.Program.Name, ver) })
@@ -824,7 +824,7 @@ function toggleVersionVisibility(elem) {
 
 // openVersionEv는 해당 요소의 한 버전을 연다.
 function openVersionEv(prj, shot, task, elem, prog, ver) {
-    let progs = site.ProgramsOf(prj, shot, task, prog)
+    let progs = site.ShotProgramsOf(prj, shot, task, prog)
     let p = progs[prog]
     if (!p) {
         notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
