@@ -20,8 +20,8 @@ function init() {
 
     ensureElementExist("project-box")
     ensureElementExist("shot-box")
-    ensureElementExist("task-box")
-    ensureElementExist("element-box")
+    ensureElementExist("shot-task-box")
+    ensureElementExist("shot-element-box")
     ensureElementExist("mytask-menu")
 
     addMytaskMenuItems()
@@ -143,7 +143,7 @@ function init() {
             shotMenu.popup(remote.getCurrentWindow())
             return
         }
-        if (parentById(ev, "task-box")) {
+        if (parentById(ev, "shot-task-box")) {
             let prj = currentProject()
             let shot = currentShot()
             let task = parentByClassName(ev, "item").id.split("-")[1]
@@ -163,10 +163,10 @@ function init() {
             taskMenu.popup(remote.getCurrentWindow())
             return
         }
-        if (parentById(ev, "element-box")) {
+        if (parentById(ev, "shot-element-box")) {
             let prj = currentProject()
             let shot = currentShot()
-            let task = currentTask()
+            let task = currentShotTask()
             let div = parentByClassName(ev, "item")
             let dir = div.dataset.dir
             let elemMenu = new Menu()
@@ -205,17 +205,17 @@ exports.openModalEv = function(kind) {
         notify("아직 프로젝트를 선택하지 않았습니다.")
         return
     }
-    if (kind == "task" && !currentShot()) {
+    if (kind == "shot-task" && !currentShot()) {
         notify("아직 샷을 선택하지 않았습니다.")
         return
     }
-    if (kind == "element" && !currentTask()) {
+    if (kind == "shot-element" && !currentShotTask()) {
         let mytask = myTask()
         let prj = currentProject()
         let shot = currentShot()
         if (prj && shot && mytask) {
             try {
-                createTask(prj, shot, mytask)
+                createShotTask(prj, shot, mytask)
             } catch(err) {
                 console.log(err)
                 notify(err.message)
@@ -247,7 +247,7 @@ function openModal(kind) {
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.ShotProgramsOf(currentProject(), currentShot(), currentTask())
+            progs = site.ShotProgramsOf(currentProject(), currentShot(), currentShotTask())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -261,8 +261,8 @@ function openModal(kind) {
     kor = {
         "project": "프로젝트",
         "shot": "샷",
-        "task": "태스크",
-        "element": "요소",
+        "shot-task": "샷 태스크",
+        "shot-element": "샷 요소",
     }
     input.placeholder = "생성 할 " + kor[kind] + " 이름"
     function createItem() {
@@ -276,11 +276,11 @@ function openModal(kind) {
             createProject(name)
         } else if (kind == "shot") {
             createShot(currentProject(), name)
-        } else if (kind == "task") {
-            createTask(currentProject(), currentShot(), name)
-        } else if (kind == "element") {
+        } else if (kind == "shot-task") {
+            createShotTask(currentProject(), currentShot(), name)
+        } else if (kind == "shot-element") {
             let prog = document.getElementById("modal-prog-input").value
-            createElement(currentProject(), currentShot(), currentTask(), name, prog)
+            createShotElement(currentProject(), currentShot(), currentShotTask(), name, prog)
         }
     }
     input.onkeydown = function(ev) {
@@ -370,36 +370,36 @@ function loadSelected() {
         return
     }
     try {
-        selectProject(data.project)
+        selectProject(data["project"])
     } catch(err) {
         console.log(err)
         return
     }
-    if (!data.shot) {
+    if (!data["shot"]) {
         return
     }
     try {
-        selectShot(data.shot)
+        selectShot(data["shot"])
     } catch(err) {
         console.log(err)
         return
     }
-    if (!data.task) {
+    if (!data["shot-task"]) {
         return
     }
     try {
-        selectTask(data.task)
+        selectShotTask(data["shot-task"])
     } catch(err) {
         console.log(err)
         return
     }
-    if (!data.element) {
+    if (!data["shot-element"]) {
         return
     }
     try {
-        selectElement(data.element, data.version)
-        if (data.version) {
-            toggleVersionVisibility(data.element)
+        selectShotElement(data["shot-element"], data["shot-version"])
+        if (data["shot-version"]) {
+            toggleVersionVisibility(data["shot-element"])
         }
     } catch(err) {
         console.log(err)
@@ -412,9 +412,9 @@ function saveSelected() {
     let data = JSON.stringify({
         "project": currentProject(),
         "shot": currentShot(),
-        "task": currentTask(),
-        "element": currentElement(),
-        "version": currentVersion(),
+        "shot-task": currentShotTask(),
+        "shot-element": currentShotElement(),
+        "shot-version": currentShotVersion(),
     })
     let fname = configDir() + "/selected.json"
     fs.writeFileSync(fname, data)
@@ -434,19 +434,19 @@ function createShot(prj, shot) {
     selectShot(shot)
 }
 
-// createTask는 하나의 태스크를 생성한다.
-function createTask(prj, shot, task) {
+// createShotTask는 하나의 샷 태스크를 생성한다.
+function createShotTask(prj, shot, task) {
     site.CreateShotTask(prj, shot, task)
-    reloadTasks()
-    selectTask(task)
-    reloadElements()
+    reloadShotTasks()
+    selectShotTask(task)
+    reloadShotElements()
 }
 
-// createElement는 하나의 요소를 생성한다.
-function createElement(prj, shot, task, elem, prog) {
+// createShotElement는 하나의 샷 요소를 생성한다.
+function createShotElement(prj, shot, task, elem, prog) {
     site.CreateShotElement(prj, shot, task, elem, prog)
-    reloadElements()
-    selectElement(elem, "")
+    reloadShotElements()
+    selectShotElement(elem, "")
 }
 
 // addMytaskMenuItems는 사용가능한 태스크들을 내 태스크 메뉴에 추가한다.
@@ -481,8 +481,8 @@ function selectProjectEv(prj) {
 function selectProject(prj) {
     clearNotify()
     clearShots()
-    clearTasks()
-    clearElements()
+    clearShotTasks()
+    clearShotElements()
     let box = document.getElementById("project-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
@@ -509,8 +509,8 @@ function selectShotEv(shot) {
 // 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
 function selectShot(shot) {
     clearNotify()
-    clearTasks()
-    clearElements()
+    clearShotTasks()
+    clearShotElements()
     let box = document.getElementById("shot-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
@@ -518,7 +518,7 @@ function selectShot(shot) {
     }
     let selected = document.getElementById("shot-" + shot)
     selected.classList.add("selected")
-    reloadTasks()
+    reloadShotTasks()
 
     let task = myTask()
     if (!task) {
@@ -529,17 +529,17 @@ function selectShot(shot) {
         return
     }
     try {
-        selectTask(task)
+        selectShotTask(task)
     } catch(err) {
         console.log(err)
         notify(err.message)
     }
 }
 
-// selectTaskEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
-function selectTaskEv(task) {
+// selectShotTaskEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
+function selectShotTaskEv(task) {
     try {
-        selectTask(task)
+        selectShotTask(task)
         saveSelected()
     } catch(err) {
         console.log(err)
@@ -547,24 +547,24 @@ function selectTaskEv(task) {
     }
 }
 
-// selectTask는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
-function selectTask(task) {
+// selectShotTask는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
+function selectShotTask(task) {
     clearNotify()
-    clearElements()
-    let box = document.getElementById("task-box")
+    clearShotElements()
+    let box = document.getElementById("shot-task-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
         item[0].classList.remove("selected")
     }
     let selected = document.getElementById("task-" + task)
     selected.classList.add("selected")
-    reloadElements()
+    reloadShotElements()
 }
 
-// selectElementEv는 요소를 선택했을 때 그 선택을 표시한다.
-function selectElementEv(elem, ver) {
+// selectShotElementEv는 요소를 선택했을 때 그 선택을 표시한다.
+function selectShotElementEv(elem, ver) {
     try {
-        selectElement(elem, ver)
+        selectShotElement(elem, ver)
         saveSelected()
     } catch(err) {
         console.log(err)
@@ -572,15 +572,15 @@ function selectElementEv(elem, ver) {
     }
 }
 
-// selectElement는 요소를 선택했을 때 그 선택을 표시한다.
-function selectElement(elem, ver) {
+// selectShotElement는 요소를 선택했을 때 그 선택을 표시한다.
+function selectShotElement(elem, ver) {
     clearNotify()
-    let box = document.getElementById("element-box")
+    let box = document.getElementById("shot-element-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
         item[0].classList.remove("selected")
     }
-    let id = "element-" + elem
+    let id = "shot-element-" + elem
     if (ver) {
         id += "-" + ver
     }
@@ -598,26 +598,28 @@ function currentShot() {
     return selectedItemValue("shot-box")
 }
 
-// currentTask는 현재 선택된 태스크 이름을 반환한다.
-function currentTask() {
-    return selectedItemValue("task-box")
+// currentShotTask는 현재 선택된 샷 태스크 이름을 반환한다.
+function currentShotTask() {
+    return selectedItemValue("shot-task-box")
 }
 
-// currentElement는 현재 선택된 엘리먼트 이름을 반환한다.
-function currentElement() {
-    let val = selectedItemValue("element-box")
+// currentShotElement는 현재 선택된 샷 엘리먼트 이름을 반환한다.
+function currentShotElement() {
+    let val = selectedItemValue("shot-element-box")
     if (!val) {
         return null
     }
+    // val은 "{element}" 또는 "{element}-{version}"이다.
     return val.split("-")[0]
 }
 
-// currentVersion은 현재 선택된 버전을 반환한다.
-function currentVersion() {
-    let val = selectedItemValue("element-box")
+// currentShotVersion은 현재 선택된 샷 버전을 반환한다.
+function currentShotVersion() {
+    let val = selectedItemValue("shot-element-box")
     if (!val) {
         return null
     }
+    // val은 "{element}" 또는 "{element}-{version}"이다.
     let vals = val.split("-")
     if (vals.length == 1) {
         return ""
@@ -715,8 +717,8 @@ function reloadShots() {
     }
 }
 
-// reloadTasks는 해당 샷의 태스크를 다시 부른다.
-function reloadTasks() {
+// reloadShotTasks는 해당 샷의 태스크를 다시 부른다.
+function reloadShotTasks() {
     let prj = currentProject()
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
@@ -725,7 +727,7 @@ function reloadTasks() {
     if (!shot) {
         throw Error("선택된 샷이 없습니다.")
     }
-    let box = document.getElementById("task-box")
+    let box = document.getElementById("shot-task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
     for (let t of site.ShotTasksOf(prj, shot)) {
@@ -734,13 +736,13 @@ function reloadTasks() {
         div.id = "task-" + t
         div.dataset.val = t
         div.getElementsByClassName("item-val")[0].textContent = t
-        div.addEventListener("click", function() { selectTaskEv(t) })
+        div.addEventListener("click", function() { selectShotTaskEv(t) })
         box.append(div)
     }
 }
 
-// reloadElements는 해당 태스크의 요소를 다시 부른다.
-function reloadElements() {
+// reloadShotElements는 해당 태스크의 요소를 다시 부른다.
+function reloadShotElements() {
     let prj = currentProject()
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
@@ -749,11 +751,11 @@ function reloadElements() {
     if (!shot) {
         throw Error("선택된 샷이 없습니다.")
     }
-    let task = currentTask()
+    let task = currentShotTask()
     if (!task) {
         throw Error("선택된 태스크가 없습니다.")
     }
-    let box = document.getElementById("element-box")
+    let box = document.getElementById("shot-element-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
     let elems = site.ShotElementsOf(prj, shot, task)
@@ -761,13 +763,13 @@ function reloadElements() {
         let e = elems[elem]
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
-        div.id = "element-" + elem
+        div.id = "shot-element-" + elem
         div.dataset.val = elem
         div.dataset.dir = e.Program.Dir
         let lastver = e.Versions[e.Versions.length - 1]
         div.getElementsByClassName("item-val")[0].textContent = elem
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  e.Program.Name
-        div.addEventListener("click", function() { selectElementEv(elem, "") })
+        div.addEventListener("click", function() { selectShotElementEv(elem, "") })
         div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.Program.Name, lastver) })
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
@@ -785,12 +787,12 @@ function reloadElements() {
         for (let ver of e.Versions.reverse()) {
             let frag = document.importNode(tmpl.content, true)
             let div = frag.querySelector("div")
-            div.classList.add("element-" + elem + "-versions")
-            div.id = "element-" + elem + "-" + ver
+            div.classList.add("shot-element-" + elem + "-versions")
+            div.id = "shot-element-" + elem + "-" + ver
             div.dataset.val = elem + "-" + ver
             div.dataset.dir = e.Program.Dir
             div.getElementsByClassName("item-val")[0].textContent = ver
-            div.addEventListener("click", function() { selectElementEv(elem, ver) })
+            div.addEventListener("click", function() { selectShotElementEv(elem, ver) })
             div.addEventListener("dblclick", function() { openVersionEv(prj, shot, task, elem, e.Program.Name, ver) })
             div.style.display = "none"
             box.append(div)
@@ -800,7 +802,7 @@ function reloadElements() {
 
 // toggleVersionVisibility는 특정 요소의 버전을 보이거나 숨긴다.
 function toggleVersionVisibility(elem) {
-    let div = document.getElementById("element-" + elem)
+    let div = document.getElementById("shot-element-" + elem)
     let toggle = div.getElementsByClassName("toggle")[0]
     if (toggle.dataset.hideVersions == "t") {
         toggle.dataset.hideVersions = "f"
@@ -812,7 +814,7 @@ function toggleVersionVisibility(elem) {
     } else {
         toggle.textContent = "▽"
     }
-    let vers = document.getElementsByClassName("element-" + elem + "-versions")
+    let vers = document.getElementsByClassName("shot-element-" + elem + "-versions")
     for (let v of vers) {
         if (toggle.dataset.hideVersions == "t") {
             v.style.display = "none"
@@ -855,14 +857,14 @@ function clearShots() {
     clearBox("shot-box")
 }
 
-// clearTasks는 태스크 박스의 내용을 지운다.
-function clearTasks() {
-    clearBox("task-box")
+// clearShotTasks는 태스크 박스의 내용을 지운다.
+function clearShotTasks() {
+    clearBox("shot-task-box")
 }
 
-// clearElements는 요소 박스의 내용을 지운다.
-function clearElements() {
-    clearBox("element-box")
+// clearShotElements는 요소 박스의 내용을 지운다.
+function clearShotElements() {
+    clearBox("shot-element-box")
 }
 
 // configDir은 elo의 설정 디렉토리 경로를 반환한다.
