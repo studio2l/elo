@@ -242,7 +242,7 @@ function openModal(kind) {
     input.value = ""
     let progInput = document.getElementById("modal-prog-input")
     progInput.hidden = true
-    if (kind == "element") {
+    if (kind == "shot-element") {
         progInput.hidden = false
         progInput.innerText = ""
         let progs = Array()
