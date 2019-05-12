@@ -210,18 +210,6 @@ exports.openModalEv = function(kind) {
         return
     }
     if (kind == "shot-element" && !currentShotTask()) {
-        let mytask = myTask()
-        let prj = currentProject()
-        let shot = currentShot()
-        if (prj && shot && mytask) {
-            try {
-                createShotTask(prj, shot, mytask)
-            } catch(err) {
-                console.log(err)
-                notify(err.message)
-            }
-            return
-        }
         notify("아직 태스크를 선택하지 않았습니다.")
         return
     }
