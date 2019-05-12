@@ -177,7 +177,8 @@ function CreateShotTask(prj, shot, task) {
     if (fs.existsSync(d)) {
         throw Error("태스크 디렉토리가 이미 존재합니다.")
     }
-    fs.mkdirSync(d, { recursive: true })
+    // 태스크 디렉토리를 생성하는 파트(PM)와, 작업하는 파트가 서로 다르다.
+    fs.mkdirSync(d, { recursive: true, mode: "775" })
     let subdirs = shotTaskDirs[task]
     if (!subdirs) {
         return
@@ -204,7 +205,7 @@ exports.ShotTasks = ShotTasks
 // shotTaskDirs는 사이트의 태스크별 디렉토리 구조를 정의한다.
 shotTaskDirs = {
     "fx": {
-        "0755": [
+        "0775": [
             "backup",
             "geo",
             "precomp",
@@ -214,7 +215,7 @@ shotTaskDirs = {
         ],
     },
     "comp": {
-        "0755": [
+        "0775": [
             "render",
             "source",
         ],
