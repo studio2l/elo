@@ -480,6 +480,9 @@ function selectProjectEv(prj) {
 // selectProject는 사용자가 프로젝트를 선택했을 때 그에 맞는 샷 리스트를 보인다.
 function selectProject(prj) {
     clearNotify()
+    if (prj == currentProject()) {
+        return
+    }
     clearShots()
     clearShotTasks()
     clearShotElements()
@@ -509,6 +512,9 @@ function selectShotEv(shot) {
 // 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
 function selectShot(shot) {
     clearNotify()
+    if (shot == currentShot()) {
+        return
+    }
     clearShotTasks()
     clearShotElements()
     let box = document.getElementById("shot-box")
@@ -550,6 +556,9 @@ function selectShotTaskEv(task) {
 // selectShotTask는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectShotTask(task) {
     clearNotify()
+    if (task == currentShotTask()) {
+        return
+    }
     clearShotElements()
     let box = document.getElementById("shot-task-box")
     let item = box.getElementsByClassName("selected")
@@ -575,6 +584,9 @@ function selectShotElementEv(elem, ver) {
 // selectShotElement는 요소를 선택했을 때 그 선택을 표시한다.
 function selectShotElement(elem, ver) {
     clearNotify()
+    if (elem == currentShotElement() && ver == currentShotVersion()) {
+        return
+    }
     let box = document.getElementById("shot-element-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
