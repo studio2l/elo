@@ -134,6 +134,9 @@ function CreateShot(prj, shot) {
         let dirs = shotDirs[perm]
         createDirs(d, dirs, perm)
     }
+    for (let task in shotTaskDirs) {
+        CreateShotTask(prj, shot, task)
+    }
 }
 exports.CreateShot = CreateShot
 
