@@ -74,39 +74,32 @@ function CreateProject(prj) {
         throw Error("프로젝트 디렉토리가 이미 존재합니다.")
     }
     fs.mkdirSync(prjDir, { recursive: true })
-    for (let perm in projectSubdirs) {
-        let dirs = projectSubdirs[perm]
-        createDirs(prjDir, dirs, perm)
-    }
+    createDirs(prjDir, projectSubdirs)
 }
 exports.CreateProject = CreateProject
 
 // projectSubdirs는 사이트의 프로젝트 디렉토리 구조를 정의한다.
-let projectSubdirs = {
-    "0755": [
-        "asset",
-        "doc",
-        "doc/cglist",
-        "doc/credit",
-        "doc/droid",
-        "edit",
-        "ref",
-        "lut",
-        "source",
-        "scan",
-        "vendor",
-        "vendor/input",
-        "vendor/output",
-    ],
-    "0775": [
-        "asset/char",
-        "asset/bg",
-        "asset/prop",
-        "review",
-        "output",
-        "shot",
-    ],
-}
+let projectSubdirs = [
+        subdir("asset", "0755"),
+        subdir("asset/char", "2775"),
+        subdir("asset/bg", "2775"),
+        subdir("asset/prop", "2775"),
+        subdir("doc", "0755"),
+        subdir("doc/cglist", "0755"),
+        subdir("doc/credit", "0755"),
+        subdir("doc/droid", "0755"),
+        subdir("edit", "0755"),
+        subdir("ref", "0755"),
+        subdir("lut", "0755"),
+        subdir("source", "0755"),
+        subdir("scan", "0755"),
+        subdir("vendor", "0755"),
+        subdir("vendor/input", "0755"),
+        subdir("vendor/output", "0755"),
+        subdir("review", "2775"),
+        subdir("output", "2775"),
+        subdir("shot", "2775"),
+]
 
 // 샷
 
@@ -130,10 +123,7 @@ function CreateShot(prj, shot) {
         throw Error("샷 디렉토리가 이미 존재합니다.")
     }
     fs.mkdirSync(d, { recursive: true })
-    for (let perm in shotSubdirs) {
-        let dirs = shotSubdirs[perm]
-        createDirs(d, dirs, perm)
-    }
+    createDirs(d, shotSubdirs)
     for (let task in shotTaskSubdirs) {
         CreateShotTask(prj, shot, task)
     }
@@ -141,20 +131,18 @@ function CreateShot(prj, shot) {
 exports.CreateShot = CreateShot
 
 // shotSubdirs는 사이트의 샷 디렉토리 구조를 정의한다.
-shotSubdirs = {
-    "0755": [
-        "scan",
-        "scan/base",
-        "scan/source",
-        "ref",
-        "pub",
-        "pub/cam",
-        "pub/geo",
-        "pub/char",
-        "task",
-        "render",
-    ],
-}
+shotSubdirs = [
+    subdir("scan", "0755"),
+    subdir("scan/base", "0755"),
+    subdir("scan/source", "0755"),
+    subdir("ref", "0755"),
+    subdir("pub", "0755"),
+    subdir("pub/cam", "2775"),
+    subdir("pub/geo", "2775"),
+    subdir("pub/char", "2775"),
+    subdir("render", "2775"),
+    subdir("task", "2775"),
+]
 
 // 태스크
 
@@ -177,16 +165,12 @@ function CreateShotTask(prj, shot, task) {
     if (fs.existsSync(d)) {
         throw Error("태스크 디렉토리가 이미 존재합니다.")
     }
-    // 태스크 디렉토리를 생성하는 파트(PM)와, 작업하는 파트가 서로 다르다.
-    fs.mkdirSync(d, { recursive: true, mode: "775" })
+    fs.mkdirSync(d, { recursive: true, mode: "2775" })
     let subdirs = shotTaskSubdirs[task]
     if (!subdirs) {
         return
     }
-    for (let perm in subdirs) {
-        let dirs = subdirs[perm]
-        createDirs(d, dirs, perm)
-    }
+    createDirs(d, subdirs)
     createDefaultShotElements(prj, shot, task)
 }
 exports.CreateShotTask = CreateShotTask
@@ -204,22 +188,18 @@ exports.ShotTasks = ShotTasks
 
 // shotTaskSubdirs는 사이트의 태스크별 디렉토리 구조를 정의한다.
 shotTaskSubdirs = {
-    "fx": {
-        "0775": [
-            "backup",
-            "geo",
-            "precomp",
-            "preview",
-            "render",
-            "temp",
-        ],
-    },
-    "comp": {
-        "0775": [
-            "render",
-            "source",
-        ],
-    },
+    "fx": [
+        subdir("backup", "2755"),
+        subdir("geo", "2755"),
+        subdir("precomp", "2755"),
+        subdir("preview", "2755"),
+        subdir("render", "2755"),
+        subdir("temp", "2755"),
+    ],
+    "comp": [
+        subdir("render", "2755"),
+        subdir("source", "2755"),
+    ],
 }
 
 // 요소
@@ -498,20 +478,19 @@ function childDirs(d) {
 
 // createDirs는 부모 디렉토리에 하위 디렉토리들을 생성한다.
 // 만일 생성하지 못한다면 에러가 난다.
-function createDirs(parentd, dirs, perm) {
+function createDirs(parentd, subdirs) {
     if (!parentd) {
         throw Error("부모 디렉토리는 비어있을 수 없습니다.")
     }
-    if (!dirs) {
+    if (subdirs.length == 0) {
         return
-    }
-    if (!perm) {
-        throw Error("생성할 디렉토리 권한이 정의되지 않았습니다.")
     }
     if (!fs.existsSync(parentd)) {
         // TODO: 부모 디렉토리 생성할 지 물어보기
     }
-    for (let d of dirs) {
+    for (let subd of subdirs) {
+        let d = subd.name
+        let perm = subd.perm
         let child = parentd + "/" + d
         if (fs.existsSync(child)) {
             continue
@@ -519,10 +498,16 @@ function createDirs(parentd, dirs, perm) {
         fs.mkdirSync(child, { recursive: true, mode: perm })
         if (process.platform == "win32") {
             // 윈도우즈에서는 위의 mode 설정이 먹히지 않기 때문에 모두에게 권한을 푼다.
-            // 리눅스의 0775와 윈도우즈의 everyone은 범위가 다르지만
+            // 리눅스의 775와 윈도우즈의 everyone은 범위가 다르지만
             // 윈도우즈에서 가장 간단히 권한을 설정할 수 있는 방법이다.
-            if (perm == "0777" || perm == "0775") {
-                proc.execFileSync("icacls", [child.replace(/\//g, "\\"), "/grant", "everyone:f"])
+            specialBit = perm.substring(0, 1)
+            defaultBits = perm.substring(1, 4)
+            if (defaultBits == "777" || defaultBits == "775") {
+                let user = "everyone:(F)"
+                if (specialBit == "2") {
+                    user = "everyone:(CI)(OI)(F)"
+                }
+                proc.execFileSync("icacls", [child.replace(/\//g, "\\"), "/grant", user])
             }
         }
     }
@@ -536,4 +521,12 @@ function cloneEnv() {
         env[e] = process.env[e]
     }
     return env
+}
+
+// subdir은 서브 디렉토리의 이름과 권한을 하나의 오브젝트로 묶어 반환한다.
+function subdir(name, perm) {
+    if (typeof perm != "string" || perm.length != 4) {
+        throw("elo에서는 파일 디렉토리 권한에 4자리 문자열 만을 사용합니다")
+    }
+    return { name: name, perm: perm }
 }
