@@ -74,15 +74,15 @@ function CreateProject(prj) {
         throw Error("프로젝트 디렉토리가 이미 존재합니다.")
     }
     fs.mkdirSync(prjDir, { recursive: true })
-    for (let perm in projectDirs) {
-        let dirs = projectDirs[perm]
+    for (let perm in projectSubdirs) {
+        let dirs = projectSubdirs[perm]
         createDirs(prjDir, dirs, perm)
     }
 }
 exports.CreateProject = CreateProject
 
-// projectDirs는 사이트의 프로젝트 디렉토리 구조를 정의한다.
-let projectDirs = {
+// projectSubdirs는 사이트의 프로젝트 디렉토리 구조를 정의한다.
+let projectSubdirs = {
     "0755": [
         "asset",
         "doc",
@@ -130,18 +130,18 @@ function CreateShot(prj, shot) {
         throw Error("샷 디렉토리가 이미 존재합니다.")
     }
     fs.mkdirSync(d, { recursive: true })
-    for (let perm in shotDirs) {
-        let dirs = shotDirs[perm]
+    for (let perm in shotSubdirs) {
+        let dirs = shotSubdirs[perm]
         createDirs(d, dirs, perm)
     }
-    for (let task in shotTaskDirs) {
+    for (let task in shotTaskSubdirs) {
         CreateShotTask(prj, shot, task)
     }
 }
 exports.CreateShot = CreateShot
 
-// shotDirs는 사이트의 샷 디렉토리 구조를 정의한다.
-shotDirs = {
+// shotSubdirs는 사이트의 샷 디렉토리 구조를 정의한다.
+shotSubdirs = {
     "0755": [
         "scan",
         "scan/base",
@@ -179,7 +179,7 @@ function CreateShotTask(prj, shot, task) {
     }
     // 태스크 디렉토리를 생성하는 파트(PM)와, 작업하는 파트가 서로 다르다.
     fs.mkdirSync(d, { recursive: true, mode: "775" })
-    let subdirs = shotTaskDirs[task]
+    let subdirs = shotTaskSubdirs[task]
     if (!subdirs) {
         return
     }
@@ -202,8 +202,8 @@ function ShotTasks() {
 }
 exports.ShotTasks = ShotTasks
 
-// shotTaskDirs는 사이트의 태스크별 디렉토리 구조를 정의한다.
-shotTaskDirs = {
+// shotTaskSubdirs는 사이트의 태스크별 디렉토리 구조를 정의한다.
+shotTaskSubdirs = {
     "fx": {
         "0775": [
             "backup",
@@ -221,7 +221,6 @@ shotTaskDirs = {
         ],
     },
 }
-exports.shotTaskDirs = shotTaskDirs
 
 // 요소
 
