@@ -492,10 +492,8 @@ function createDirs(parentd, subdirs) {
         let d = subd.name
         let perm = subd.perm
         let child = parentd + "/" + d
-        if (fs.existsSync(child)) {
-            continue
-        }
-        fs.mkdirSync(child, { recursive: true, mode: perm })
+        fs.mkdirSync(child)
+        fs.chmodSync(child, perm)
         if (process.platform == "win32") {
             // 윈도우즈에서는 위의 mode 설정이 먹히지 않기 때문에 모두에게 권한을 푼다.
             // 리눅스의 775와 윈도우즈의 everyone은 범위가 다르지만
