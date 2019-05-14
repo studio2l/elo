@@ -124,9 +124,6 @@ function CreateShot(prj, shot) {
     }
     fs.mkdirSync(d, { recursive: true })
     createDirs(d, shotSubdirs)
-    for (let task in shotTaskSubdirs) {
-        CreateShotTask(prj, shot, task)
-    }
 }
 exports.CreateShot = CreateShot
 
