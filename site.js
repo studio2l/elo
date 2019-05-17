@@ -14,11 +14,11 @@
 //
 // ShotTasks() => []string
 // ShotTasksOf(prj, shot) => []string
-// CreateShotTask(prj, shot, task)
+// CreateShotTask(prj, shot, part)
 // ShotTaskDir(prj, shot)
 //
-// ShotElementsOf(prj, shot, task) => [string]Element
-// CreateShotElement(prj, shot, task, elem, prog)
+// ShotElementsOf(prj, shot, part) => [string]Element
+// CreateShotElement(prj, shot, part, task, prog)
 //
 // ShotProgramsOf(prj, shot, task) => [string]Program
 //
@@ -101,125 +101,179 @@ let projectSubdirs = [
         subdir("shot", "2775"),
 ]
 
-// 샷
+// 카테고리
 
-// ShotDir은 해당 샷의 디렉토리 경로를 반환한다.
-function ShotDir(prj, shot) {
-    return ProjectDir(prj) + "/shot/" + shot
-}
-exports.ShotDir = ShotDir
-
-// ShotsOf는 특정 프로젝트의 샷들을 반환한다.
-function ShotsOf(prj) {
-    let d = ProjectDir(prj) + "/shot"
-    return childDirs(d)
-}
-exports.ShotsOf = ShotsOf
-
-// CreateShot은 특정 프로젝트에 샷을 생성한다. 생성할 권한이 없다면 에러가 난다.
-function CreateShot(prj, shot) {
-    let d = ShotDir(prj, shot)
-    if (fs.existsSync(d)) {
-        throw Error("샷 디렉토리가 이미 존재합니다.")
+// Shot은 (가상의) 카테고리 인터페이스를 구현한다.
+class ShotCategory {
+    constructor() {
+        this.unitSubdirs = [
+            subdir("scan", "0755"),
+            subdir("scan/base", "0755"),
+            subdir("scan/source", "0755"),
+            subdir("ref", "0755"),
+            subdir("pub", "0755"),
+            subdir("pub/cam", "2775"),
+            subdir("pub/geo", "2775"),
+            subdir("pub/char", "2775"),
+            subdir("render", "2775"),
+            subdir("part", "2775"),
+        ]
+        this.Parts = [
+            "fx",
+            "comp",
+        ]
+        this.partSubdirs = {
+            "fx": [
+                subdir("backup", "2775"),
+                subdir("geo", "2775"),
+                subdir("precomp", "2775"),
+                subdir("preview", "2775"),
+                subdir("render", "2775"),
+                subdir("temp", "2775"),
+            ],
+            "comp": [
+                subdir("render", "2775"),
+                subdir("source", "2775"),
+            ],
+        }
+        this.defaultTasksInfo = {
+            "fx": [
+                { name: "main", prog: "houdini" },
+            ],
+            "comp": [
+                { name: "main", prog: "nuke" },
+            ],
+        }
+        this.programs = {
+            "fx": {
+                "houdini": function(taskDir, sceneEnviron) { return newHoudiniAt(taskDir, sceneEnviron) },
+                "nuke": function(taskDir, sceneEnviron) { return newNukeAt(taskDir + "/precomp", sceneEnviron) },
+            },
+            "comp": {
+                "nuke": function(taskDir, sceneEnviron) { return newNukeAt(taskDir, sceneEnviron) },
+            },
+        }
     }
-    fs.mkdirSync(d, { recursive: true })
-    createDirs(d, shotSubdirs)
-}
-exports.CreateShot = CreateShot
 
-// shotSubdirs는 사이트의 샷 디렉토리 구조를 정의한다.
-shotSubdirs = [
-    subdir("scan", "0755"),
-    subdir("scan/base", "0755"),
-    subdir("scan/source", "0755"),
-    subdir("ref", "0755"),
-    subdir("pub", "0755"),
-    subdir("pub/cam", "2775"),
-    subdir("pub/geo", "2775"),
-    subdir("pub/char", "2775"),
-    subdir("render", "2775"),
-    subdir("task", "2775"),
-]
+    // 샷 유닛
 
-// 태스크
-
-// ShotTaskDir은 해당 태스크의 디렉토리 경로를 반환한다.
-function ShotTaskDir(prj, shot, task) {
-    return ShotDir(prj, shot) + "/task/" + task
-}
-exports.ShotTaskDir = ShotTaskDir
-
-// ShotTasksOf는 특정 샷의 태스크들을 반환한다.
-function ShotTasksOf(prj, shot) {
-    let d = ShotDir(prj, shot) + "/task"
-    return childDirs(d)
-}
-exports.ShotTasksOf = ShotTasksOf
-
-// CreateShotTask는 특정 샷에 태스크를 생성한다. 생성할 권한이 없다면 에러가 난다.
-function CreateShotTask(prj, shot, task) {
-    let d = ShotTaskDir(prj, shot, task)
-    if (fs.existsSync(d)) {
-        throw Error("태스크 디렉토리가 이미 존재합니다.")
+    UnitDir(prj, shot) {
+        return ProjectDir(prj) + "/shot/" + shot
     }
-    fs.mkdirSync(d, { recursive: true, mode: "2775" })
-    let subdirs = shotTaskSubdirs[task]
-    if (!subdirs) {
-        return
+
+    UnitsOf(prj) {
+        let d = ProjectDir(prj) + "/shot"
+        return childDirs(d)
     }
-    createDirs(d, subdirs)
-    createDefaultShotElements(prj, shot, task)
-}
-exports.CreateShotTask = CreateShotTask
 
-// tasks는 사이트에 정의된 태스크들을 반환한다.
-function ShotTasks() {
-    // 생성하거나 실행할 수 있는 프로그램이 정의된 태스크 전체를 반환한다.
-    let ts = Array()
-    for (let task in shotPrograms) {
-        ts.push(task)
+    CreateUnit(prj, shot) {
+        let d = this.UnitDir(prj, shot)
+        fs.mkdirSync(d)
+        createDirs(d, this.unitSubdirs)
     }
-    return ts
-}
-exports.ShotTasks = ShotTasks
 
-// shotTaskSubdirs는 사이트의 태스크별 디렉토리 구조를 정의한다.
-shotTaskSubdirs = {
-    "fx": [
-        subdir("backup", "2755"),
-        subdir("geo", "2755"),
-        subdir("precomp", "2755"),
-        subdir("preview", "2755"),
-        subdir("render", "2755"),
-        subdir("temp", "2755"),
-    ],
-    "comp": [
-        subdir("render", "2755"),
-        subdir("source", "2755"),
-    ],
-}
+    // 샷 파트
 
-// 요소
-
-// ShotElementsOf는 특정 태스크의 요소들을 반환한다.
-// 반환값은 '[요소 이름]요소' 형식의 오브젝트이다.
-function ShotElementsOf(prj, shot, task) {
-    let taskdir = ShotTaskDir(prj, shot, task)
-    let progs = ShotProgramsOf(prj, shot, task)
-    if (Object.keys(progs).length == 0) {
-        return {}
+    PartDir(prj, shot, part) {
+        return this.UnitDir(prj, shot) + "/part/" + part
     }
-    let elems = {}
-    for (let i in progs) {
-        let p = progs[i]
-        Object.assign(elems, p.ListElements(prj, shot, task))
-    }
-    return elems
-}
-exports.ShotElementsOf = ShotElementsOf
 
-// 엘리먼트는 태스크 하위 요소이다.
-class Element {
+    PartsOf(prj, shot) {
+        let d = this.UnitDir(prj, shot) + "/part"
+        return childDirs(d)
+    }
+
+    CreatePart(prj, shot, part) {
+        let d = this.PartDir(prj, shot, part)
+        fs.mkdirSync(d)
+        let subdirs = this.partSubdirs[part]
+        if (!subdirs) {
+            return
+        }
+        createDirs(d, subdirs)
+        this.createDefaultTasks(prj, shot, part)
+    }
+
+    // 샷 태스크
+
+    TasksOf(prj, shot, part) {
+        let partdir = PartDir(prj, shot, part)
+        let progs = ProgramsOf(prj, shot, part)
+        if (!progs) {
+            return {}
+        }
+        let tasks = {}
+        for (let i in progs) {
+            let p = progs[i]
+            Object.assign(tasks, p.ListTasks(prj, shot, part))
+        }
+        return tasks
+    }
+
+    CreateTask(prj, shot, part, task, prog) {
+        console.log(prj, shot)
+        console.log(this.PartsOf(prj, shot))
+        if (!this.PartsOf(prj, shot).includes(part)) {
+            throw Error("해당 파트가 없습니다.")
+        }
+        let partdir = this.PartDir(prj, shot, part)
+        if (!partdir) {
+            throw Error("파트 디렉토리가 없습니다.")
+        }
+        if (!task) {
+            throw Error("태스크를 선택하지 않았습니다.")
+        }
+        if (!prog) {
+            throw Error("프로그램을 선택하지 않았습니다.")
+        }
+        let progs = this.ProgramsOf(prj, shot, part)
+        let p = progs[prog]
+        p.CreateTask(prj, shot, part, task)
+    }
+
+    createDefaultTasks(prj, shot, part) {
+        let tasksInfo = this.defaultTasksInfo[part]
+        if (tasksInfo) {
+            for (let ti of tasksInfo) {
+                this.CreateTask(prj, shot, part, ti.name, ti.prog)
+            }
+        }
+    }
+
+
+    ProgramsOf(prj, shot, part) {
+        // prj와 shot은 아직 사용하지 않는다.
+        let pgs = this.programs[part]
+        if (!pgs) {
+            throw Error("사이트에 " + part + " 파트가 정의되어 있지 않습니다.")
+        }
+        let sceneEnviron = function (prj, shot, part, task) {
+            let env = {
+                "PRJ": prj,
+                "SHOT": shot,
+                "PART": part,
+                "TASK": task,
+                "PRJD": ProjectDir(prj),
+                "SHOTD": this.UnitDir(prj, shot),
+                "PARTD": this.PartDir(prj, shot, part),
+                "TASKD": this.TaskDir(prj, shot, part, task),
+            }
+            return env
+        }
+        let partDir = this.PartDir(prj, shot, part)
+        let progs = {}
+        for (let p in pgs) {
+            let newProgramAt = pgs[p]
+            progs[p] = newProgramAt(partDir, this.sceneEnviron)
+        }
+        return progs
+    }
+}
+
+let Shot = new ShotCategory()
+exports.Shot = Shot
+
+class Task {
     constructor(name, program) {
         this.Name = name
         this.Program = program
@@ -227,64 +281,21 @@ class Element {
     }
 }
 
-// CreateShotElement는 특정 태스크에 요소를 생성한다.
-// 요소를 생성할 때는 어떤 프로그램에 대한 요소인지도 알려주어야 한다.
-// 요소를 생성할 권한이 없다면 에러가 난다.
-function CreateShotElement(prj, shot, task, elem, prog) {
-    if (!ShotTasksOf(prj, shot).includes(task)) {
-        throw Error("해당 태스크가 없습니다.")
-    }
-    let taskdir = ShotTaskDir(prj, shot, task)
-    if (!taskdir) {
-        throw Error("태스크 디렉토리가 없습니다.")
-    }
-    if (!elem) {
-        throw Error("요소를 선택하지 않았습니다.")
-    }
-    if (!prog) {
-        throw Error("프로그램을 선택하지 않았습니다.")
-    }
-    let progs = ShotProgramsOf(prj, shot, task)
-    let p = progs[prog]
-    p.CreateElement(prj, shot, task, elem)
-}
-exports.CreateShotElement = CreateShotElement
-
-// createDefaultShotElements는 특정 태스크에 미리 정의된 기본 요소들을 만든다.
-// 요소를 생성할 권한이 없다면 에러가 난다.
-function createDefaultShotElements(prj, shot, task) {
-    let elemsInfo = defaultShotElementsInfo[task]
-    if (elemsInfo) {
-        for (let ei of elemsInfo) {
-            CreateShotElement(prj, shot, task, ei.name, ei.prog)
-        }
-    }
-}
-
-// defaultShotElementsInfo는 태스크별 기본 요소들이다.
-defaultShotElementsInfo = {
-    "fx": [
-        { name: "main", prog: "houdini" },
-    ],
-    "comp": [
-        { name: "main", prog: "nuke" },
-    ],
-}
-
 // Program은 씬을 생성하고 실행할 프로그램이다.
 class Program {
-    constructor(name, dir, ext, env, createScene, openScene) {
+    constructor(name, dir, ext, env, sceneEnviron, createScene, openScene) {
         this.Name = name
         this.Dir = dir
         this.Ext = ext
         this.env = env
         // 아래는 외부에서 사용하지 않는 것 추천
+        this.sceneEnviron = sceneEnviron
         this.createScene = createScene
         this.openScene = openScene
     }
-    // ListElements는 특정 태스크의 엘리먼트들을 찾아 반환한다.
-    ListElements(prj, shot, task) {
-        let elems = {}
+    // ListTasks는 특정 파트의 태스크들을 찾아 반환한다.
+    ListTasks(prj, shot, part) {
+        let tasks = {}
         let files = fs.readdirSync(this.Dir)
         for (let f of files) {
             if (!fs.lstatSync(this.Dir + "/" + f).isFile()) {
@@ -294,7 +305,7 @@ class Program {
                 continue
             }
             f = f.substring(0, f.length - this.Ext.length)
-            let prefix = prj + "_" + shot + "_" + task + "_"
+            let prefix = prj + "_" + shot + "_" + part + "_"
             if (!f.startsWith(prefix)) {
                 continue
             }
@@ -303,23 +314,23 @@ class Program {
             if (ws.length != 2) {
                 continue
             }
-            let [elem, version] = ws
+            let [task, version] = ws
             if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
                 continue
             }
-            if (!elems[elem]) {
+            if (!tasks[task]) {
                 let vers = []
-                elems[elem] = new Element(elem, this, vers)
+                tasks[task] = new Element(task, this, vers)
             }
-            elems[elem].Versions.push(version)
+            tasks[task].Versions.push(version)
         }
-        return elems
+        return tasks
     }
-    // CreateElement는 해당 태스크에 엘리먼트를 생성한다. 생성할 권한이 없다면 에러가 난다.
-    CreateElement(prj, shot, task, elem) {
-        let scene = this.Dir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + "v001" + this.Ext
+    // CreateTask는 해당 태스크에 엘리먼트를 생성한다. 생성할 권한이 없다면 에러가 난다.
+    CreateTask(prj, shot, part, task) {
+        let scene = this.Dir + "/" + prj + "_" + shot + "_" + part + "_" + task + "_" + "v001" + this.Ext
         let env = this.env()
-        let sceneEnv = sceneEnviron(prj, shot, task, elem)
+        let sceneEnv = this.sceneEnviron(prj, shot, part, task)
         try {
             this.createScene(scene, env, sceneEnv)
         } catch(err) {
@@ -333,10 +344,10 @@ class Program {
     // 씬을 열기 전 작업과 관련된 환경변수를 설정한다.
     // 버전을 열 때 프로그램에서 떼어내야만 elo가 멈추지 않는다.
     // 따라서 프로그램 실행에서 에러가 났을 때 처리 방법도 이 함수에 함께 전달해야 한다.
-    OpenVersion(prj, shot, task, elem, ver, handleError) {
-        let scene = this.Dir + "/" + prj + "_" + shot + "_" + task + "_" + elem + "_" + ver + this.Ext
+    OpenVersion(prj, shot, part, task, ver, sceneEnv, handleError) {
+        let scene = this.Dir + "/" + prj + "_" + shot + "_" + part + "_" + task + "_" + ver + this.Ext
+        let sceneEnv = this.sceneEnviron(prj, shot, part, task)
         let env = this.env()
-        let sceneEnv = sceneEnviron(prj, shot, task, elem)
         for (let e in sceneEnv) {
             env[e] = sceneEnv[e]
         }
@@ -344,22 +355,8 @@ class Program {
     }
 }
 
-// sceneEnviron은 해당 요소 작업에 필요한 환경변수들을 반환한다.
-function sceneEnviron(prj, shot, task, elem) {
-    let env = {
-        "PRJ": prj,
-        "SHOT": shot,
-        "TASK": task,
-        "ELEM": elem,
-        "PRJDIR": ProjectDir(prj),
-        "SHOTDIR": ShotDir(prj, shot),
-        "TASKDIR": ShotTaskDir(prj, shot, task),
-    }
-    return env
-}
-
 // newHoudiniAt은 지정된 위치에 후디니 프로그램을 생성한다.
-function newHoudiniAt(dir) {
+function newHoudiniAt(dir, sceneEnv) {
     let houdini = new Program(
         // name
         "houdini",
@@ -376,6 +373,8 @@ function newHoudiniAt(dir) {
             }
             return process.env
         },
+        // sceneEnv
+        sceneEnv,
         // createScene
         function(scene, env, sceneEnv) {
             let initScript = ""
@@ -397,7 +396,7 @@ function newHoudiniAt(dir) {
 }
 
 // newNukeAt은 지정된 위치에 누크 프로그램을 생성한다.
-function newNukeAt(dir) {
+function newNukeAt(dir, sceneEnv) {
     let nuke = new Program(
         // name
         "nuke",
@@ -414,6 +413,8 @@ function newNukeAt(dir) {
             }
             return process.env
         },
+        // sceneEnv
+        sceneEnv,
         // createScene
         function(scene, env, sceneEnv) {
             // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
@@ -427,35 +428,6 @@ function newNukeAt(dir) {
     )
     return nuke
 }
-
-// shotPrograms는 사이트의 태스크별 프로그램 정보를 담고 있다.
-shotPrograms = {
-    "fx": {
-        "houdini": function(taskDir) { return newHoudiniAt(taskDir) },
-        "nuke": function(taskDir) { return newNukeAt(taskDir + "/precomp") },
-    },
-    "comp": {
-        "nuke": function(taskDir) { return newNukeAt(taskDir) },
-    },
-}
-
-// ShotProgramsOf는 특정 태스크의 프로그램들을 반환한다.
-// 반환값은 '[프로그램 이름]프로그램' 형식의 오브젝트이다.
-function ShotProgramsOf(prj, shot, task) {
-    // prj와 shot은 아직 사용하지 않는다.
-    let pgs = shotPrograms[task]
-    if (Object.keys(pgs).length == 0) {
-        throw Error("사이트에 " + task + " 태스크가 정의되어 있지 않습니다.")
-    }
-    let taskDir = ShotTaskDir(prj, shot, task)
-    let progs = {}
-    for (let p in pgs) {
-        let newProgramAt = pgs[p]
-        progs[p] = newProgramAt(taskDir)
-    }
-    return progs
-}
-exports.ShotProgramsOf = ShotProgramsOf
 
 // childDirs는 특정 디렉토리의 하위 디렉토리들을 검색하여 반환한다.
 // 해당 디렉토리가 없거나 검사할 수 없다면 에러가 난다.
