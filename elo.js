@@ -825,12 +825,15 @@ function toggleVersionVisibility(elem) {
 }
 
 // openVersionEv는 해당 요소의 한 버전을 연다.
-function openVersionEv(prj, shot, task, elem, prog, ver) {
-    let progs = site.Shot.ProgramsOf(prj, shot, task, prog)
+function openVersionEv(prj, shot, part, task, prog, ver) {
+    let progs = site.Shot.ProgramsOf(prj, shot, part, prog)
     let p = progs[prog]
     if (!p) {
         notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
     }
+    let scene = p.SceneName(prj, shot, part, task, ver)
+    let env = p.Env()
+    let sceneEnv = site.Shot.SceneEnviron(prj, shot, part, task)
     let handleError = function(err, stdout, stderr) {
         if (err) {
             if (err.errno == "ENOENT") {
@@ -840,7 +843,7 @@ function openVersionEv(prj, shot, task, elem, prog, ver) {
             notify(err.message)
         }
     }
-    p.OpenVersion(prj, shot, task, elem, ver, handleError)
+    p.OpenScene(scene, env, sceneEnv, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.

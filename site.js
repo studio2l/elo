@@ -146,11 +146,11 @@ class ShotCategory {
         }
         this.programs = {
             "fx": {
-                "houdini": function(taskDir, sceneEnviron) { return newHoudiniAt(taskDir, sceneEnviron) },
-                "nuke": function(taskDir, sceneEnviron) { return newNukeAt(taskDir + "/precomp", sceneEnviron) },
+                "houdini": function(taskDir, sceneEnvironFunc) { return newHoudiniAt(taskDir, sceneEnvironFunc) },
+                "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir + "/precomp", sceneEnvironFunc) },
             },
             "comp": {
-                "nuke": function(taskDir, sceneEnviron) { return newNukeAt(taskDir, sceneEnviron) },
+                "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir, sceneEnvironFunc) },
             },
         }
     }
@@ -191,28 +191,32 @@ class ShotCategory {
             return
         }
         createDirs(d, subdirs)
-        this.createDefaultTasks(prj, shot, part)
+        // 해당 파트의 기본 태스크 생성
+        let tasksInfo = this.defaultTasksInfo[part]
+        if (tasksInfo) {
+            for (let ti of tasksInfo) {
+                this.CreateTask(prj, shot, part, ti.name, ti.prog)
+            }
+        }
     }
 
     // 샷 태스크
 
     TasksOf(prj, shot, part) {
-        let partdir = PartDir(prj, shot, part)
-        let progs = ProgramsOf(prj, shot, part)
+        let partdir = this.PartDir(prj, shot, part)
+        let progs = this.ProgramsOf(prj, shot, part)
         if (!progs) {
             return {}
         }
         let tasks = {}
-        for (let i in progs) {
-            let p = progs[i]
+        for (let prog in progs) {
+            let p = progs[prog]
             Object.assign(tasks, p.ListTasks(prj, shot, part))
         }
         return tasks
     }
 
     CreateTask(prj, shot, part, task, prog) {
-        console.log(prj, shot)
-        console.log(this.PartsOf(prj, shot))
         if (!this.PartsOf(prj, shot).includes(part)) {
             throw Error("해당 파트가 없습니다.")
         }
@@ -228,18 +232,24 @@ class ShotCategory {
         }
         let progs = this.ProgramsOf(prj, shot, part)
         let p = progs[prog]
-        p.CreateTask(prj, shot, part, task)
+        let scene = p.SceneName(prj, shot, part, task, "v001")
+        let env = p.Env(prj, shot, part, task)
+        let sceneEnv = this.SceneEnviron(prj, shot, part, task)
+        p.CreateScene(scene, env, sceneEnv)
     }
 
-    createDefaultTasks(prj, shot, part) {
-        let tasksInfo = this.defaultTasksInfo[part]
-        if (tasksInfo) {
-            for (let ti of tasksInfo) {
-                this.CreateTask(prj, shot, part, ti.name, ti.prog)
-            }
+    SceneEnviron(prj, shot, part, task) {
+        let env = {
+            "PRJ": prj,
+            "SHOT": shot,
+            "PART": part,
+            "TASK": task,
+            "PRJD": ProjectDir(prj),
+            "SHOTD": this.UnitDir(prj, shot),
+            "PARTD": this.PartDir(prj, shot, part),
         }
+        return env
     }
-
 
     ProgramsOf(prj, shot, part) {
         // prj와 shot은 아직 사용하지 않는다.
@@ -247,24 +257,11 @@ class ShotCategory {
         if (!pgs) {
             throw Error("사이트에 " + part + " 파트가 정의되어 있지 않습니다.")
         }
-        let sceneEnviron = function (prj, shot, part, task) {
-            let env = {
-                "PRJ": prj,
-                "SHOT": shot,
-                "PART": part,
-                "TASK": task,
-                "PRJD": ProjectDir(prj),
-                "SHOTD": this.UnitDir(prj, shot),
-                "PARTD": this.PartDir(prj, shot, part),
-                "TASKD": this.TaskDir(prj, shot, part, task),
-            }
-            return env
-        }
         let partDir = this.PartDir(prj, shot, part)
         let progs = {}
         for (let p in pgs) {
             let newProgramAt = pgs[p]
-            progs[p] = newProgramAt(partDir, this.sceneEnviron)
+            progs[p] = newProgramAt(partDir)
         }
         return progs
     }
@@ -283,17 +280,18 @@ class Task {
 
 // Program은 씬을 생성하고 실행할 프로그램이다.
 class Program {
-    constructor(name, dir, ext, env, sceneEnviron, createScene, openScene) {
+    constructor(name, dir, ext, Env, CreateScene, OpenScene) {
         this.Name = name
         this.Dir = dir
         this.Ext = ext
-        this.env = env
-        // 아래는 외부에서 사용하지 않는 것 추천
-        this.sceneEnviron = sceneEnviron
-        this.createScene = createScene
-        this.openScene = openScene
+        this.Env = Env
+        this.CreateScene = CreateScene
+        this.OpenScene = OpenScene
     }
-    // ListTasks는 특정 파트의 태스크들을 찾아 반환한다.
+    SceneName(prj, shot, part, task, ver) {
+        let scene = this.Dir + "/" + prj + "_" + shot + "_" + part + "_" + task + "_" + "v001" + this.Ext
+        return scene
+    }
     ListTasks(prj, shot, part) {
         let tasks = {}
         let files = fs.readdirSync(this.Dir)
@@ -320,43 +318,16 @@ class Program {
             }
             if (!tasks[task]) {
                 let vers = []
-                tasks[task] = new Element(task, this, vers)
+                tasks[task] = new Task(task, this, vers)
             }
             tasks[task].Versions.push(version)
         }
         return tasks
     }
-    // CreateTask는 해당 태스크에 엘리먼트를 생성한다. 생성할 권한이 없다면 에러가 난다.
-    CreateTask(prj, shot, part, task) {
-        let scene = this.Dir + "/" + prj + "_" + shot + "_" + part + "_" + task + "_" + "v001" + this.Ext
-        let env = this.env()
-        let sceneEnv = this.sceneEnviron(prj, shot, part, task)
-        try {
-            this.createScene(scene, env, sceneEnv)
-        } catch(err) {
-            if (err.errno == "ENOENT") {
-                throw Error(this.Name + " 씬을 만들기 위한 명령어가 없습니다.")
-            }
-            throw Error(this.Name + " 씬 생성중 에러가 났습니다: " + err.message)
-        }
-    }
-    // OpenVersion은 해당 엘리먼트의 해당 버전을 연다.
-    // 씬을 열기 전 작업과 관련된 환경변수를 설정한다.
-    // 버전을 열 때 프로그램에서 떼어내야만 elo가 멈추지 않는다.
-    // 따라서 프로그램 실행에서 에러가 났을 때 처리 방법도 이 함수에 함께 전달해야 한다.
-    OpenVersion(prj, shot, part, task, ver, sceneEnv, handleError) {
-        let scene = this.Dir + "/" + prj + "_" + shot + "_" + part + "_" + task + "_" + ver + this.Ext
-        let sceneEnv = this.sceneEnviron(prj, shot, part, task)
-        let env = this.env()
-        for (let e in sceneEnv) {
-            env[e] = sceneEnv[e]
-        }
-        this.openScene(scene, env, handleError)
-    }
 }
 
 // newHoudiniAt은 지정된 위치에 후디니 프로그램을 생성한다.
-function newHoudiniAt(dir, sceneEnv) {
+function newHoudiniAt(dir) {
     let houdini = new Program(
         // name
         "houdini",
@@ -364,7 +335,7 @@ function newHoudiniAt(dir, sceneEnv) {
         dir,
         // ext
         ".hip",
-        // env
+        // Env
         function() {
             if (process.platform == "win32") {
                 let env = cloneEnv()
@@ -373,9 +344,7 @@ function newHoudiniAt(dir, sceneEnv) {
             }
             return process.env
         },
-        // sceneEnv
-        sceneEnv,
-        // createScene
+        // CreateScene
         function(scene, env, sceneEnv) {
             let initScript = ""
             for (let e in sceneEnv) {
@@ -387,8 +356,11 @@ function newHoudiniAt(dir, sceneEnv) {
             initScript += `hou.hipFile.save('${scene}')`
             proc.execFileSync("hython", ["-c", initScript], { "env": env })
         },
-        // openScene
-        function(scene, env, handleError) {
+        // OpenScene
+        function(scene, env, sceneEnv, handleError) {
+            for (let e in sceneEnv) {
+                env[e] = sceneEnv[e]
+            }
             proc.execFile("houdini", [scene], { "env": env }, handleError)
         },
     )
@@ -396,7 +368,7 @@ function newHoudiniAt(dir, sceneEnv) {
 }
 
 // newNukeAt은 지정된 위치에 누크 프로그램을 생성한다.
-function newNukeAt(dir, sceneEnv) {
+function newNukeAt(dir) {
     let nuke = new Program(
         // name
         "nuke",
@@ -404,7 +376,7 @@ function newNukeAt(dir, sceneEnv) {
         dir,
         // ext
         ".nk",
-        // env
+        // Env
         function() {
             if (process.platform == "win32") {
                 let env = cloneEnv()
@@ -413,16 +385,15 @@ function newNukeAt(dir, sceneEnv) {
             }
             return process.env
         },
-        // sceneEnv
-        sceneEnv,
-        // createScene
+        // CreateScene
         function(scene, env, sceneEnv) {
-            // 누크의 bin 디렉토리가 기본 파이썬 디렉토리 보다 PATH 앞에 잡혀있어야 함.
             proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
         },
-        // openScene
-        function(scene, env, handleError) {
-            // 누크의 bin 디렉토리가 PATH에 잡혀있어야 함.
+        // OpenScene
+        function(scene, env, sceneEnv, handleError) {
+            for (let e in sceneEnv) {
+                env[e] = sceneEnv[e]
+            }
             proc.execFile("Nuke10.0", ["--nukex", scene], { "env": env }, handleError)
         },
     )
