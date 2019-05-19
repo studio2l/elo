@@ -216,7 +216,7 @@ class ShotCategory {
         return tasks
     }
 
-    CreateTask(prj, shot, part, task, prog) {
+    CreateTask(prj, shot, part, task, ver, prog) {
         if (!this.PartsOf(prj, shot).includes(part)) {
             throw Error("해당 파트가 없습니다.")
         }
@@ -232,10 +232,22 @@ class ShotCategory {
         }
         let progs = this.ProgramsOf(prj, shot, part)
         let p = progs[prog]
-        let scene = p.SceneName(prj, shot, part, task, "v001")
+        let scene = p.SceneName(prj, shot, part, task, ver)
         let env = p.Env(prj, shot, part, task)
         let sceneEnv = this.SceneEnviron(prj, shot, part, task)
         p.CreateScene(scene, env, sceneEnv)
+    }
+
+    openTask(prj, shot, part, task, prog, ver, handleError) {
+        let progs = site.Shot.ProgramsOf(prj, shot, part, prog)
+        let p = progs[prog]
+        if (!p) {
+            notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
+        }
+        let scene = p.SceneName(prj, shot, part, task, ver)
+        let env = p.Env()
+        let sceneEnv = this.SceneEnviron(prj, shot, part, task)
+        p.OpenScene(scene, env, sceneEnv, handleError)
     }
 
     SceneEnviron(prj, shot, part, task) {
