@@ -132,7 +132,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.Shot.UnitDir(prj, shot))
+                        openDir(site.Current.UnitDir(prj, shot))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -152,7 +152,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.Shot.TaskDir(prj, shot, task))
+                        openDir(site.Current.TaskDir(prj, shot, task))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -235,7 +235,7 @@ function openModal(kind) {
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.Shot.ProgramsOf(currentProject(), currentUnit(), currentPart())
+            progs = site.Current.ProgramsOf(currentProject(), currentUnit(), currentPart())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -417,14 +417,14 @@ function createProject(prj) {
 
 // createUnit은 하나의 샷을 생성한다.
 function createUnit(prj, shot) {
-    site.Shot.CreateUnit(prj, shot)
+    site.Current.CreateUnit(prj, shot)
     reloadUnits()
     selectUnit(shot)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
 function createPart(prj, shot, part) {
-    site.Shot.CreatePart(prj, shot, part)
+    site.Current.CreatePart(prj, shot, part)
     reloadParts()
     selectPart(part)
     reloadTasks()
@@ -432,7 +432,7 @@ function createPart(prj, shot, part) {
 
 // createTask는 하나의 샷 요소를 생성한다.
 function createTask(prj, shot, part, task, ver, prog) {
-    site.Shot.CreateTask(prj, shot, part, task, ver, prog)
+    site.Current.CreateTask(prj, shot, part, task, ver, prog)
     reloadTasks()
     selectTask(task, "")
 }
@@ -447,7 +447,7 @@ function addMyPartMenuItems() {
     opt.text = "없음"
     opt.value = ""
     menu.add(opt)
-    for (let part of site.Shot.Parts) {
+    for (let part of site.Current.Parts) {
         let opt = document.createElement("option")
         opt.text = part
         menu.add(opt)
@@ -519,7 +519,7 @@ function selectUnit(shot) {
         return
     }
     let prj = currentProject()
-    if (!site.Shot.PartsOf(prj, shot).includes(part)) {
+    if (!site.Current.PartsOf(prj, shot).includes(part)) {
         return
     }
     try {
@@ -690,7 +690,7 @@ function reloadUnits() {
     let box = document.getElementById("shot-box")
     box.innerText = ""
 
-    let shots = site.Shot.UnitsOf(prj)
+    let shots = site.Current.UnitsOf(prj)
     let pinned = []
     let unpinned = []
     for (let shot of shots) {
@@ -730,7 +730,7 @@ function reloadParts() {
     let box = document.getElementById("part-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    for (let part of site.Shot.PartsOf(prj, shot)) {
+    for (let part of site.Current.PartsOf(prj, shot)) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "part-" + part
@@ -758,7 +758,7 @@ function reloadTasks() {
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let tasks = site.Shot.TasksOf(prj, shot, task)
+    let tasks = site.Current.TasksOf(prj, shot, task)
     for (let task in tasks) {
         let t = tasks[task]
         let frag = document.importNode(tmpl.content, true)
@@ -835,7 +835,7 @@ function openVersionEv(prj, shot, part, task, prog, ver) {
             notify(err.message)
         }
     }
-    site.Shot.openTask(prj, shot, part, task, prog, ver, handleError)
+    site.Current.OpenTask(prj, shot, part, task, prog, ver, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.

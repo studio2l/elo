@@ -238,8 +238,8 @@ class ShotCategory {
         p.CreateScene(scene, env, sceneEnv)
     }
 
-    openTask(prj, shot, part, task, prog, ver, handleError) {
-        let progs = site.Shot.ProgramsOf(prj, shot, part, prog)
+    OpenTask(prj, shot, part, task, prog, ver, handleError) {
+        let progs = this.ProgramsOf(prj, shot, part, prog)
         let p = progs[prog]
         if (!p) {
             notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
@@ -281,6 +281,26 @@ class ShotCategory {
 
 let Shot = new ShotCategory()
 exports.Shot = Shot
+
+let Categories = ["shot"]
+exports.Categories = Categories
+
+let category = {
+    "shot": Shot,
+}
+
+// Current는 현재 선택된 카테고리를 의미한다.
+let Current = category[Categories[0]]
+exports.Current = Current
+
+function SetCurrentCategory(c) {
+    let cur = category[c]
+    if (!cur) {
+        throw Error(c + "카테고리가 없습니다.")
+    }
+    Current = cur
+}
+exports.SetCurrentCategory = SetCurrentCategory
 
 class Task {
     constructor(name, program) {
