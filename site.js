@@ -152,56 +152,14 @@ function mustType(label, val, type) {
 }
 
 // Shot은 (가상의) 카테고리 인터페이스를 구현한다.
-class ShotCategory {
-    constructor() {
-        this.Name = "shot"
-        this.unitSubdirs = [
-            subdir("scan", "0755"),
-            subdir("scan/base", "0755"),
-            subdir("scan/source", "0755"),
-            subdir("ref", "0755"),
-            subdir("pub", "0755"),
-            subdir("pub/cam", "2775"),
-            subdir("pub/geo", "2775"),
-            subdir("pub/char", "2775"),
-            subdir("render", "2775"),
-            subdir("work", "2775"),
-        ]
-        this.Parts = [
-            "fx",
-            "comp",
-        ]
-        this.partSubdirs = {
-            "fx": [
-                subdir("backup", "2775"),
-                subdir("geo", "2775"),
-                subdir("precomp", "2775"),
-                subdir("preview", "2775"),
-                subdir("render", "2775"),
-                subdir("temp", "2775"),
-            ],
-            "comp": [
-                subdir("render", "2775"),
-                subdir("source", "2775"),
-            ],
-        }
-        this.defaultTasksInfo = {
-            "fx": [
-                { name: "main", prog: "houdini" },
-            ],
-            "comp": [
-                { name: "main", prog: "nuke" },
-            ],
-        }
-        this.programs = {
-            "fx": {
-                "houdini": function(taskDir, sceneEnvironFunc) { return newHoudiniAt(taskDir, sceneEnvironFunc) },
-                "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir + "/precomp", sceneEnvironFunc) },
-            },
-            "comp": {
-                "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir, sceneEnvironFunc) },
-            },
-        }
+class Category {
+    constructor(opt) {
+        this.Name = opt.Name
+        this.unitSubdirs = opt.unitSubdirs
+        this.Parts = opt.Parts
+        this.partSubdirs = opt.partSubdirs
+        this.defaultTasksInfo = opt.defaultTasksInfo
+        this.programs = opt.programs
     }
 
     // 샷 유닛
@@ -321,11 +279,62 @@ class ShotCategory {
     }
 }
 
+let Shot = new Category({
+    Name: "shot",
+    unitSubdirs: [
+        subdir("scan", "0755"),
+        subdir("scan/base", "0755"),
+        subdir("scan/source", "0755"),
+        subdir("ref", "0755"),
+        subdir("pub", "0755"),
+        subdir("pub/cam", "2775"),
+        subdir("pub/geo", "2775"),
+        subdir("pub/char", "2775"),
+        subdir("render", "2775"),
+        subdir("work", "2775"),
+    ],
+    Parts: [
+        "fx",
+        "comp",
+    ],
+    partSubdirs: {
+        "fx": [
+            subdir("backup", "2775"),
+            subdir("geo", "2775"),
+            subdir("precomp", "2775"),
+            subdir("preview", "2775"),
+            subdir("render", "2775"),
+            subdir("temp", "2775"),
+        ],
+        "comp": [
+            subdir("render", "2775"),
+            subdir("source", "2775"),
+        ],
+    },
+    defaultTasksInfo: {
+        "fx": [
+            { name: "main", prog: "houdini" },
+        ],
+        "comp": [
+            { name: "main", prog: "nuke" },
+        ],
+    },
+    programs: {
+        "fx": {
+            "houdini": function(taskDir, sceneEnvironFunc) { return newHoudiniAt(taskDir, sceneEnvironFunc) },
+            "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir + "/precomp", sceneEnvironFunc) },
+        },
+        "comp": {
+            "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir, sceneEnvironFunc) },
+        },
+    },
+})
+
 let Categories = ["shot"]
 exports.Categories = Categories
 
 let category = {
-    "shot": new ShotCategory(),
+    "shot": Shot,
 }
 
 // current는 현재 선택된 카테고리이다.
