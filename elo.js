@@ -95,15 +95,64 @@ function init() {
             projectMenu.popup(remote.getCurrentWindow())
             return
         }
+        if (parentById(ev, "group-box")) {
+            let prj = currentProject()
+            let grp = parentByClassName(ev, "item").id.split("-")[1]
+            let groupMenu = new Menu()
+            let pinGroupMenuItem = new MenuItem({
+                label: "상단에 고정",
+                click: function() {
+                    try {
+                        pinGroup(prj, grp)
+                        reloadShots()
+                    } catch(err) {
+                        console.log(err)
+                        notify(err.message)
+                    }
+                },
+            })
+            let unpinGroupMenuItem = new MenuItem({
+                label: "상단에서 제거",
+                click: function() {
+                    try {
+                        unpinGroup(prj, grp)
+                        reloadShots()
+                    } catch(err) {
+                        console.log(err)
+                        notify(err.message)
+                    }
+                },
+            })
+            if (pinnedGroup[prj] && pinnedGroup[prj][grp]) {
+                shotMenu.append(unpinGroupMeknuItem)
+            } else {
+                shotMenu.append(pinGroupMenuItem)
+            }
+            let openUnitDir = new MenuItem({
+                label: "디렉토리 열기",
+                click: function() {
+                    try {
+                        openDir(site.CurrentCategory().UnitDir(prj, grp, shot))
+                    } catch(err) {
+                        console.log(err)
+                        notify(err.message)
+                    }
+                }
+            })
+            shotMenu.append(openUnitDir)
+            shotMenu.popup(remote.getCurrentWindow())
+            return
+        }
         if (parentById(ev, "unit-box")) {
             let prj = currentProject()
+            let grp = currentGroup()
             let shot = parentByClassName(ev, "item").id.split("-")[1]
             let shotMenu = new Menu()
             let pinShotMenuItem = new MenuItem({
                 label: "상단에 고정",
                 click: function() {
                     try {
-                        pinShot(prj, shot)
+                        pinShot(prj, grp, shot)
                         reloadShots()
                     } catch(err) {
                         console.log(err)
@@ -115,7 +164,7 @@ function init() {
                 label: "상단에서 제거",
                 click: function() {
                     try {
-                        unpinShot(prj, shot)
+                        unpinShot(prj, grp, shot)
                         reloadShots()
                     } catch(err) {
                         console.log(err)
@@ -123,7 +172,7 @@ function init() {
                     }
                 },
             })
-            if (pinnedShot[prj] && pinnedShot[prj][shot]) {
+            if (pinnedShot[prj] && pinnedShot[prj][grp] && pinnedShot[prj][grp][shot]) {
                 shotMenu.append(unpinShotMenuItem)
             } else {
                 shotMenu.append(pinShotMenuItem)
@@ -132,7 +181,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.CurrentCategory().UnitDir(prj, shot))
+                        openDir(site.CurrentCategory().UnitDir(prj, grp, shot))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -145,6 +194,7 @@ function init() {
         }
         if (parentById(ev, "part-box")) {
             let prj = currentProject()
+            let grp = currentGroup()
             let shot = currentUnit()
             let task = parentByClassName(ev, "item").id.split("-")[1]
             let taskMenu = new Menu()
@@ -152,7 +202,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.CurrentCategory().PartDir(prj, shot, task))
+                        openDir(site.CurrentCategory().PartDir(prj, grp, shot, task))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -165,6 +215,7 @@ function init() {
         }
         if (parentById(ev, "task-box")) {
             let prj = currentProject()
+            let grp = currentGroup()
             let shot = currentUnit()
             let task = currentPart()
             let div = parentByClassName(ev, "item")
@@ -201,8 +252,12 @@ function ensureElementExist(id) {
 // 예외적으로 자동으로 생성할 수 있다고 판단하는 몇 몇의 경우에는 창은 열리지 않고
 // 해당 항목을 자동으로 만든다.
 exports.openModalEv = function(kind) {
-    if (kind == "unit" && !currentProject()) {
+    if (kind == "group" && !currentProject()) {
         notify("아직 프로젝트를 선택하지 않았습니다.")
+        return
+    }
+    if (kind == "unit" && !currentGroup()) {
+        notify("아직 그룹을 선택하지 않았습니다.")
         return
     }
     if (kind == "part" && !currentUnit()) {
@@ -235,7 +290,7 @@ function openModal(kind) {
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.CurrentCategory().ProgramsOf(currentProject(), currentUnit(), currentPart())
+            progs = site.CurrentCategory().ProgramsOf(currentProject(), currentGroup(), currentUnit(), currentPart())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -248,9 +303,10 @@ function openModal(kind) {
     }
     kor = {
         "project": "프로젝트",
+        "group": "그룹",
         "unit": "샷",
-        "part": "샷 태스크",
-        "task": "샷 요소",
+        "part": "파트",
+        "task": "태스크",
     }
     input.placeholder = "생성 할 " + kor[kind] + " 이름"
     function createItem() {
@@ -399,6 +455,7 @@ function loadSelected() {
 function saveSelected() {
     let data = JSON.stringify({
         "project": currentProject(),
+        "group": currentGroup(),
         "shot": currentUnit(),
         "part": currentPart(),
         "task": currentTask(),
@@ -415,24 +472,31 @@ function createProject(prj) {
     selectProject(prj)
 }
 
+// createGroup은 하나의 그룹을 생성한다.
+function createGroup(prj, grp) {
+    site.CurrentCategory().CreateGroup(grp)
+    reloadGroups()
+    selectGroup(grp)
+}
+
 // createUnit은 하나의 샷을 생성한다.
-function createUnit(prj, shot) {
-    site.CurrentCategory().CreateUnit(prj, shot)
+function createUnit(prj, grp, shot) {
+    site.CurrentCategory().CreateUnit(prj, grp, shot)
     reloadUnits()
     selectUnit(shot)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
-function createPart(prj, shot, part) {
-    site.CurrentCategory().CreatePart(prj, shot, part)
+function createPart(prj, grp, shot, part) {
+    site.CurrentCategory().CreatePart(prj, grp, shot, part)
     reloadParts()
     selectPart(part)
     reloadTasks()
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
-function createTask(prj, shot, part, task, ver, prog) {
-    site.CurrentCategory().CreateTask(prj, shot, part, task, ver, prog)
+function createTask(prj, grp, shot, part, task, ver, prog) {
+    site.CurrentCategory().CreateTask(prj, grp, shot, part, task, ver, prog)
     reloadTasks()
     selectTask(task, "")
 }
@@ -471,6 +535,7 @@ function selectProject(prj) {
     if (prj == currentProject()) {
         return
     }
+    clearGroups()
     clearUnits()
     clearParts()
     clearTasks()
@@ -480,6 +545,38 @@ function selectProject(prj) {
         item[0].classList.remove("selected")
     }
     let selected = document.getElementById("project-" + prj)
+    selected.classList.add("selected")
+    reloadUnits()
+}
+
+// selectGroupEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
+// 추가로 내 태스크가 설정되어 있다면 그 태스크를 자동으로 선택해 준다.
+function selectGroupEv(shot) {
+    try {
+        selectGroup(shot)
+        saveSelected()
+    } catch(err) {
+        console.log(err)
+        notify(err.message)
+    }
+}
+
+// selectGroup은 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
+// 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
+function selectGroup(grp) {
+    clearNotify()
+    if (grp == currentGroup()) {
+        return
+    }
+    clearUnits()
+    clearParts()
+    clearTasks()
+    let box = document.getElementById("group-box")
+    let item = box.getElementsByClassName("selected")
+    if (item.length != 0) {
+        item[0].classList.remove("selected")
+    }
+    let selected = document.getElementById("group-" + grp)
     selected.classList.add("selected")
     reloadUnits()
 }
@@ -519,7 +616,7 @@ function selectUnit(shot) {
         return
     }
     let prj = currentProject()
-    if (!site.CurrentCategory().PartsOf(prj, shot).includes(part)) {
+    if (!site.CurrentCategory().PartsOf(prj, grp, shot).includes(part)) {
         return
     }
     try {
@@ -681,20 +778,60 @@ function reloadProjects() {
     }
 }
 
+// reloadGroups는 해당 프로젝트의 그룹을 다시 부른다.
+function reloadGroups() {
+    let prj = currentProject()
+    if (!prj) {
+        throw Error("선택된 프로젝트가 없습니다.")
+    }
+    let box = document.getElementById("group-box")
+    box.innerText = ""
+
+    let groups = site.CurrentCategory().GroupsOf(prj)
+    let pinned = []
+    let unpinned = []
+    for (let grp of groups) {
+        if (pinnedGroup[prj] && pinnedGroup[prj][grp]) {
+            pinned.push(shot)
+        } else {
+            unpinned.push(shot)
+        }
+    }
+    groups = pinned.concat(unpinned)
+    let tmpl = document.getElementById("item-tmpl")
+    for (let grp of groups) {
+        let frag = document.importNode(tmpl.content, true)
+        let div = frag.querySelector("div")
+        div.id = "group-" + grp
+        div.dataset.val = grp
+        div.classList.add("pinnable-item")
+        div.getElementsByClassName("item-val")[0].textContent = grp
+        if (pinned.includes(grp)) {
+            div.getElementsByClassName("item-pin")[0].textContent = "*"
+        }
+        div.addEventListener("click", function() { selectGroupEv(grp) })
+        box.append(div)
+    }
+}
+
 // reloadUnits는 해당 프로젝트의 샷을 다시 부른다.
 function reloadUnits() {
     let prj = currentProject()
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let grp = currentGroup()
+    if (!grp) {
+        throw Error("선택된 그룹이 없습니다.")
+    }
     let box = document.getElementById("unit-box")
     box.innerText = ""
 
-    let shots = site.CurrentCategory().UnitsOf(prj)
+    let shots = site.CurrentCategory().UnitsOf(prj, grp)
     let pinned = []
     let unpinned = []
     for (let shot of shots) {
-        if (pinnedShot[prj] && pinnedShot[prj][shot]) {
+        if (pinnedShot[prj] && pinnedShot[prj][grp] && pinnedShot[prj][grp][shot]) {
             pinned.push(shot)
         } else {
             unpinned.push(shot)
@@ -723,6 +860,10 @@ function reloadParts() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let grp = currentGroup()
+    if (!grp) {
+        throw Error("선택된 그룹이 없습니다.")
+    }
     let shot = currentUnit()
     if (!shot) {
         throw Error("선택된 샷이 없습니다.")
@@ -730,7 +871,7 @@ function reloadParts() {
     let box = document.getElementById("part-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    for (let part of site.CurrentCategory().PartsOf(prj, shot)) {
+    for (let part of site.CurrentCategory().PartsOf(prj, grp, shot)) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "part-" + part
@@ -747,6 +888,10 @@ function reloadTasks() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let grp = currentGroup()
+    if (!grp) {
+        throw Error("선택된 그룹이 없습니다.")
+    }
     let shot = currentUnit()
     if (!shot) {
         throw Error("선택된 샷이 없습니다.")
@@ -758,7 +903,7 @@ function reloadTasks() {
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let tasks = site.CurrentCategory().TasksOf(prj, shot, task)
+    let tasks = site.CurrentCategory().TasksOf(prj, grp, shot, task)
     for (let task in tasks) {
         let t = tasks[task]
         let frag = document.importNode(tmpl.content, true)
@@ -825,7 +970,7 @@ function toggleVersionVisibility(task) {
 }
 
 // openVersionEv는 해당 요소의 한 버전을 연다.
-function openVersionEv(prj, shot, part, task, prog, ver) {
+function openVersionEv(prj, grp, shot, part, task, prog, ver) {
     let handleError = function(err, stdout, stderr) {
         if (err) {
             if (err.errno == "ENOENT") {
@@ -835,7 +980,7 @@ function openVersionEv(prj, shot, part, task, prog, ver) {
             notify(err.message)
         }
     }
-    site.CurrentCategory().OpenTask(prj, shot, part, task, prog, ver, handleError)
+    site.CurrentCategory().OpenTask(prj, grp, shot, part, task, prog, ver, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
@@ -845,6 +990,11 @@ function clearBox(id) {
         throw Error(id + "가 없습니다.")
     }
     box.innerText = ""
+}
+
+// clearGroups는 그룹 박스의 내용을 지운다.
+function clearGroups() {
+    clearBox("group-box")
 }
 
 // clearUnits는 샷 박스의 내용을 지운다.
@@ -920,6 +1070,9 @@ function pinShot(prj, shot) {
     if (!pinnedShot[prj]) {
         pinnedShot[prj] = {}
     }
+    if (!pinnedShot[prj][grp]) {
+        pinnedShot[prj][grp] = {}
+    }
     pinnedShot[prj][shot] = true
     let fname = configDir() + "/pinned_shot.json"
     let data = JSON.stringify(pinnedShot)
@@ -928,8 +1081,11 @@ function pinShot(prj, shot) {
 
 // unpinShot은 특정 샷의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function unpinShot(prj, shot) {
-    delete pinnedShot[prj][shot]
+function unpinShot(prj, grp, shot) {
+    delete pinnedShot[prj][grp][shot]
+    if (Object.keys(pinnedShot[prj][grp]).length == 0) {
+        delete pinnedShot[prj][grp]
+    }
     if (Object.keys(pinnedShot[prj]).length == 0) {
         delete pinnedShot[prj]
     }

@@ -107,6 +107,7 @@ let projectSubdirs = [
 class Category {
     constructor(opt) {
         this.Name = opt.Name
+        this.groupRoot = opt.groupRoot
         this.unitRoot = opt.unitRoot
         this.unitSubdirs = opt.unitSubdirs
         this.Parts = opt.Parts
@@ -116,30 +117,43 @@ class Category {
         this.programs = opt.programs
     }
 
-    // 샷 유닛
-    UnitDir(prj, shot) {
-        return this.unitRoot(prj) + "/" + shot
+    // 그룹
+    GroupDir(prj) {
+        return this.groupRoot(prj) + "/" + grp
     }
-    UnitsOf(prj) {
-        let d = this.unitRoot(prj)
+    GroupsOf(prj) {
+        let d = this.groupRoot(prj)
         return childDirs(d)
     }
-    CreateUnit(prj, shot) {
+    CreateGroup(prj, grp) {
         let d = this.UnitDir(prj, shot)
+        fs.mkdirSync(d)
+    }
+
+    // 샷 유닛
+    UnitDir(prj, grp, shot) {
+        return this.unitRoot(prj) + "/" + grp + "/" + shot
+    }
+    UnitsOf(prj, grp) {
+        let d = this.unitRoot(prj, grp)
+        return childDirs(d)
+    }
+    CreateUnit(prj, grp, shot) {
+        let d = this.UnitDir(prj, grp, shot)
         fs.mkdirSync(d)
         createDirs(d, this.unitSubdirs)
     }
 
     // 샷 파트
-    PartDir(prj, shot, part) {
-        return this.partRoot(prj, shot) + "/" + part
+    PartDir(prj, grp, shot, part) {
+        return this.partRoot(prj, grp, shot) + "/" + part
     }
-    PartsOf(prj, shot) {
-        let d = this.partRoot(prj, shot)
+    PartsOf(prj, grp, shot) {
+        let d = this.partRoot(prj, grp, shot)
         return childDirs(d)
     }
-    CreatePart(prj, shot, part) {
-        let d = this.PartDir(prj, shot, part)
+    CreatePart(prj, grp, shot, part) {
+        let d = this.PartDir(prj, grp, shot, part)
         fs.mkdirSync(d)
         let subdirs = this.partSubdirs[part]
         if (!subdirs) {
@@ -156,24 +170,24 @@ class Category {
     }
 
     // 샷 태스크
-    TasksOf(prj, shot, part) {
-        let partdir = this.PartDir(prj, shot, part)
-        let progs = this.ProgramsOf(prj, shot, part)
+    TasksOf(prj, grp, shot, part) {
+        let partdir = this.PartDir(prj, grp, shot, part)
+        let progs = this.ProgramsOf(prj, grp, shot, part)
         if (!progs) {
             return {}
         }
         let tasks = {}
         for (let prog in progs) {
             let p = progs[prog]
-            Object.assign(tasks, p.ListTasks(prj, shot, part))
+            Object.assign(tasks, p.ListTasks(prj, grp, shot, part))
         }
         return tasks
     }
-    CreateTask(prj, shot, part, task, ver, prog) {
+    CreateTask(prj, grp, shot, part, task, ver, prog) {
         if (!this.PartsOf(prj, shot).includes(part)) {
             throw Error("해당 파트가 없습니다.")
         }
-        let partdir = this.PartDir(prj, shot, part)
+        let partdir = this.PartDir(prj, grp, shot, part)
         if (!partdir) {
             throw Error("파트 디렉토리가 없습니다.")
         }
@@ -183,47 +197,49 @@ class Category {
         if (!prog) {
             throw Error("프로그램을 선택하지 않았습니다.")
         }
-        let progs = this.ProgramsOf(prj, shot, part)
+        let progs = this.ProgramsOf(prj, grp, shot, part)
         let p = progs[prog]
-        let scene = p.SceneName(prj, shot, part, task, ver)
-        let env = p.Env(prj, shot, part, task)
-        let sceneEnv = this.SceneEnviron(prj, shot, part, task)
+        let scene = p.SceneName(prj, grp, shot, part, task, ver)
+        let env = p.Env(prj, grp, shot, part, task)
+        let sceneEnv = this.SceneEnviron(prj, grp, shot, part, task)
         p.CreateScene(scene, env, sceneEnv)
     }
-    OpenTask(prj, shot, part, task, prog, ver, handleError) {
-        let progs = this.ProgramsOf(prj, shot, part, prog)
+    OpenTask(prj, grp, shot, part, task, prog, ver, handleError) {
+        let progs = this.ProgramsOf(prj, grp, shot, part, prog)
         let p = progs[prog]
         if (!p) {
             notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
         }
-        let scene = p.SceneName(prj, shot, part, task, ver)
+        let scene = p.SceneName(prj, grp, shot, part, task, ver)
         let env = p.Env()
-        let sceneEnv = this.SceneEnviron(prj, shot, part, task)
+        let sceneEnv = this.SceneEnviron(prj, grp, shot, part, task)
         p.OpenScene(scene, env, sceneEnv, handleError)
     }
 
     // 씬 환경
-    SceneEnviron(prj, shot, part, task) {
+    SceneEnviron(prj, grp, shot, part, task) {
         let env = {
             "PRJ": prj,
+            "GROUP": grp,
             "SHOT": shot,
             "PART": part,
             "TASK": task,
             "PRJD": ProjectDir(prj),
-            "SHOTD": this.UnitDir(prj, shot),
-            "PARTD": this.PartDir(prj, shot, part),
+            "GROUPD": this.GroupDir(prj, grp),
+            "SHOTD": this.UnitDir(prj, grp, shot),
+            "PARTD": this.PartDir(prj, grp, shot, part),
         }
         return env
     }
 
     // 씬 프로그램
-    ProgramsOf(prj, shot, part) {
+    ProgramsOf(prj, grp, shot, part) {
         // prj와 shot은 아직 사용하지 않는다.
         let pgs = this.programs[part]
         if (!pgs) {
             throw Error("사이트에 " + part + " 파트가 정의되어 있지 않습니다.")
         }
-        let partDir = this.PartDir(prj, shot, part)
+        let partDir = this.PartDir(prj, grp, shot, part)
         let progs = {}
         for (let p in pgs) {
             let newProgramAt = pgs[p]
@@ -235,8 +251,11 @@ class Category {
 
 let Shot = new Category({
     Name: "shot",
-    unitRoot: function(prj) {
+    groupRoot: function(prj) {
         return ProjectDir(prj) + "/shot"
+    }
+    unitRoot: function(prj, grp) {
+        return ProjectDir(prj) + "/shot/" + grp + "/"
     },
     unitSubdirs: [
         subdir("scan", "0755"),
@@ -254,8 +273,8 @@ let Shot = new Category({
         "fx",
         "comp",
     ],
-    partRoot: function(prj, unit) {
-        return ProjectDir(prj) + "/shot/" + unit + "/work"
+    partRoot: function(prj, grp, unit) {
+        return ProjectDir(prj) + "/shot/" + grp + "/" + unit + "/work"
     },
     partSubdirs: {
         "fx": [
