@@ -289,18 +289,24 @@ let category = {
     "shot": Shot,
 }
 
-// Current는 현재 선택된 카테고리를 의미한다.
-let Current = category[Categories[0]]
-exports.Current = Current
+// current는 현재 선택된 카테고리이다.
+let current = category[Categories[0]]
 
+// SetCurrentCategory는 카테고리를 선택한다.
 function SetCurrentCategory(c) {
     let cur = category[c]
     if (!cur) {
         throw Error(c + "카테고리가 없습니다.")
     }
-    Current = cur
+    current = cur
 }
 exports.SetCurrentCategory = SetCurrentCategory
+
+// CurrentCategory는 현재 선택된 카테고리를 반환한다.
+function CurrentCategory() {
+    return current
+}
+exports.CurrentCategory = CurrentCategory
 
 class Task {
     constructor(name, program) {
