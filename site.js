@@ -281,11 +281,11 @@ let Shot = new Category({
     },
     programs: {
         "fx": {
-            "houdini": function(taskDir, sceneEnvironFunc) { return newHoudiniAt(taskDir, sceneEnvironFunc) },
-            "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir + "/precomp", sceneEnvironFunc) },
+            "houdini": function(taskDir) { return newHoudiniAt(taskDir) },
+            "nuke": function(taskDir) { return newNukeAt(taskDir + "/precomp") },
         },
         "comp": {
-            "nuke": function(taskDir, sceneEnvironFunc) { return newNukeAt(taskDir, sceneEnvironFunc) },
+            "nuke": function(taskDir) { return newNukeAt(taskDir) },
         },
     },
 })
