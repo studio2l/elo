@@ -36,7 +36,7 @@ function Init() {
         fs.mkdirSync(prjRoot)
     }
     for (let c of Categories) {
-        MustCategory(category[c])
+        mustCategory(category[c])
     }
 }
 exports.Init = Init
@@ -106,28 +106,49 @@ let projectSubdirs = [
 
 // 카테고리
 
-function MustCategory(c) {
-    try {
-        c.Name
-        c.unitSubdirs
-        c.Parts
-        c.partSubdirs
-        c.defaultTasksInfo
-        c.programs
-        c.UnitDir
-        c.UnitsOf
-        c.CreateUnit
-        c.PartDir
-        c.PartsOf
-        c.CreatePart
-        c.TasksOf
-        c.CreateTask
-        c.OpenTask
-        c.SceneEnviron
-        c.ProgramsOf
-    } catch (err) {
-        throw Error(c.Name + "은 카테고리 인터페이스가 아닙니다: " + err.message)
+function mustCategory(c) {
+    if (!c) {
+        throw Error("빈 값은 카테고리가 아닙니다.")
     }
+    if (typeof c != "object") {
+        throw Error("카테고리는 오브젝트여야 합니다.")
+    }
+    if (!c.Name) {
+        throw Error("카테고리에 Name 멤버가 없습니다. (혹은 비어있습니다.)")
+    }
+    if (typeof c.Name != "string") {
+        throw Error("카테고리의 Name 멤버가 문자열이 아닙니다.")
+    }
+    let members = [
+        ["unitSubdirs", "object"],
+        ["Parts", "object"],
+        ["partSubdirs", "object"],
+        ["programs", "object"],
+        ["UnitDir", "function"],
+        ["UnitsOf", "function"],
+        ["CreateUnit", "function"],
+        ["PartDir", "function"],
+        ["PartsOf", "function"],
+        ["CreatePart", "function"],
+        ["TasksOf", "function"],
+        ["CreateTask", "function"],
+        ["OpenTask", "function"],
+        ["SceneEnviron", "function"],
+        ["ProgramsOf", "function"],
+    ]
+    for (let [label, type] of members) {
+        try {
+            mustType(label, c[label], type)
+        } catch (err) {
+            throw Error(c.Name + " 은 카테고리가 아닙니다: " + err.message)
+        }
+    }
+}
+
+function mustType(label, val, type) {
+	if (typeof val != type) {
+		throw Error(label + " 은 " + type + " 타입이 아닙니다.")
+	}
 }
 
 // Shot은 (가상의) 카테고리 인터페이스를 구현한다.
