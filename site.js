@@ -35,6 +35,9 @@ function Init() {
     if (!fs.existsSync(prjRoot)) {
         fs.mkdirSync(prjRoot)
     }
+    for (let c of Categories) {
+        MustCategory(category[c])
+    }
 }
 exports.Init = Init
 
@@ -103,9 +106,34 @@ let projectSubdirs = [
 
 // 카테고리
 
+function MustCategory(c) {
+    try {
+        c.Name
+        c.unitSubdirs
+        c.Parts
+        c.partSubdirs
+        c.defaultTasksInfo
+        c.programs
+        c.UnitDir
+        c.UnitsOf
+        c.CreateUnit
+        c.PartDir
+        c.PartsOf
+        c.CreatePart
+        c.TasksOf
+        c.CreateTask
+        c.OpenTask
+        c.SceneEnviron
+        c.ProgramsOf
+    } catch (err) {
+        throw Error(c.Name + "은 카테고리 인터페이스가 아닙니다: " + err.message)
+    }
+}
+
 // Shot은 (가상의) 카테고리 인터페이스를 구현한다.
 class ShotCategory {
     constructor() {
+        this.Name = "shot"
         this.unitSubdirs = [
             subdir("scan", "0755"),
             subdir("scan/base", "0755"),
@@ -156,16 +184,13 @@ class ShotCategory {
     }
 
     // 샷 유닛
-
     UnitDir(prj, shot) {
         return ProjectDir(prj) + "/shot/" + shot
     }
-
     UnitsOf(prj) {
         let d = ProjectDir(prj) + "/shot"
         return childDirs(d)
     }
-
     CreateUnit(prj, shot) {
         let d = this.UnitDir(prj, shot)
         fs.mkdirSync(d)
@@ -173,16 +198,13 @@ class ShotCategory {
     }
 
     // 샷 파트
-
     PartDir(prj, shot, part) {
         return this.UnitDir(prj, shot) + "/work/" + part
     }
-
     PartsOf(prj, shot) {
         let d = this.UnitDir(prj, shot) + "/work"
         return childDirs(d)
     }
-
     CreatePart(prj, shot, part) {
         let d = this.PartDir(prj, shot, part)
         fs.mkdirSync(d)
@@ -201,7 +223,6 @@ class ShotCategory {
     }
 
     // 샷 태스크
-
     TasksOf(prj, shot, part) {
         let partdir = this.PartDir(prj, shot, part)
         let progs = this.ProgramsOf(prj, shot, part)
@@ -215,7 +236,6 @@ class ShotCategory {
         }
         return tasks
     }
-
     CreateTask(prj, shot, part, task, ver, prog) {
         if (!this.PartsOf(prj, shot).includes(part)) {
             throw Error("해당 파트가 없습니다.")
@@ -237,7 +257,6 @@ class ShotCategory {
         let sceneEnv = this.SceneEnviron(prj, shot, part, task)
         p.CreateScene(scene, env, sceneEnv)
     }
-
     OpenTask(prj, shot, part, task, prog, ver, handleError) {
         let progs = this.ProgramsOf(prj, shot, part, prog)
         let p = progs[prog]
@@ -250,6 +269,7 @@ class ShotCategory {
         p.OpenScene(scene, env, sceneEnv, handleError)
     }
 
+    // 씬 환경
     SceneEnviron(prj, shot, part, task) {
         let env = {
             "PRJ": prj,
@@ -263,6 +283,7 @@ class ShotCategory {
         return env
     }
 
+    // 씬 프로그램
     ProgramsOf(prj, shot, part) {
         // prj와 shot은 아직 사용하지 않는다.
         let pgs = this.programs[part]
