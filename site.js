@@ -279,14 +279,11 @@ class ShotCategory {
     }
 }
 
-let Shot = new ShotCategory()
-exports.Shot = Shot
-
 let Categories = ["shot"]
 exports.Categories = Categories
 
 let category = {
-    "shot": Shot,
+    "shot": new ShotCategory(),
 }
 
 // current는 현재 선택된 카테고리이다.
