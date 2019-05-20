@@ -107,8 +107,10 @@ let projectSubdirs = [
 class Category {
     constructor(opt) {
         this.Name = opt.Name
+        this.unitRoot = opt.unitRoot
         this.unitSubdirs = opt.unitSubdirs
         this.Parts = opt.Parts
+        this.partRoot = opt.partRoot
         this.partSubdirs = opt.partSubdirs
         this.defaultTasksInfo = opt.defaultTasksInfo
         this.programs = opt.programs
@@ -116,10 +118,10 @@ class Category {
 
     // 샷 유닛
     UnitDir(prj, shot) {
-        return ProjectDir(prj) + "/shot/" + shot
+        return this.unitRoot(prj) + "/" + shot
     }
     UnitsOf(prj) {
-        let d = ProjectDir(prj) + "/shot"
+        let d = this.unitRoot(prj)
         return childDirs(d)
     }
     CreateUnit(prj, shot) {
@@ -130,10 +132,10 @@ class Category {
 
     // 샷 파트
     PartDir(prj, shot, part) {
-        return this.UnitDir(prj, shot) + "/work/" + part
+        return this.partRoot(prj, shot) + "/" + part
     }
     PartsOf(prj, shot) {
-        let d = this.UnitDir(prj, shot) + "/work"
+        let d = this.partRoot(prj, shot)
         return childDirs(d)
     }
     CreatePart(prj, shot, part) {
@@ -233,6 +235,9 @@ class Category {
 
 let Shot = new Category({
     Name: "shot",
+    unitRoot: function(prj) {
+        return ProjectDir(prj) + "/shot"
+    },
     unitSubdirs: [
         subdir("scan", "0755"),
         subdir("scan/base", "0755"),
@@ -249,6 +254,9 @@ let Shot = new Category({
         "fx",
         "comp",
     ],
+    partRoot: function(prj, unit) {
+        return ProjectDir(prj) + "/shot/" + unit + "/work"
+    },
     partSubdirs: {
         "fx": [
             subdir("backup", "2775"),
