@@ -148,18 +148,18 @@ function init() {
             let shot = currentUnit()
             let task = parentByClassName(ev, "item").id.split("-")[1]
             let taskMenu = new Menu()
-            let openTaskDir = new MenuItem({
+            let openPartDir = new MenuItem({
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.CurrentCategory().TaskDir(prj, shot, task))
+                        openDir(site.CurrentCategory().PartDir(prj, shot, task))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
                     }
                 }
             })
-            taskMenu.append(openTaskDir)
+            taskMenu.append(openPartDir)
             taskMenu.popup(remote.getCurrentWindow())
             return
         }
