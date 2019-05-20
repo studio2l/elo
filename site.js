@@ -116,7 +116,7 @@ class ShotCategory {
             subdir("pub/geo", "2775"),
             subdir("pub/char", "2775"),
             subdir("render", "2775"),
-            subdir("part", "2775"),
+            subdir("work", "2775"),
         ]
         this.Parts = [
             "fx",
@@ -175,11 +175,11 @@ class ShotCategory {
     // 샷 파트
 
     PartDir(prj, shot, part) {
-        return this.UnitDir(prj, shot) + "/part/" + part
+        return this.UnitDir(prj, shot) + "/work/" + part
     }
 
     PartsOf(prj, shot) {
-        let d = this.UnitDir(prj, shot) + "/part"
+        let d = this.UnitDir(prj, shot) + "/work"
         return childDirs(d)
     }
 
