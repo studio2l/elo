@@ -195,7 +195,7 @@ class ShotCategory {
         let tasksInfo = this.defaultTasksInfo[part]
         if (tasksInfo) {
             for (let ti of tasksInfo) {
-                this.CreateTask(prj, shot, part, ti.name, ti.prog)
+                this.CreateTask(prj, shot, part, "v001", ti.name, ti.prog)
             }
         }
     }
