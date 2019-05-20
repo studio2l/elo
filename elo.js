@@ -19,7 +19,7 @@ function init() {
     loadPinnedShot()
 
     ensureElementExist("project-box")
-    ensureElementExist("shot-box")
+    ensureElementExist("unit-box")
     ensureElementExist("part-box")
     ensureElementExist("task-box")
     ensureElementExist("my-part-menu")
@@ -95,7 +95,7 @@ function init() {
             projectMenu.popup(remote.getCurrentWindow())
             return
         }
-        if (parentById(ev, "shot-box")) {
+        if (parentById(ev, "unit-box")) {
             let prj = currentProject()
             let shot = parentByClassName(ev, "item").id.split("-")[1]
             let shotMenu = new Menu()
@@ -201,7 +201,7 @@ function ensureElementExist(id) {
 // 예외적으로 자동으로 생성할 수 있다고 판단하는 몇 몇의 경우에는 창은 열리지 않고
 // 해당 항목을 자동으로 만든다.
 exports.openModalEv = function(kind) {
-    if (kind == "shot" && !currentProject()) {
+    if (kind == "unit" && !currentProject()) {
         notify("아직 프로젝트를 선택하지 않았습니다.")
         return
     }
@@ -248,7 +248,7 @@ function openModal(kind) {
     }
     kor = {
         "project": "프로젝트",
-        "shot": "샷",
+        "unit": "샷",
         "part": "샷 태스크",
         "task": "샷 요소",
     }
@@ -262,7 +262,7 @@ function openModal(kind) {
         }
         if (kind == "project") {
             createProject(name)
-        } else if (kind == "shot") {
+        } else if (kind == "unit") {
             createUnit(currentProject(), name)
         } else if (kind == "part") {
             createPart(currentProject(), currentUnit(), name)
@@ -505,12 +505,12 @@ function selectUnit(shot) {
     }
     clearParts()
     clearTasks()
-    let box = document.getElementById("shot-box")
+    let box = document.getElementById("unit-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
         item[0].classList.remove("selected")
     }
-    let selected = document.getElementById("shot-" + shot)
+    let selected = document.getElementById("unit-" + shot)
     selected.classList.add("selected")
     reloadParts()
 
@@ -595,7 +595,7 @@ function currentProject() {
 
 // currentUnit은 현재 선택된 샷 이름을 반환한다.
 function currentUnit() {
-    return selectedItemValue("shot-box")
+    return selectedItemValue("unit-box")
 }
 
 // currentPart는 현재 선택된 샷 태스크 이름을 반환한다.
@@ -687,7 +687,7 @@ function reloadUnits() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
-    let box = document.getElementById("shot-box")
+    let box = document.getElementById("unit-box")
     box.innerText = ""
 
     let shots = site.CurrentCategory().UnitsOf(prj)
@@ -705,7 +705,7 @@ function reloadUnits() {
     for (let shot of shots) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
-        div.id = "shot-" + shot
+        div.id = "unit-" + shot
         div.dataset.val = shot
         div.classList.add("pinnable-item")
         div.getElementsByClassName("item-val")[0].textContent = shot
@@ -849,7 +849,7 @@ function clearBox(id) {
 
 // clearUnits는 샷 박스의 내용을 지운다.
 function clearUnits() {
-    clearBox("shot-box")
+    clearBox("unit-box")
 }
 
 // clearParts는 태스크 박스의 내용을 지운다.
