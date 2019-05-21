@@ -7,7 +7,8 @@ const { Menu, MenuItem } = remote
 
 let projectRoot = ""
 let pinnedProject = {}
-let pinnedShot = {}
+let pinnedGroup = {}
+let pinnedUnit = {}
 
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
@@ -16,7 +17,8 @@ function init() {
 
     ensureDirExist(configDir())
     loadPinnedProject()
-    loadPinnedShot()
+    loadPinnedGroup()
+    loadPinnedUnit()
 
     ensureElementExist("project-box")
     ensureElementExist("unit-box")
@@ -75,7 +77,7 @@ function init() {
                     }
                 },
             })
-            if (pinnedProject[prj]) {
+            if (isPinnedProject(prj)) {
                 projectMenu.append(unpinProjectMenuItem)
             } else {
                 projectMenu.append(pinProjectMenuItem)
@@ -97,14 +99,15 @@ function init() {
         }
         if (parentById(ev, "group-box")) {
             let prj = currentProject()
+            let ctg = currentCategory()
             let grp = parentByClassName(ev, "item").id.split("-")[1]
             let groupMenu = new Menu()
             let pinGroupMenuItem = new MenuItem({
                 label: "상단에 고정",
                 click: function() {
                     try {
-                        pinGroup(prj, grp)
-                        reloadShots()
+                        pinGroup(prj, ctg, grp)
+                        reloadGroups()
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -115,32 +118,32 @@ function init() {
                 label: "상단에서 제거",
                 click: function() {
                     try {
-                        unpinGroup(prj, grp)
-                        reloadShots()
+                        unpinGroup(prj, ctg, grp)
+                        reloadGroups()
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
                     }
                 },
             })
-            if (pinnedGroup[prj] && pinnedGroup[prj][grp]) {
-                shotMenu.append(unpinGroupMeknuItem)
+            if (isPinnedGroup(prj, ctg, grp)) {
+                gropuMenu.append(unpinGroupMenuItem)
             } else {
-                shotMenu.append(pinGroupMenuItem)
+                groupMenu.append(pinGroupMenuItem)
             }
             let openUnitDir = new MenuItem({
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.CurrentCategory().UnitDir(prj, grp, shot))
+                        openDir(site.CurrentCategory().GroupDir(prj, grp))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
                     }
                 }
             })
-            shotMenu.append(openUnitDir)
-            shotMenu.popup(remote.getCurrentWindow())
+            groupMenu.append(openUnitDir)
+            groupMenu.popup(remote.getCurrentWindow())
             return
         }
         if (parentById(ev, "unit-box")) {
@@ -148,11 +151,11 @@ function init() {
             let grp = currentGroup()
             let shot = parentByClassName(ev, "item").id.split("-")[1]
             let shotMenu = new Menu()
-            let pinShotMenuItem = new MenuItem({
+            let pinUnitMenuItem = new MenuItem({
                 label: "상단에 고정",
                 click: function() {
                     try {
-                        pinShot(prj, grp, shot)
+                        pinUnit(prj, ctg, grp, shot)
                         reloadShots()
                     } catch(err) {
                         console.log(err)
@@ -160,11 +163,11 @@ function init() {
                     }
                 },
             })
-            let unpinShotMenuItem = new MenuItem({
+            let unpinUnitMenuItem = new MenuItem({
                 label: "상단에서 제거",
                 click: function() {
                     try {
-                        unpinShot(prj, grp, shot)
+                        unpinUnit(prj, ctg, grp, shot)
                         reloadShots()
                     } catch(err) {
                         console.log(err)
@@ -172,10 +175,10 @@ function init() {
                     }
                 },
             })
-            if (pinnedShot[prj] && pinnedShot[prj][grp] && pinnedShot[prj][grp][shot]) {
-                shotMenu.append(unpinShotMenuItem)
+            if (isPinnedUnit(prj, ctg, grp, shot)) {
+                shotMenu.append(unpinUnitMenuItem)
             } else {
-                shotMenu.append(pinShotMenuItem)
+                shotMenu.append(pinUnitMenuItem)
             }
             let openUnitDir = new MenuItem({
                 label: "디렉토리 열기",
@@ -318,10 +321,12 @@ function openModal(kind) {
         }
         if (kind == "project") {
             createProject(name)
+        } else if (kind == "group") {
+            createGroup(currentProject(), name)
         } else if (kind == "unit") {
-            createUnit(currentProject(), name)
+            createUnit(currentProject(), currentGroup(), name)
         } else if (kind == "part") {
-            createPart(currentProject(), currentUnit(), name)
+            createPart(currentProject(), currentGroup(), currentUnit(), name)
         } else if (kind == "task") {
             let prog = document.getElementById("modal-prog-input").value
             createTask(currentProject(), currentUnit(), currentPart(), name, "v001", prog)
@@ -413,41 +418,13 @@ function loadSelected() {
     if (!data.project) {
         return
     }
-    try {
-        selectProject(data["project"])
-    } catch(err) {
-        console.log(err)
-        return
-    }
-    if (!data["shot"]) {
-        return
-    }
-    try {
-        selectUnit(data["shot"])
-    } catch(err) {
-        console.log(err)
-        return
-    }
-    if (!data["part"]) {
-        return
-    }
-    try {
-        selectPart(data["part"])
-    } catch(err) {
-        console.log(err)
-        return
-    }
-    if (!data["task"]) {
-        return
-    }
-    try {
-        selectTask(data["task"], data["version"])
-        if (data["version"]) {
-            toggleVersionVisibility(data["task"])
-        }
-    } catch(err) {
-        console.log(err)
-        return
+    selectProject(data["project"])
+    selectGroup(data["group"])
+    selectUnit(data["shot"])
+    selectPart(data["part"])
+    selectTask(data["task"], data["version"])
+    if (data["version"]) {
+        toggleVersionVisibility(data["task"])
     }
 }
 
@@ -455,6 +432,7 @@ function loadSelected() {
 function saveSelected() {
     let data = JSON.stringify({
         "project": currentProject(),
+        "category": currentCategory(),
         "group": currentGroup(),
         "shot": currentUnit(),
         "part": currentPart(),
@@ -474,24 +452,23 @@ function createProject(prj) {
 
 // createGroup은 하나의 그룹을 생성한다.
 function createGroup(prj, grp) {
-    site.CurrentCategory().CreateGroup(grp)
+    site.CurrentCategory().CreateGroup(prj, grp)
     reloadGroups()
     selectGroup(grp)
 }
 
 // createUnit은 하나의 샷을 생성한다.
-function createUnit(prj, grp, shot) {
-    site.CurrentCategory().CreateUnit(prj, grp, shot)
+function createUnit(prj, grp, unit) {
+    site.CurrentCategory().CreateUnit(prj, grp, unit)
     reloadUnits()
     selectUnit(shot)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
-function createPart(prj, grp, shot, part) {
-    site.CurrentCategory().CreatePart(prj, grp, shot, part)
+function createPart(prj, grp, unit, part) {
+    site.CurrentCategory().CreatePart(prj, grp, unit, part)
     reloadParts()
     selectPart(part)
-    reloadTasks()
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
@@ -546,7 +523,7 @@ function selectProject(prj) {
     }
     let selected = document.getElementById("project-" + prj)
     selected.classList.add("selected")
-    reloadUnits()
+    reloadGroups()
 }
 
 // selectGroupEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
@@ -616,6 +593,7 @@ function selectUnit(shot) {
         return
     }
     let prj = currentProject()
+    let grp = currentGroup()
     if (!site.CurrentCategory().PartsOf(prj, grp, shot).includes(part)) {
         return
     }
@@ -688,6 +666,15 @@ function selectTask(task, ver) {
 // currentProject는 현재 선택된 프로젝트 이름을 반환한다.
 function currentProject() {
     return selectedItemValue("project-box")
+}
+
+function currentCategory() {
+    return site.CurrentCategory().Name
+}
+
+// currentGroup은 현재 선택된 그룹 이름을 반환한다.
+function currentGroup() {
+    return selectedItemValue("group-box")
 }
 
 // currentUnit은 현재 선택된 샷 이름을 반환한다.
@@ -784,6 +771,7 @@ function reloadGroups() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let ctg = currentCategory()
     let box = document.getElementById("group-box")
     box.innerText = ""
 
@@ -791,10 +779,10 @@ function reloadGroups() {
     let pinned = []
     let unpinned = []
     for (let grp of groups) {
-        if (pinnedGroup[prj] && pinnedGroup[prj][grp]) {
-            pinned.push(shot)
+        if (isPinnedGroup(prj, ctg, grp)) {
+            pinned.push(grp)
         } else {
-            unpinned.push(shot)
+            unpinned.push(grp)
         }
     }
     groups = pinned.concat(unpinned)
@@ -820,6 +808,7 @@ function reloadUnits() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let ctg = currentCategory()
     let grp = currentGroup()
     if (!grp) {
         throw Error("선택된 그룹이 없습니다.")
@@ -831,7 +820,7 @@ function reloadUnits() {
     let pinned = []
     let unpinned = []
     for (let shot of shots) {
-        if (pinnedShot[prj] && pinnedShot[prj][grp] && pinnedShot[prj][grp][shot]) {
+        if (isPinnedUnit(prj, ctg, grp, shot)) {
             pinned.push(shot)
         } else {
             unpinned.push(shot)
@@ -1053,45 +1042,121 @@ function unpinProject(prj) {
     fs.writeFileSync(fname, data)
 }
 
-// loadPinnedShot은 사용자가 상단에 고정한 샷을 설정 디렉토리에서 찾아 부른다.
-function loadPinnedShot() {
-    let fname = configDir() + "/pinned_shot.json"
+function isPinnedProject(prj) {
+    if (pinnedProject[prj] == true) {
+        return true
+    }
+    return false
+}
+
+// loadPinnedGroup은 사용자가 상단에 고정한 샷을 설정 디렉토리에서 찾아 부른다.
+function loadPinnedGroup() {
+    let fname = configDir() + "/pinned_group.json"
     if (!fs.existsSync(fname)) {
-        pinnedShot = {}
+        pinnedGroup = {}
         return
     }
     let data = fs.readFileSync(fname)
-    pinnedShot = JSON.parse(data)
+    pinnedGroup = JSON.parse(data)
 }
 
-// pinShot은 특정 샷을 상단에 고정한다.
+// pinGroup은 특정 샷을 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function pinShot(prj, shot) {
-    if (!pinnedShot[prj]) {
-        pinnedShot[prj] = {}
+function pinGroup(prj, ctg, grp) {
+    if (!pinnedGroup[prj]) {
+        pinnedGroup[prj] = {}
     }
-    if (!pinnedShot[prj][grp]) {
-        pinnedShot[prj][grp] = {}
+    if (!pinnedGroup[prj][ctg]) {
+        pinnedGroup[prj][ctg] = {}
     }
-    pinnedShot[prj][shot] = true
-    let fname = configDir() + "/pinned_shot.json"
-    let data = JSON.stringify(pinnedShot)
+    pinnedGroup[prj][ctg][grp] = true
+    let fname = configDir() + "/pinned_group.json"
+    let data = JSON.stringify(pinnedGroup)
     fs.writeFileSync(fname, data)
 }
 
-// unpinShot은 특정 샷의 상단 고정을 푼다.
+// unpinGroup은 특정 샷의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function unpinShot(prj, grp, shot) {
-    delete pinnedShot[prj][grp][shot]
-    if (Object.keys(pinnedShot[prj][grp]).length == 0) {
-        delete pinnedShot[prj][grp]
+function unpinGroup(prj, ctg, grp) {
+    delete pinnedGroup[prj][ctg][grp]
+    if (Object.keys(pinnedGroup[prj][ctg]).length == 0) {
+        delete pinnedGroup[prj][ctg]
     }
-    if (Object.keys(pinnedShot[prj]).length == 0) {
-        delete pinnedShot[prj]
+    if (Object.keys(pinnedGroup[prj]).length == 0) {
+        delete pinnedGroup[prj]
     }
     let fname = configDir() + "/pinned_shot.json"
-    let data = JSON.stringify(pinnedShot)
+    let data = JSON.stringify(pinnedUnit)
     fs.writeFileSync(fname, data)
+}
+
+function isPinnedGroup(prj, ctg, grp) {
+    try {
+        if (pinnedGroup[prj][ctg][grp]) {
+            return true
+        }
+        return false
+    } catch (err) {
+        return false
+    }
+}
+
+// loadPinnedUnit은 사용자가 상단에 고정한 샷을 설정 디렉토리에서 찾아 부른다.
+function loadPinnedUnit() {
+    let fname = configDir() + "/pinned_unit.json"
+    if (!fs.existsSync(fname)) {
+        pinnedUnit = {}
+        return
+    }
+    let data = fs.readFileSync(fname)
+    pinnedUnit = JSON.parse(data)
+}
+
+// pinUnit은 특정 샷을 상단에 고정한다.
+// 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
+function pinUnit(prj, ctg, grp, unit) {
+    if (!pinnedUnit[prj]) {
+        pinnedUnit[prj] = {}
+    }
+    if (!pinnedUnit[prj][ctg]) {
+        pinnedUnit[prj][ctg] = {}
+    }
+    if (!pinnedUnit[prj][ctg][grp]) {
+        pinnedUnit[prj][ctg][grp] = {}
+    }
+    pinnedUnit[prj][ctg][grp][unit] = true
+    let fname = configDir() + "/pinned_unit.json"
+    let data = JSON.stringify(pinnedUnit)
+    fs.writeFileSync(fname, data)
+}
+
+// unpinUnit은 특정 샷의 상단 고정을 푼다.
+// 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
+function unpinUnit(prj, ctg, grp, unit) {
+    delete pinnedUnit[prj][ctg][grp][unit]
+    if (Object.keys(pinnedUnit[prj][ctg][grp]).length == 0) {
+        delete pinnedUnit[prj][ctg][grp]
+    }
+    if (Object.keys(pinnedUnit[prj][ctg]).length == 0) {
+        delete pinnedUnit[prj][ctg]
+    }
+    if (Object.keys(pinnedUnit[prj]).length == 0) {
+        delete pinnedUnit[prj]
+    }
+    let fname = configDir() + "/pinned_unit.json"
+    let data = JSON.stringify(pinnedUnit)
+    fs.writeFileSync(fname, data)
+}
+
+function isPinnedUnit(prj, grp, unit) {
+    try {
+        if (pinnedUnit[prj][grp][unit]) {
+            return true
+        }
+        return false
+    } catch (err) {
+        return false
+    }
 }
 
 // openDir은 받은 디렉토리 경로를 연다.

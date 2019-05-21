@@ -118,7 +118,7 @@ class Category {
     }
 
     // 그룹
-    GroupDir(prj) {
+    GroupDir(prj, grp) {
         return this.groupRoot(prj) + "/" + grp
     }
     GroupsOf(prj) {
@@ -126,13 +126,15 @@ class Category {
         return childDirs(d)
     }
     CreateGroup(prj, grp) {
-        let d = this.UnitDir(prj, shot)
+        console.log(prj, grp)
+        let d = this.GroupDir(prj, grp)
+        console.log(d)
         fs.mkdirSync(d)
     }
 
     // 샷 유닛
     UnitDir(prj, grp, shot) {
-        return this.unitRoot(prj) + "/" + grp + "/" + shot
+        return this.unitRoot(prj, grp) + "/" + shot
     }
     UnitsOf(prj, grp) {
         let d = this.unitRoot(prj, grp)
@@ -164,7 +166,7 @@ class Category {
         let tasksInfo = this.defaultTasksInfo[part]
         if (tasksInfo) {
             for (let ti of tasksInfo) {
-                this.CreateTask(prj, shot, part, "v001", ti.name, ti.prog)
+                this.CreateTask(prj, grp, shot, part, "v001", ti.name, ti.prog)
             }
         }
     }
@@ -184,7 +186,7 @@ class Category {
         return tasks
     }
     CreateTask(prj, grp, shot, part, task, ver, prog) {
-        if (!this.PartsOf(prj, shot).includes(part)) {
+        if (!this.PartsOf(prj, grp, shot).includes(part)) {
             throw Error("해당 파트가 없습니다.")
         }
         let partdir = this.PartDir(prj, grp, shot, part)
@@ -253,7 +255,7 @@ let Shot = new Category({
     Name: "shot",
     groupRoot: function(prj) {
         return ProjectDir(prj) + "/shot"
-    }
+    },
     unitRoot: function(prj, grp) {
         return ProjectDir(prj) + "/shot/" + grp + "/"
     },
