@@ -1,27 +1,4 @@
 // site.js를 자신의 사이트(스튜디오)에 맞는 설정으로 수정하세요.
-//
-// 아래는 elo.js에서 불러서 사용 가능해야 하는 함수의 리스트입니다.
-//
-// Init()
-//
-// Projects() => []string
-// CreateProject(prj)
-// ProjectDir(prj)
-//
-// ShotsOf(prj) => []string
-// CreateShot(prj, shot)
-// ShotDir(prj, shot)
-//
-// ShotTasks() => []string
-// ShotTasksOf(prj, shot) => []string
-// CreateShotTask(prj, shot, part)
-// ShotTaskDir(prj, shot)
-//
-// ShotElementsOf(prj, shot, part) => [string]Element
-// CreateShotElement(prj, shot, part, task, prog)
-//
-// ShotProgramsOf(prj, shot, task) => [string]Program
-//
 
 const fs = require("fs")
 const proc = require("child_process")
