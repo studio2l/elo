@@ -321,21 +321,15 @@ let category = {
 // current는 현재 선택된 카테고리이다.
 let current = category[Categories[0]]
 
-// SetCurrentCategory는 카테고리를 선택한다.
-function SetCurrentCategory(c) {
-    let cur = category[c]
-    if (!cur) {
+// Categ는 해당 카테고리를 반환한다.
+function Categ(c) {
+    let ctg = category[c]
+    if (!ctg) {
         throw Error(c + "카테고리가 없습니다.")
     }
-    current = cur
+    return ctg
 }
-exports.SetCurrentCategory = SetCurrentCategory
-
-// CurrentCategory는 현재 선택된 카테고리를 반환한다.
-function CurrentCategory() {
-    return current
-}
-exports.CurrentCategory = CurrentCategory
+exports.Categ = Categ
 
 class Task {
     constructor(name, program) {
