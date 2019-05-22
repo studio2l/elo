@@ -134,7 +134,7 @@ function init() {
                 },
             })
             if (isPinnedGroup(prj, grp)) {
-                gropuMenu.append(unpinGroupMenuItem)
+                groupMenu.append(unpinGroupMenuItem)
             } else {
                 groupMenu.append(pinGroupMenuItem)
             }
