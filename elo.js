@@ -131,7 +131,7 @@ function init() {
             } else {
                 groupMenu.append(pinGroupMenuItem)
             }
-            let openUnitDir = new MenuItem({
+            let openGroupDir = new MenuItem({
                 label: "디렉토리 열기",
                 click: function() {
                     try {
@@ -142,20 +142,20 @@ function init() {
                     }
                 }
             })
-            groupMenu.append(openUnitDir)
+            groupMenu.append(openGroupDir)
             groupMenu.popup(remote.getCurrentWindow())
             return
         }
         if (parentById(ev, "unit-box")) {
             let prj = currentProject()
             let grp = currentGroup()
-            let shot = parentByClassName(ev, "item").id.split("-")[1]
-            let shotMenu = new Menu()
+            let unit = parentByClassName(ev, "item").id.split("-")[1]
+            let unitMenu = new Menu()
             let pinUnitMenuItem = new MenuItem({
                 label: "상단에 고정",
                 click: function() {
                     try {
-                        pinUnit(prj, ctg, grp, shot)
+                        pinUnit(prj, ctg, grp, unit)
                         reloadShots()
                     } catch(err) {
                         console.log(err)
@@ -167,7 +167,7 @@ function init() {
                 label: "상단에서 제거",
                 click: function() {
                     try {
-                        unpinUnit(prj, ctg, grp, shot)
+                        unpinUnit(prj, ctg, grp, unit)
                         reloadShots()
                     } catch(err) {
                         console.log(err)
@@ -175,37 +175,37 @@ function init() {
                     }
                 },
             })
-            if (isPinnedUnit(prj, ctg, grp, shot)) {
-                shotMenu.append(unpinUnitMenuItem)
+            if (isPinnedUnit(prj, ctg, grp, unit)) {
+                unitMenu.append(unpinUnitMenuItem)
             } else {
-                shotMenu.append(pinUnitMenuItem)
+                unitMenu.append(pinUnitMenuItem)
             }
             let openUnitDir = new MenuItem({
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.CurrentCategory().UnitDir(prj, grp, shot))
+                        openDir(site.CurrentCategory().UnitDir(prj, grp, unit))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
                     }
                 }
             })
-            shotMenu.append(openUnitDir)
-            shotMenu.popup(remote.getCurrentWindow())
+            unitMenu.append(openUnitDir)
+            unitMenu.popup(remote.getCurrentWindow())
             return
         }
         if (parentById(ev, "part-box")) {
             let prj = currentProject()
             let grp = currentGroup()
-            let shot = currentUnit()
+            let unit = currentUnit()
             let task = parentByClassName(ev, "item").id.split("-")[1]
             let taskMenu = new Menu()
             let openPartDir = new MenuItem({
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.CurrentCategory().PartDir(prj, grp, shot, task))
+                        openDir(site.CurrentCategory().PartDir(prj, grp, unit, task))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -219,12 +219,12 @@ function init() {
         if (parentById(ev, "task-box")) {
             let prj = currentProject()
             let grp = currentGroup()
-            let shot = currentUnit()
+            let unit = currentUnit()
             let task = currentPart()
             let div = parentByClassName(ev, "item")
             let dir = div.dataset.dir
-            let elemMenu = new Menu()
-            let openElemDir = new MenuItem({
+            let taskMenu = new Menu()
+            let openTaskDir = new MenuItem({
                 label: "디렉토리 열기",
                 click: function() {
                     try {
@@ -235,8 +235,8 @@ function init() {
                     }
                 }
             })
-            elemMenu.append(openElemDir)
-            elemMenu.popup(remote.getCurrentWindow())
+            taskMenu.append(openTaskDir)
+            taskMenu.popup(remote.getCurrentWindow())
             return
         }
     })
@@ -329,7 +329,7 @@ function openModal(kind) {
             createPart(currentProject(), currentGroup(), currentUnit(), name)
         } else if (kind == "task") {
             let prog = document.getElementById("modal-prog-input").value
-            createTask(currentProject(), currentUnit(), currentPart(), name, "v001", prog)
+            createTask(currentProject(), currentGroup(), currentUnit(), currentPart(), name, "v001", prog)
         }
     }
     input.onkeydown = function(ev) {
@@ -420,7 +420,7 @@ function loadSelected() {
     }
     selectProject(data["project"])
     selectGroup(data["group"])
-    selectUnit(data["shot"])
+    selectUnit(data["unit"])
     selectPart(data["part"])
     selectTask(data["task"], data["version"])
     if (data["version"]) {
@@ -434,7 +434,7 @@ function saveSelected() {
         "project": currentProject(),
         "category": currentCategory(),
         "group": currentGroup(),
-        "shot": currentUnit(),
+        "unit": currentUnit(),
         "part": currentPart(),
         "task": currentTask(),
         "version": currentVersion(),
@@ -461,7 +461,7 @@ function createGroup(prj, grp) {
 function createUnit(prj, grp, unit) {
     site.CurrentCategory().CreateUnit(prj, grp, unit)
     reloadUnits()
-    selectUnit(shot)
+    selectUnit(unit)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
@@ -472,8 +472,8 @@ function createPart(prj, grp, unit, part) {
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
-function createTask(prj, grp, shot, part, task, ver, prog) {
-    site.CurrentCategory().CreateTask(prj, grp, shot, part, task, ver, prog)
+function createTask(prj, grp, unit, part, task, ver, prog) {
+    site.CurrentCategory().CreateTask(prj, grp, unit, part, task, ver, prog)
     reloadTasks()
     selectTask(task, "")
 }
@@ -526,11 +526,10 @@ function selectProject(prj) {
     reloadGroups()
 }
 
-// selectGroupEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
-// 추가로 내 태스크가 설정되어 있다면 그 태스크를 자동으로 선택해 준다.
-function selectGroupEv(shot) {
+// selectGroupEv는 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
+function selectGroupEv(grp) {
     try {
-        selectGroup(shot)
+        selectGroup(grp)
         saveSelected()
     } catch(err) {
         console.log(err)
@@ -538,8 +537,7 @@ function selectGroupEv(shot) {
     }
 }
 
-// selectGroup은 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
-// 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
+// selectGroup은 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
 function selectGroup(grp) {
     clearNotify()
     if (grp == currentGroup()) {
@@ -560,9 +558,9 @@ function selectGroup(grp) {
 
 // selectUnitEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
 // 추가로 내 태스크가 설정되어 있다면 그 태스크를 자동으로 선택해 준다.
-function selectUnitEv(shot) {
+function selectUnitEv(unit) {
     try {
-        selectUnit(shot)
+        selectUnit(unit)
         saveSelected()
     } catch(err) {
         console.log(err)
@@ -572,9 +570,9 @@ function selectUnitEv(shot) {
 
 // selectUnit은 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
 // 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
-function selectUnit(shot) {
+function selectUnit(unit) {
     clearNotify()
-    if (shot == currentUnit()) {
+    if (unit == currentUnit()) {
         return
     }
     clearParts()
@@ -584,7 +582,7 @@ function selectUnit(shot) {
     if (item.length != 0) {
         item[0].classList.remove("selected")
     }
-    let selected = document.getElementById("unit-" + shot)
+    let selected = document.getElementById("unit-" + unit)
     selected.classList.add("selected")
     reloadParts()
 
@@ -594,7 +592,7 @@ function selectUnit(shot) {
     }
     let prj = currentProject()
     let grp = currentGroup()
-    if (!site.CurrentCategory().PartsOf(prj, grp, shot).includes(part)) {
+    if (!site.CurrentCategory().PartsOf(prj, grp, unit).includes(part)) {
         return
     }
     try {
@@ -816,29 +814,29 @@ function reloadUnits() {
     let box = document.getElementById("unit-box")
     box.innerText = ""
 
-    let shots = site.CurrentCategory().UnitsOf(prj, grp)
+    let units = site.CurrentCategory().UnitsOf(prj, grp)
     let pinned = []
     let unpinned = []
-    for (let shot of shots) {
-        if (isPinnedUnit(prj, ctg, grp, shot)) {
-            pinned.push(shot)
+    for (let unit of units) {
+        if (isPinnedUnit(prj, ctg, grp, unit)) {
+            pinned.push(unit)
         } else {
-            unpinned.push(shot)
+            unpinned.push(unit)
         }
     }
-    shots = pinned.concat(unpinned)
+    units = pinned.concat(unpinned)
     let tmpl = document.getElementById("item-tmpl")
-    for (let shot of shots) {
+    for (let unit of units) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
-        div.id = "unit-" + shot
-        div.dataset.val = shot
+        div.id = "unit-" + unit
+        div.dataset.val = unit
         div.classList.add("pinnable-item")
-        div.getElementsByClassName("item-val")[0].textContent = shot
-        if (pinned.includes(shot)) {
+        div.getElementsByClassName("item-val")[0].textContent = unit
+        if (pinned.includes(unit)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
-        div.addEventListener("click", function() { selectUnitEv(shot) })
+        div.addEventListener("click", function() { selectUnitEv(unit) })
         box.append(div)
     }
 }
@@ -853,14 +851,14 @@ function reloadParts() {
     if (!grp) {
         throw Error("선택된 그룹이 없습니다.")
     }
-    let shot = currentUnit()
-    if (!shot) {
+    let unit = currentUnit()
+    if (!unit) {
         throw Error("선택된 샷이 없습니다.")
     }
     let box = document.getElementById("part-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    for (let part of site.CurrentCategory().PartsOf(prj, grp, shot)) {
+    for (let part of site.CurrentCategory().PartsOf(prj, grp, unit)) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "part-" + part
@@ -881,18 +879,18 @@ function reloadTasks() {
     if (!grp) {
         throw Error("선택된 그룹이 없습니다.")
     }
-    let shot = currentUnit()
-    if (!shot) {
+    let unit = currentUnit()
+    if (!unit) {
         throw Error("선택된 샷이 없습니다.")
     }
-    let task = currentPart()
-    if (!task) {
+    let part = currentPart()
+    if (!part) {
         throw Error("선택된 태스크가 없습니다.")
     }
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let tasks = site.CurrentCategory().TasksOf(prj, grp, shot, task)
+    let tasks = site.CurrentCategory().TasksOf(prj, grp, unit, part)
     for (let task in tasks) {
         let t = tasks[task]
         let frag = document.importNode(tmpl.content, true)
@@ -904,7 +902,7 @@ function reloadTasks() {
         div.getElementsByClassName("item-val")[0].textContent = task
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  t.Program.Name
         div.addEventListener("click", function() { selectTaskEv(task, "") })
-        div.addEventListener("dblclick", function() { openVersionEv(prj, shot, part, task, t.Program.Name, lastver) })
+        div.addEventListener("dblclick", function() { openVersionEv(prj, grp, unit, part, task, t.Program.Name, lastver) })
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
         toggle.textContent = "▷"
@@ -927,7 +925,7 @@ function reloadTasks() {
             div.dataset.dir = t.Program.Dir
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectTaskEv(task, ver) })
-            div.addEventListener("dblclick", function() { openVersionEv(prj, shot, part, task, t.Program.Name, ver) })
+            div.addEventListener("dblclick", function() { openVersionEv(prj, grp, unit, part, task, t.Program.Name, ver) })
             div.style.display = "none"
             box.append(div)
         }
@@ -959,7 +957,7 @@ function toggleVersionVisibility(task) {
 }
 
 // openVersionEv는 해당 요소의 한 버전을 연다.
-function openVersionEv(prj, grp, shot, part, task, prog, ver) {
+function openVersionEv(prj, grp, unit, part, task, prog, ver) {
     let handleError = function(err, stdout, stderr) {
         if (err) {
             if (err.errno == "ENOENT") {
@@ -969,7 +967,7 @@ function openVersionEv(prj, grp, shot, part, task, prog, ver) {
             notify(err.message)
         }
     }
-    site.CurrentCategory().OpenTask(prj, grp, shot, part, task, prog, ver, handleError)
+    site.CurrentCategory().OpenTask(prj, grp, unit, part, task, prog, ver, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
@@ -1085,7 +1083,7 @@ function unpinGroup(prj, ctg, grp) {
     if (Object.keys(pinnedGroup[prj]).length == 0) {
         delete pinnedGroup[prj]
     }
-    let fname = configDir() + "/pinned_shot.json"
+    let fname = configDir() + "/pinned_group.json"
     let data = JSON.stringify(pinnedUnit)
     fs.writeFileSync(fname, data)
 }
