@@ -132,30 +132,30 @@ class Category {
         fs.mkdirSync(d)
     }
 
-    // 샷 유닛
-    UnitDir(prj, grp, shot) {
-        return this.unitRoot(prj, grp) + "/" + shot
+    // 유닛
+    UnitDir(prj, grp, unit) {
+        return this.unitRoot(prj, grp) + "/" + unit
     }
     UnitsOf(prj, grp) {
         let d = this.unitRoot(prj, grp)
         return childDirs(d)
     }
-    CreateUnit(prj, grp, shot) {
-        let d = this.UnitDir(prj, grp, shot)
+    CreateUnit(prj, grp, unit) {
+        let d = this.UnitDir(prj, grp, unit)
         fs.mkdirSync(d)
         createDirs(d, this.unitSubdirs)
     }
 
-    // 샷 파트
-    PartDir(prj, grp, shot, part) {
-        return this.partRoot(prj, grp, shot) + "/" + part
+    // 파트
+    PartDir(prj, grp, unit, part) {
+        return this.partRoot(prj, grp, unit) + "/" + part
     }
-    PartsOf(prj, grp, shot) {
-        let d = this.partRoot(prj, grp, shot)
+    PartsOf(prj, grp, unit) {
+        let d = this.partRoot(prj, grp, unit)
         return childDirs(d)
     }
-    CreatePart(prj, grp, shot, part) {
-        let d = this.PartDir(prj, grp, shot, part)
+    CreatePart(prj, grp, unit, part) {
+        let d = this.PartDir(prj, grp, unit, part)
         fs.mkdirSync(d)
         let subdirs = this.partSubdirs[part]
         if (!subdirs) {
@@ -166,30 +166,30 @@ class Category {
         let tasksInfo = this.defaultTasksInfo[part]
         if (tasksInfo) {
             for (let ti of tasksInfo) {
-                this.CreateTask(prj, grp, shot, part, "v001", ti.name, ti.prog)
+                this.CreateTask(prj, grp, unit, part, "v001", ti.name, ti.prog)
             }
         }
     }
 
-    // 샷 태스크
-    TasksOf(prj, grp, shot, part) {
-        let partdir = this.PartDir(prj, grp, shot, part)
-        let progs = this.ProgramsOf(prj, grp, shot, part)
+    // 태스크
+    TasksOf(prj, grp, unit, part) {
+        let partdir = this.PartDir(prj, grp, unit, part)
+        let progs = this.ProgramsOf(prj, grp, unit, part)
         if (!progs) {
             return {}
         }
         let tasks = {}
         for (let prog in progs) {
             let p = progs[prog]
-            Object.assign(tasks, p.ListTasks(prj, grp, shot, part))
+            Object.assign(tasks, p.ListTasks(prj, grp, unit, part))
         }
         return tasks
     }
-    CreateTask(prj, grp, shot, part, task, ver, prog) {
-        if (!this.PartsOf(prj, grp, shot).includes(part)) {
+    CreateTask(prj, grp, unit, part, task, ver, prog) {
+        if (!this.PartsOf(prj, grp, unit).includes(part)) {
             throw Error("해당 파트가 없습니다.")
         }
-        let partdir = this.PartDir(prj, grp, shot, part)
+        let partdir = this.PartDir(prj, grp, unit, part)
         if (!partdir) {
             throw Error("파트 디렉토리가 없습니다.")
         }
@@ -199,49 +199,49 @@ class Category {
         if (!prog) {
             throw Error("프로그램을 선택하지 않았습니다.")
         }
-        let progs = this.ProgramsOf(prj, grp, shot, part)
+        let progs = this.ProgramsOf(prj, grp, unit, part)
         let p = progs[prog]
-        let scene = p.SceneName(prj, grp, shot, part, task, ver)
-        let env = p.Env(prj, grp, shot, part, task)
-        let sceneEnv = this.SceneEnviron(prj, grp, shot, part, task)
+        let scene = p.SceneName(prj, grp, unit, part, task, ver)
+        let env = p.Env(prj, grp, unit, part, task)
+        let sceneEnv = this.SceneEnviron(prj, grp, unit, part, task)
         p.CreateScene(scene, env, sceneEnv)
     }
-    OpenTask(prj, grp, shot, part, task, prog, ver, handleError) {
-        let progs = this.ProgramsOf(prj, grp, shot, part, prog)
+    OpenTask(prj, grp, unit, part, task, prog, ver, handleError) {
+        let progs = this.ProgramsOf(prj, grp, unit, part, prog)
         let p = progs[prog]
         if (!p) {
             notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
         }
-        let scene = p.SceneName(prj, grp, shot, part, task, ver)
+        let scene = p.SceneName(prj, grp, unit, part, task, ver)
         let env = p.Env()
-        let sceneEnv = this.SceneEnviron(prj, grp, shot, part, task)
+        let sceneEnv = this.SceneEnviron(prj, grp, unit, part, task)
         p.OpenScene(scene, env, sceneEnv, handleError)
     }
 
-    // 씬 환경
-    SceneEnviron(prj, grp, shot, part, task) {
+    // 씬 환경변수
+    SceneEnviron(prj, grp, unit, part, task) {
         let env = {
             "PRJ": prj,
             "GROUP": grp,
-            "SHOT": shot,
+            "SHOT": unit,
             "PART": part,
             "TASK": task,
             "PRJD": ProjectDir(prj),
             "GROUPD": this.GroupDir(prj, grp),
-            "SHOTD": this.UnitDir(prj, grp, shot),
-            "PARTD": this.PartDir(prj, grp, shot, part),
+            "SHOTD": this.UnitDir(prj, grp, unit),
+            "PARTD": this.PartDir(prj, grp, unit, part),
         }
         return env
     }
 
-    // 씬 프로그램
-    ProgramsOf(prj, grp, shot, part) {
-        // prj와 shot은 아직 사용하지 않는다.
+    // 프로그램
+    ProgramsOf(prj, grp, unit, part) {
+        // prj와 grp, unit은 아직 사용하지 않는다.
         let pgs = this.programs[part]
         if (!pgs) {
             throw Error("사이트에 " + part + " 파트가 정의되어 있지 않습니다.")
         }
-        let partDir = this.PartDir(prj, grp, shot, part)
+        let partDir = this.PartDir(prj, grp, unit, part)
         let progs = {}
         for (let p in pgs) {
             let newProgramAt = pgs[p]
@@ -312,11 +312,66 @@ let Shot = new Category({
     },
 })
 
-let Categories = ["shot"]
+// Asset은 애셋 카테고리이다.
+let Asset = new Category({
+    Name: "asset",
+    groupRoot: function(prj) {
+        return ProjectDir(prj) + "/asset"
+    },
+    unitRoot: function(prj, grp) {
+        return ProjectDir(prj) + "/asset/" + grp + "/"
+    },
+    unitSubdirs: [
+        subdir("work", "2775"),
+        subdir("pub", "2775"),
+    ],
+    Parts: [
+        "model",
+        "lookdev",
+        "rig",
+    ],
+    partRoot: function(prj, grp, unit) {
+        return ProjectDir(prj) + "/asset/" + grp + "/" + unit + "/work"
+    },
+    partSubdirs: {
+        "model": [
+            subdir("high", "2775"),
+            subdir("low", "2775"),
+        ],
+        "lookdev": [
+            subdir("cache", "2775"),
+        ],
+        "rig": [
+        ],
+    },
+    defaultTasksInfo: {
+        "model": [
+            // { name: "main", prog: "maya" },
+        ],
+        "lookdev": [
+        ],
+        "rig": [
+        ],
+    },
+    programs: {
+        "model": {
+            "maya": function(taskDir) { return newMayaAt(taskDir) },
+        },
+        "lookdev": {
+            "nuke": function(taskDir) { return newMayaAt(taskDir) },
+        },
+        "rig": {
+            "nuke": function(taskDir) { return newMayaAt(taskDir) },
+        },
+    },
+})
+
+let Categories = ["shot", "asset"]
 exports.Categories = Categories
 
 let category = {
     "shot": Shot,
+    "asset": Asset,
 }
 
 // current는 현재 선택된 카테고리이다.
@@ -350,11 +405,11 @@ class Program {
         this.CreateScene = CreateScene
         this.OpenScene = OpenScene
     }
-    SceneName(prj, shot, part, task, ver) {
-        let scene = this.Dir + "/" + prj + "_" + shot + "_" + part + "_" + task + "_" + "v001" + this.Ext
+    SceneName(prj, unit, part, task, ver) {
+        let scene = this.Dir + "/" + prj + "_" + unit + "_" + part + "_" + task + "_" + "v001" + this.Ext
         return scene
     }
-    ListTasks(prj, shot, part) {
+    ListTasks(prj, unit, part) {
         let tasks = {}
         let files = fs.readdirSync(this.Dir)
         for (let f of files) {
@@ -365,7 +420,7 @@ class Program {
                 continue
             }
             f = f.substring(0, f.length - this.Ext.length)
-            let prefix = prj + "_" + shot + "_" + part + "_"
+            let prefix = prj + "_" + unit + "_" + part + "_"
             if (!f.startsWith(prefix)) {
                 continue
             }
@@ -386,6 +441,49 @@ class Program {
         }
         return tasks
     }
+}
+
+// newMayaAt은 지정된 위치에 마야 프로그램을 생성한다.
+function newMayaAt(dir) {
+    let maya = new Program(
+        // name
+        "maya",
+        // dir
+        dir,
+        // ext
+        ".mb",
+        // Env
+        function() {
+            if (process.platform == "win32") {
+                let env = cloneEnv()
+                env.PATH = "C:\\Program Files\\Autodesk\\Maya2018\\bin;" + env.PATH
+                return env
+            }
+            return process.env
+        },
+        // CreateScene
+        function(scene, env, sceneEnv) {
+            let initScript = `
+# encoding: utf-8
+
+from maya import standalone
+from maya import cmds
+
+standalone.initialize(name="python")
+cmds.file(rename="` + scene + `")
+cmds.file(save=True)
+`
+            proc.execFileSync("mayapy", ["-c", initScript], { "env": env })
+        },
+        // OpenScene
+        function(scene, env, sceneEnv, handleError) {
+            for (let e in sceneEnv) {
+                env[e] = sceneEnv[e]
+            }
+            proc.execFile("maya", [scene], { "env": env }, handleError)
+        },
+    )
+    return maya
 }
 
 // newHoudiniAt은 지정된 위치에 후디니 프로그램을 생성한다.

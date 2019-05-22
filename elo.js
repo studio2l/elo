@@ -411,6 +411,7 @@ function saveCategory() {
     Ctg = menu.value
     let fname = configDir() + "/category.json"
     fs.writeFileSync(fname, Ctg)
+    selectProject(currentProject())
 }
 exports.saveCategory = saveCategory
 
@@ -464,7 +465,7 @@ function loadSelected() {
 function saveSelected() {
     let data = JSON.stringify({
         "project": currentProject(),
-        "category": currentCategory(),
+        "category": Ctg,
         "group": currentGroup(),
         "unit": currentUnit(),
         "part": currentPart(),
@@ -554,9 +555,6 @@ function selectProjectEv(prj) {
 // selectProject는 사용자가 프로젝트를 선택했을 때 그에 맞는 샷 리스트를 보인다.
 function selectProject(prj) {
     clearNotify()
-    if (prj == currentProject()) {
-        return
-    }
     clearGroups()
     clearUnits()
     clearParts()
@@ -585,9 +583,6 @@ function selectGroupEv(grp) {
 // selectGroup은 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
 function selectGroup(grp) {
     clearNotify()
-    if (grp == currentGroup()) {
-        return
-    }
     clearUnits()
     clearParts()
     clearTasks()
@@ -617,9 +612,6 @@ function selectUnitEv(unit) {
 // 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
 function selectUnit(unit) {
     clearNotify()
-    if (unit == currentUnit()) {
-        return
-    }
     clearParts()
     clearTasks()
     let box = document.getElementById("unit-box")
@@ -662,9 +654,6 @@ function selectPartEv(part) {
 // selectPart는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectPart(part) {
     clearNotify()
-    if (part == currentPart()) {
-        return
-    }
     clearTasks()
     let box = document.getElementById("part-box")
     let item = box.getElementsByClassName("selected")
@@ -690,9 +679,6 @@ function selectTaskEv(task, ver) {
 // selectTask는 요소를 선택했을 때 그 선택을 표시한다.
 function selectTask(task, ver) {
     clearNotify()
-    if (task == currentTask() && ver == currentVersion()) {
-        return
-    }
     let box = document.getElementById("task-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
