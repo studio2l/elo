@@ -82,7 +82,7 @@ exports.CreateProject = CreateProject
 let projectSubdirs = [
         subdir("asset", "0755"),
         subdir("asset/char", "2775"),
-        subdir("asset/bg", "2775"),
+        subdir("asset/env", "2775"),
         subdir("asset/prop", "2775"),
         subdir("doc", "0755"),
         subdir("doc/cglist", "0755"),
