@@ -103,7 +103,7 @@ let projectSubdirs = [
 
 // 카테고리
 
-// Shot은 (가상의) 카테고리 인터페이스를 구현한다.
+// Category는 샷, 애셋 같은 작업 카테고리를 의미한다.
 class Category {
     constructor(opt) {
         this.Name = opt.Name
@@ -251,6 +251,7 @@ class Category {
     }
 }
 
+// Shot은 샷 카테고리이다.
 let Shot = new Category({
     Name: "shot",
     groupRoot: function(prj) {
