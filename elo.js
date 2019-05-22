@@ -927,7 +927,7 @@ function reloadTasks() {
         div.getElementsByClassName("item-val")[0].textContent = task
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  t.Program.Name
         div.addEventListener("click", function() { selectTaskEv(task, "") })
-        div.addEventListener("dblclick", function() { openVersionEv(prj, grp, unit, part, task, t.Program.Name, lastver) })
+        div.addEventListener("dblclick", function() { openTaskEv(prj, grp, unit, part, task, t.Program.Name, lastver) })
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
         toggle.textContent = "▷"
@@ -950,7 +950,7 @@ function reloadTasks() {
             div.dataset.dir = t.Program.Dir
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectTaskEv(task, ver) })
-            div.addEventListener("dblclick", function() { openVersionEv(prj, grp, unit, part, task, t.Program.Name, ver) })
+            div.addEventListener("dblclick", function() { openTaskEv(prj, grp, unit, part, task, t.Program.Name, ver) })
             div.style.display = "none"
             box.append(div)
         }
@@ -981,8 +981,8 @@ function toggleVersionVisibility(task) {
     }
 }
 
-// openVersionEv는 해당 요소의 한 버전을 연다.
-function openVersionEv(prj, grp, unit, part, task, prog, ver) {
+// openTaskEv는 해당 요소의 한 버전을 연다.
+function openTaskEv(prj, grp, unit, part, task, prog, ver) {
     let handleError = function(err, stdout, stderr) {
         if (err) {
             if (err.errno == "ENOENT") {
