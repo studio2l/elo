@@ -10,10 +10,6 @@ let pinnedProject = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
 
-// Ctg는 현재 선택된 카테고리를 나타낸다.
-// init에서 값이 설정된다.
-let Ctg = ""
-
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
 function init() {
@@ -107,6 +103,7 @@ function init() {
         }
         if (parentById(ev, "group-box")) {
             let prj = currentProject()
+            let ctg = currentCategory()
             let grp = parentByClassName(ev, "item").id.split("-")[1]
             let groupMenu = new Menu()
             let pinGroupMenuItem = new MenuItem({
@@ -142,7 +139,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.Categ(Ctg).GroupDir(prj, grp))
+                        openDir(site.Categ(ctg).GroupDir(prj, grp))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -155,6 +152,7 @@ function init() {
         }
         if (parentById(ev, "unit-box")) {
             let prj = currentProject()
+            let ctg = currentCategory()
             let grp = currentGroup()
             let unit = parentByClassName(ev, "item").id.split("-")[1]
             let unitMenu = new Menu()
@@ -191,7 +189,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.Categ(Ctg).UnitDir(prj, grp, unit))
+                        openDir(site.Categ(ctg).UnitDir(prj, grp, unit))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -204,6 +202,7 @@ function init() {
         }
         if (parentById(ev, "part-box")) {
             let prj = currentProject()
+            let ctg = currentCategory()
             let grp = currentGroup()
             let unit = currentUnit()
             let task = parentByClassName(ev, "item").id.split("-")[1]
@@ -212,7 +211,7 @@ function init() {
                 label: "디렉토리 열기",
                 click: function() {
                     try {
-                        openDir(site.Categ(Ctg).PartDir(prj, grp, unit, task))
+                        openDir(site.Categ(ctg).PartDir(prj, grp, unit, task))
                     } catch(err) {
                         console.log(err)
                         notify(err.message)
@@ -295,12 +294,13 @@ function openModal(kind) {
     input.value = ""
     let progInput = document.getElementById("modal-prog-input")
     progInput.hidden = true
+    let ctg = currentCategory()
     if (kind == "task") {
         progInput.hidden = false
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.Categ(Ctg).ProgramsOf(currentProject(), currentGroup(), currentUnit(), currentPart())
+            progs = site.Categ(ctg).ProgramsOf(currentProject(), currentGroup(), currentUnit(), currentPart())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -329,14 +329,14 @@ function openModal(kind) {
         if (kind == "project") {
             createProject(name)
         } else if (kind == "group") {
-            createGroup(currentProject(), name)
+            createGroup(currentProject(), ctg, name)
         } else if (kind == "unit") {
-            createUnit(currentProject(), currentGroup(), name)
+            createUnit(currentProject(), ctg, currentGroup(), name)
         } else if (kind == "part") {
-            createPart(currentProject(), currentGroup(), currentUnit(), name)
+            createPart(currentProject(), ctg, currentGroup(), currentUnit(), name)
         } else if (kind == "task") {
             let prog = document.getElementById("modal-prog-input").value
-            createTask(currentProject(), currentGroup(), currentUnit(), currentPart(), name, "v001", prog)
+            createTask(currentProject(), ctg, currentGroup(), currentUnit(), currentPart(), name, "v001", prog)
         }
     }
     input.onkeydown = function(ev) {
@@ -396,21 +396,18 @@ function loadCategory() {
     if (!fs.existsSync(fname)) {
         let ctg = site.Categories[0]
         menu.value = ctg
-        Ctg = ctg
         return
     }
     let data = fs.readFileSync(fname)
     let ctg = data.toString("utf8")
     menu.value = ctg
-    Ctg = ctg
 }
 
 // saveCategory는 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
 function saveCategory() {
     let menu = document.getElementById("category-menu")
-    Ctg = menu.value
     let fname = configDir() + "/category.json"
-    fs.writeFileSync(fname, Ctg)
+    fs.writeFileSync(fname, menu.value)
     selectProject(currentProject())
 }
 exports.saveCategory = saveCategory
@@ -465,7 +462,7 @@ function loadSelected() {
 function saveSelected() {
     let data = JSON.stringify({
         "project": currentProject(),
-        "category": Ctg,
+        "category": currentCategory(),
         "group": currentGroup(),
         "unit": currentUnit(),
         "part": currentPart(),
@@ -484,29 +481,29 @@ function createProject(prj) {
 }
 
 // createGroup은 하나의 그룹을 생성한다.
-function createGroup(prj, grp) {
-    site.Categ(Ctg).CreateGroup(prj, grp)
+function createGroup(prj, ctg, grp) {
+    site.Categ(ctg).CreateGroup(prj, grp)
     reloadGroups()
     selectGroup(grp)
 }
 
 // createUnit은 하나의 샷을 생성한다.
-function createUnit(prj, grp, unit) {
-    site.Categ(Ctg).CreateUnit(prj, grp, unit)
+function createUnit(prj, ctg, grp, unit) {
+    site.Categ(ctg).CreateUnit(prj, grp, unit)
     reloadUnits()
     selectUnit(unit)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
-function createPart(prj, grp, unit, part) {
-    site.Categ(Ctg).CreatePart(prj, grp, unit, part)
+function createPart(prj, ctg, grp, unit, part) {
+    site.Categ(ctg).CreatePart(prj, grp, unit, part)
     reloadParts()
     selectPart(part)
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
-function createTask(prj, grp, unit, part, task, ver, prog) {
-    site.Categ(Ctg).CreateTask(prj, grp, unit, part, task, ver, prog)
+function createTask(prj, ctg, grp, unit, part, task, ver, prog) {
+    site.Categ(ctg).CreateTask(prj, grp, unit, part, task, ver, prog)
     reloadTasks()
     selectTask(task, "")
 }
@@ -534,7 +531,8 @@ function addMyPartMenuItems() {
     opt.text = "없음"
     opt.value = ""
     menu.add(opt)
-    for (let part of site.Categ(Ctg).Parts) {
+    let ctg = currentCategory()
+    for (let part of site.Categ(ctg).Parts) {
         let opt = document.createElement("option")
         opt.text = part
         menu.add(opt)
@@ -628,8 +626,9 @@ function selectUnit(unit) {
         return
     }
     let prj = currentProject()
+    let ctg = currentCategory()
     let grp = currentGroup()
-    if (!site.Categ(Ctg).PartsOf(prj, grp, unit).includes(part)) {
+    if (!site.Categ(ctg).PartsOf(prj, grp, unit).includes(part)) {
         return
     }
     try {
@@ -695,6 +694,12 @@ function selectTask(task, ver) {
 // currentProject는 현재 선택된 프로젝트 이름을 반환한다.
 function currentProject() {
     return selectedItemValue("project-box")
+}
+
+// currentCategory는 현재 선택된 카테고리 이름을 반환한다.
+function currentCategory() {
+    let menu = document.getElementById("category-menu")
+    return menu.value
 }
 
 // currentGroup은 현재 선택된 그룹 이름을 반환한다.
@@ -796,14 +801,15 @@ function reloadGroups() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let ctg = currentCategory()
     let box = document.getElementById("group-box")
     box.innerText = ""
 
-    let groups = site.Categ(Ctg).GroupsOf(prj)
+    let groups = site.Categ(ctg).GroupsOf(prj)
     let pinned = []
     let unpinned = []
     for (let grp of groups) {
-        if (isPinnedGroup(prj, Ctg, grp)) {
+        if (isPinnedGroup(prj, ctg, grp)) {
             pinned.push(grp)
         } else {
             unpinned.push(grp)
@@ -836,14 +842,15 @@ function reloadUnits() {
     if (!grp) {
         throw Error("선택된 그룹이 없습니다.")
     }
+    let ctg = currentCategory()
     let box = document.getElementById("unit-box")
     box.innerText = ""
 
-    let units = site.Categ(Ctg).UnitsOf(prj, grp)
+    let units = site.Categ(ctg).UnitsOf(prj, grp)
     let pinned = []
     let unpinned = []
     for (let unit of units) {
-        if (isPinnedUnit(prj, Ctg, grp, unit)) {
+        if (isPinnedUnit(prj, ctg, grp, unit)) {
             pinned.push(unit)
         } else {
             unpinned.push(unit)
@@ -880,10 +887,11 @@ function reloadParts() {
     if (!unit) {
         throw Error("선택된 샷이 없습니다.")
     }
+    let ctg = currentCategory()
     let box = document.getElementById("part-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    for (let part of site.Categ(Ctg).PartsOf(prj, grp, unit)) {
+    for (let part of site.Categ(ctg).PartsOf(prj, grp, unit)) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
         div.id = "part-" + part
@@ -900,6 +908,7 @@ function reloadTasks() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let ctg = currentCategory()
     let grp = currentGroup()
     if (!grp) {
         throw Error("선택된 그룹이 없습니다.")
@@ -915,7 +924,7 @@ function reloadTasks() {
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
-    let tasks = site.Categ(Ctg).TasksOf(prj, grp, unit, part)
+    let tasks = site.Categ(ctg).TasksOf(prj, grp, unit, part)
     for (let task in tasks) {
         let t = tasks[task]
         let frag = document.importNode(tmpl.content, true)
@@ -927,7 +936,7 @@ function reloadTasks() {
         div.getElementsByClassName("item-val")[0].textContent = task
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  t.Program.Name
         div.addEventListener("click", function() { selectTaskEv(task, "") })
-        div.addEventListener("dblclick", function() { openTaskEv(prj, grp, unit, part, task, t.Program.Name, lastver) })
+        div.addEventListener("dblclick", function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, lastver) })
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
         toggle.textContent = "▷"
@@ -950,7 +959,7 @@ function reloadTasks() {
             div.dataset.dir = t.Program.Dir
             div.getElementsByClassName("item-val")[0].textContent = ver
             div.addEventListener("click", function() { selectTaskEv(task, ver) })
-            div.addEventListener("dblclick", function() { openTaskEv(prj, grp, unit, part, task, t.Program.Name, ver) })
+            div.addEventListener("dblclick", function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, ver) })
             div.style.display = "none"
             box.append(div)
         }
@@ -982,7 +991,7 @@ function toggleVersionVisibility(task) {
 }
 
 // openTaskEv는 해당 요소의 한 버전을 연다.
-function openTaskEv(prj, grp, unit, part, task, prog, ver) {
+function openTaskEv(prj, ctg, grp, unit, part, task, prog, ver) {
     let handleError = function(err, stdout, stderr) {
         if (err) {
             if (err.errno == "ENOENT") {
@@ -992,7 +1001,7 @@ function openTaskEv(prj, grp, unit, part, task, prog, ver) {
             notify(err.message)
         }
     }
-    site.Categ(Ctg).OpenTask(prj, grp, unit, part, task, prog, ver, handleError)
+    site.Categ(ctg).OpenTask(prj, grp, unit, part, task, prog, ver, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
@@ -1085,14 +1094,14 @@ function loadPinnedGroup() {
 
 // pinGroup은 특정 샷을 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function pinGroup(prj, grp) {
+function pinGroup(prj, ctg, grp) {
     if (!pinnedGroup[prj]) {
         pinnedGroup[prj] = {}
     }
-    if (!pinnedGroup[prj][Ctg]) {
-        pinnedGroup[prj][Ctg] = {}
+    if (!pinnedGroup[prj][ctg]) {
+        pinnedGroup[prj][ctg] = {}
     }
-    pinnedGroup[prj][Ctg][grp] = true
+    pinnedGroup[prj][ctg][grp] = true
     let fname = configDir() + "/pinned_group.json"
     let data = JSON.stringify(pinnedGroup)
     fs.writeFileSync(fname, data)
@@ -1100,10 +1109,10 @@ function pinGroup(prj, grp) {
 
 // unpinGroup은 특정 샷의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function unpinGroup(prj, grp) {
-    delete pinnedGroup[prj][Ctg][grp]
-    if (Object.keys(pinnedGroup[prj][Ctg]).length == 0) {
-        delete pinnedGroup[prj][Ctg]
+function unpinGroup(prj, ctg, grp) {
+    delete pinnedGroup[prj][ctg][grp]
+    if (Object.keys(pinnedGroup[prj][ctg]).length == 0) {
+        delete pinnedGroup[prj][ctg]
     }
     if (Object.keys(pinnedGroup[prj]).length == 0) {
         delete pinnedGroup[prj]
@@ -1113,9 +1122,9 @@ function unpinGroup(prj, grp) {
     fs.writeFileSync(fname, data)
 }
 
-function isPinnedGroup(prj, grp) {
+function isPinnedGroup(prj, ctg, grp) {
     try {
-        if (pinnedGroup[prj][Ctg][grp]) {
+        if (pinnedGroup[prj][ctg][grp]) {
             return true
         }
         return false
@@ -1137,17 +1146,17 @@ function loadPinnedUnit() {
 
 // pinUnit은 특정 샷을 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function pinUnit(prj, grp, unit) {
+function pinUnit(prj, ctg, grp, unit) {
     if (!pinnedUnit[prj]) {
         pinnedUnit[prj] = {}
     }
-    if (!pinnedUnit[prj][Ctg]) {
-        pinnedUnit[prj][Ctg] = {}
+    if (!pinnedUnit[prj][ctg]) {
+        pinnedUnit[prj][ctg] = {}
     }
-    if (!pinnedUnit[prj][Ctg][grp]) {
-        pinnedUnit[prj][Ctg][grp] = {}
+    if (!pinnedUnit[prj][ctg][grp]) {
+        pinnedUnit[prj][ctg][grp] = {}
     }
-    pinnedUnit[prj][Ctg][grp][unit] = true
+    pinnedUnit[prj][ctg][grp][unit] = true
     let fname = configDir() + "/pinned_unit.json"
     let data = JSON.stringify(pinnedUnit)
     fs.writeFileSync(fname, data)
@@ -1156,12 +1165,12 @@ function pinUnit(prj, grp, unit) {
 // unpinUnit은 특정 샷의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
 function unpinUnit(prj, grp, unit) {
-    delete pinnedUnit[prj][Ctg][grp][unit]
-    if (Object.keys(pinnedUnit[prj][Ctg][grp]).length == 0) {
-        delete pinnedUnit[prj][Ctg][grp]
+    delete pinnedUnit[prj][ctg][grp][unit]
+    if (Object.keys(pinnedUnit[prj][ctg][grp]).length == 0) {
+        delete pinnedUnit[prj][ctg][grp]
     }
-    if (Object.keys(pinnedUnit[prj][Ctg]).length == 0) {
-        delete pinnedUnit[prj][Ctg]
+    if (Object.keys(pinnedUnit[prj][ctg]).length == 0) {
+        delete pinnedUnit[prj][ctg]
     }
     if (Object.keys(pinnedUnit[prj]).length == 0) {
         delete pinnedUnit[prj]
