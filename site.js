@@ -181,8 +181,7 @@ class Category {
         let p = progs[prog]
         let scene = p.SceneName(prj, grp, unit, part, task, ver)
         let env = p.Env(prj, grp, unit, part, task)
-        let sceneEnv = this.SceneEnviron(prj, grp, unit, part, task)
-        p.CreateScene(scene, env, sceneEnv)
+        p.CreateScene(scene, env)
     }
     OpenTask(prj, grp, unit, part, task, prog, ver, handleError) {
         let progs = this.ProgramsOf(prj, grp, unit, part, prog)
@@ -193,7 +192,10 @@ class Category {
         let scene = p.SceneName(prj, grp, unit, part, task, ver)
         let env = p.Env()
         let sceneEnv = this.SceneEnviron(prj, grp, unit, part, task)
-        p.OpenScene(scene, env, sceneEnv, handleError)
+        for (let e in sceneEnv) {
+            env[e] = sceneEnv[e]
+        }
+        p.OpenScene(scene, env, handleError)
     }
 
     // 씬 환경변수
@@ -442,7 +444,7 @@ function newMayaAt(dir) {
             return process.env
         },
         // CreateScene
-        function(scene, env, sceneEnv) {
+        function(scene, env) {
             let initScript = `
 # encoding: utf-8
 
@@ -456,10 +458,7 @@ cmds.file(save=True)
             proc.execFileSync("mayapy", ["-c", initScript], { "env": env })
         },
         // OpenScene
-        function(scene, env, sceneEnv, handleError) {
-            for (let e in sceneEnv) {
-                env[e] = sceneEnv[e]
-            }
+        function(scene, env, handleError) {
             proc.execFile("maya", [scene], { "env": env }, handleError)
         },
     )
@@ -485,22 +484,12 @@ function newHoudiniAt(dir) {
             return process.env
         },
         // CreateScene
-        function(scene, env, sceneEnv) {
-            let initScript = ""
-            for (let e in sceneEnv) {
-                let v = sceneEnv[e]
-                initScript += "\n"
-                initScript += `hou.hscript("set -g ${e}=${v}")`
-            }
-            initScript += "\n"
+        function(scene, env) {
             initScript += `hou.hipFile.save('${scene}')`
             proc.execFileSync("hython", ["-c", initScript], { "env": env })
         },
         // OpenScene
-        function(scene, env, sceneEnv, handleError) {
-            for (let e in sceneEnv) {
-                env[e] = sceneEnv[e]
-            }
+        function(scene, env, handleError) {
             proc.execFile("houdini", [scene], { "env": env }, handleError)
         },
     )
@@ -526,14 +515,11 @@ function newNukeAt(dir) {
             return process.env
         },
         // CreateScene
-        function(scene, env, sceneEnv) {
+        function(scene, env) {
             proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
         },
         // OpenScene
-        function(scene, env, sceneEnv, handleError) {
-            for (let e in sceneEnv) {
-                env[e] = sceneEnv[e]
-            }
+        function(scene, env, handleError) {
             proc.execFile("Nuke10.0", ["--nukex", scene], { "env": env }, handleError)
         },
     )
