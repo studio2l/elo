@@ -311,12 +311,13 @@ function openModal(kind) {
             progInput.add(opt)
         }
     }
+    let ctgLabel = site.Categ(ctg).Label
     kor = {
         "project": "프로젝트",
         "group": "그룹",
-        "unit": "샷",
-        "part": "파트",
-        "task": "태스크",
+        "unit": ctgLabel,
+        "part": ctgLabel + " 파트",
+        "task": ctgLabel + " 태스크",
     }
     input.placeholder = "생성 할 " + kor[kind] + " 이름"
     function createItem() {
@@ -396,18 +397,22 @@ function loadCategory() {
     if (!fs.existsSync(fname)) {
         let ctg = site.Categories[0]
         menu.value = ctg
+        document.getElementById("unit-label").innerText = site.Categ(ctg).Label
         return
     }
     let data = fs.readFileSync(fname)
     let ctg = data.toString("utf8")
     menu.value = ctg
+    document.getElementById("unit-label").innerText = site.Categ(ctg).Label
 }
 
 // saveCategory는 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
 function saveCategory() {
     let menu = document.getElementById("category-menu")
+    let ctg = menu.value
+    document.getElementById("unit-label").innerText = site.Categ(ctg).Label
     let fname = configDir() + "/category.json"
-    fs.writeFileSync(fname, menu.value)
+    fs.writeFileSync(fname, ctg)
     selectProject(currentProject())
 }
 exports.saveCategory = saveCategory

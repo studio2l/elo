@@ -84,6 +84,7 @@ let projectSubdirs = [
 class Category {
     constructor(opt) {
         this.Name = opt.Name
+        this.Label = opt.Label
         this.groupRoot = opt.groupRoot
         this.unitRoot = opt.unitRoot
         this.unitSubdirs = opt.unitSubdirs
@@ -231,6 +232,7 @@ class Category {
 // Shot은 샷 카테고리이다.
 let Shot = new Category({
     Name: "shot",
+    Label: "샷",
     groupRoot: function(prj) {
         return ProjectDir(prj) + "/shot"
     },
@@ -292,6 +294,7 @@ let Shot = new Category({
 // Asset은 애셋 카테고리이다.
 let Asset = new Category({
     Name: "asset",
+    Label: "애셋",
     groupRoot: function(prj) {
         return ProjectDir(prj) + "/asset"
     },
