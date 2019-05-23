@@ -239,7 +239,7 @@ let Shot = new Category({
         return ProjectDir(prj) + "/shot"
     },
     unitRoot: function(prj, grp) {
-        return ProjectDir(prj) + "/shot/" + grp + "/"
+        return ProjectDir(prj) + "/shot/" + grp
     },
     unitSubdirs: [
         subdir("scan", "0755"),
@@ -301,7 +301,7 @@ let Asset = new Category({
         return ProjectDir(prj) + "/asset"
     },
     unitRoot: function(prj, grp) {
-        return ProjectDir(prj) + "/asset/" + grp + "/"
+        return ProjectDir(prj) + "/asset/" + grp
     },
     unitSubdirs: [
         subdir("work", "2775"),
