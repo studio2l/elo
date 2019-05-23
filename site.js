@@ -382,11 +382,11 @@ class Program {
         this.CreateScene = CreateScene
         this.OpenScene = OpenScene
     }
-    SceneName(prj, unit, part, task, ver) {
-        let scene = this.Dir + "/" + prj + "_" + unit + "_" + part + "_" + task + "_" + "v001" + this.Ext
+    SceneName(prj, grp, unit, part, task, ver) {
+        let scene = this.Dir + "/" + prj + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver + this.Ext
         return scene
     }
-    ListTasks(prj, unit, part) {
+    ListTasks(prj, grp, unit, part) {
         let tasks = {}
         let files = fs.readdirSync(this.Dir)
         for (let f of files) {
@@ -397,7 +397,7 @@ class Program {
                 continue
             }
             f = f.substring(0, f.length - this.Ext.length)
-            let prefix = prj + "_" + unit + "_" + part + "_"
+            let prefix = prj + "_" + grp + "_" + unit + "_" + part + "_"
             if (!f.startsWith(prefix)) {
                 continue
             }
