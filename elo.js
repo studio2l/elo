@@ -36,217 +36,218 @@ function init() {
     reloadProjects()
     loadSelected()
 
-    window.addEventListener("contextmenu", function(ev) {
-        ev.preventDefault()
-        function parentById(ev, id) {
-            for (let p of ev.path) {
-                if (p.id == id) {
-                    return p
-                }
-            }
-            return null
-        }
-        function parentByClassName(ev, cls) {
-            for (let p of ev.path) {
-                if (p.classList.contains(cls)) {
-                    return p
-                }
-            }
-            return null
-        }
-        if (parentById(ev, "project-box")) {
-            let prj = parentByClassName(ev, "item").id.split("-")[1]
-            let projectMenu = new Menu()
-            let pinProjectMenuItem = new MenuItem({
-                label: "상단에 고정",
-                click: function() {
-                    try {
-                        pinProject(prj)
-                        reloadProjects()
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                },
-            })
-            let unpinProjectMenuItem = new MenuItem({
-                label: "상단에서 제거",
-                click: function() {
-                    try {
-                        unpinProject(prj)
-                        reloadProjects()
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                },
-            })
-            if (isPinnedProject(prj)) {
-                projectMenu.append(unpinProjectMenuItem)
-            } else {
-                projectMenu.append(pinProjectMenuItem)
-            }
-            let openProjectDir = new MenuItem({
-                label: "디렉토리 열기",
-                click: function() {
-                    try {
-                        openDir(site.ProjectDir(prj))
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                }
-            })
-            projectMenu.append(openProjectDir)
-            projectMenu.popup(remote.getCurrentWindow())
-            return
-        }
-        if (parentById(ev, "group-box")) {
-            let prj = currentProject()
-            let ctg = currentCategory()
-            let grp = parentByClassName(ev, "item").id.split("-")[1]
-            let groupMenu = new Menu()
-            let pinGroupMenuItem = new MenuItem({
-                label: "상단에 고정",
-                click: function() {
-                    try {
-                        pinGroup(prj, grp)
-                        reloadGroups()
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                },
-            })
-            let unpinGroupMenuItem = new MenuItem({
-                label: "상단에서 제거",
-                click: function() {
-                    try {
-                        unpinGroup(prj, grp)
-                        reloadGroups()
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                },
-            })
-            if (isPinnedGroup(prj, grp)) {
-                groupMenu.append(unpinGroupMenuItem)
-            } else {
-                groupMenu.append(pinGroupMenuItem)
-            }
-            let openGroupDir = new MenuItem({
-                label: "디렉토리 열기",
-                click: function() {
-                    try {
-                        openDir(site.Categ(ctg).GroupDir(prj, grp))
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                }
-            })
-            groupMenu.append(openGroupDir)
-            groupMenu.popup(remote.getCurrentWindow())
-            return
-        }
-        if (parentById(ev, "unit-box")) {
-            let prj = currentProject()
-            let ctg = currentCategory()
-            let grp = currentGroup()
-            let unit = parentByClassName(ev, "item").id.split("-")[1]
-            let unitMenu = new Menu()
-            let pinUnitMenuItem = new MenuItem({
-                label: "상단에 고정",
-                click: function() {
-                    try {
-                        pinUnit(prj, grp, unit)
-                        reloadShots()
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                },
-            })
-            let unpinUnitMenuItem = new MenuItem({
-                label: "상단에서 제거",
-                click: function() {
-                    try {
-                        unpinUnit(prj, grp, unit)
-                        reloadShots()
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                },
-            })
-            if (isPinnedUnit(prj, grp, unit)) {
-                unitMenu.append(unpinUnitMenuItem)
-            } else {
-                unitMenu.append(pinUnitMenuItem)
-            }
-            let openUnitDir = new MenuItem({
-                label: "디렉토리 열기",
-                click: function() {
-                    try {
-                        openDir(site.Categ(ctg).UnitDir(prj, grp, unit))
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                }
-            })
-            unitMenu.append(openUnitDir)
-            unitMenu.popup(remote.getCurrentWindow())
-            return
-        }
-        if (parentById(ev, "part-box")) {
-            let prj = currentProject()
-            let ctg = currentCategory()
-            let grp = currentGroup()
-            let unit = currentUnit()
-            let task = parentByClassName(ev, "item").id.split("-")[1]
-            let taskMenu = new Menu()
-            let openPartDir = new MenuItem({
-                label: "디렉토리 열기",
-                click: function() {
-                    try {
-                        openDir(site.Categ(ctg).PartDir(prj, grp, unit, task))
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                }
-            })
-            taskMenu.append(openPartDir)
-            taskMenu.popup(remote.getCurrentWindow())
-            return
-        }
-        if (parentById(ev, "task-box")) {
-            let prj = currentProject()
-            let grp = currentGroup()
-            let unit = currentUnit()
-            let task = currentPart()
-            let div = parentByClassName(ev, "item")
-            let dir = div.dataset.dir
-            let taskMenu = new Menu()
-            let openTaskDir = new MenuItem({
-                label: "디렉토리 열기",
-                click: function() {
-                    try {
-                        openDir(dir)
-                    } catch(err) {
-                        console.log(err)
-                        notify(err.message)
-                    }
-                }
-            })
-            taskMenu.append(openTaskDir)
-            taskMenu.popup(remote.getCurrentWindow())
-            return
-        }
-    })
 }
+
+window.addEventListener("contextmenu", function(ev) {
+    ev.preventDefault()
+    function parentById(ev, id) {
+        for (let p of ev.path) {
+            if (p.id == id) {
+                return p
+            }
+        }
+        return null
+    }
+    function parentByClassName(ev, cls) {
+        for (let p of ev.path) {
+            if (p.classList.contains(cls)) {
+                return p
+            }
+        }
+        return null
+    }
+    if (parentById(ev, "project-box")) {
+        let prj = parentByClassName(ev, "item").id.split("-")[1]
+        let projectMenu = new Menu()
+        let pinProjectMenuItem = new MenuItem({
+            label: "상단에 고정",
+            click: function() {
+                try {
+                    pinProject(prj)
+                    reloadProjects()
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            },
+        })
+        let unpinProjectMenuItem = new MenuItem({
+            label: "상단에서 제거",
+            click: function() {
+                try {
+                    unpinProject(prj)
+                    reloadProjects()
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            },
+        })
+        if (isPinnedProject(prj)) {
+            projectMenu.append(unpinProjectMenuItem)
+        } else {
+            projectMenu.append(pinProjectMenuItem)
+        }
+        let openProjectDir = new MenuItem({
+            label: "디렉토리 열기",
+            click: function() {
+                try {
+                    openDir(site.ProjectDir(prj))
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            }
+        })
+        projectMenu.append(openProjectDir)
+        projectMenu.popup(remote.getCurrentWindow())
+        return
+    }
+    if (parentById(ev, "group-box")) {
+        let prj = currentProject()
+        let ctg = currentCategory()
+        let grp = parentByClassName(ev, "item").id.split("-")[1]
+        let groupMenu = new Menu()
+        let pinGroupMenuItem = new MenuItem({
+            label: "상단에 고정",
+            click: function() {
+                try {
+                    pinGroup(prj, grp)
+                    reloadGroups()
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            },
+        })
+        let unpinGroupMenuItem = new MenuItem({
+            label: "상단에서 제거",
+            click: function() {
+                try {
+                    unpinGroup(prj, grp)
+                    reloadGroups()
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            },
+        })
+        if (isPinnedGroup(prj, grp)) {
+            groupMenu.append(unpinGroupMenuItem)
+        } else {
+            groupMenu.append(pinGroupMenuItem)
+        }
+        let openGroupDir = new MenuItem({
+            label: "디렉토리 열기",
+            click: function() {
+                try {
+                    openDir(site.Categ(ctg).GroupDir(prj, grp))
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            }
+        })
+        groupMenu.append(openGroupDir)
+        groupMenu.popup(remote.getCurrentWindow())
+        return
+    }
+    if (parentById(ev, "unit-box")) {
+        let prj = currentProject()
+        let ctg = currentCategory()
+        let grp = currentGroup()
+        let unit = parentByClassName(ev, "item").id.split("-")[1]
+        let unitMenu = new Menu()
+        let pinUnitMenuItem = new MenuItem({
+            label: "상단에 고정",
+            click: function() {
+                try {
+                    pinUnit(prj, grp, unit)
+                    reloadShots()
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            },
+        })
+        let unpinUnitMenuItem = new MenuItem({
+            label: "상단에서 제거",
+            click: function() {
+                try {
+                    unpinUnit(prj, grp, unit)
+                    reloadShots()
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            },
+        })
+        if (isPinnedUnit(prj, grp, unit)) {
+            unitMenu.append(unpinUnitMenuItem)
+        } else {
+            unitMenu.append(pinUnitMenuItem)
+        }
+        let openUnitDir = new MenuItem({
+            label: "디렉토리 열기",
+            click: function() {
+                try {
+                    openDir(site.Categ(ctg).UnitDir(prj, grp, unit))
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            }
+        })
+        unitMenu.append(openUnitDir)
+        unitMenu.popup(remote.getCurrentWindow())
+        return
+    }
+    if (parentById(ev, "part-box")) {
+        let prj = currentProject()
+        let ctg = currentCategory()
+        let grp = currentGroup()
+        let unit = currentUnit()
+        let task = parentByClassName(ev, "item").id.split("-")[1]
+        let taskMenu = new Menu()
+        let openPartDir = new MenuItem({
+            label: "디렉토리 열기",
+            click: function() {
+                try {
+                    openDir(site.Categ(ctg).PartDir(prj, grp, unit, task))
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            }
+        })
+        taskMenu.append(openPartDir)
+        taskMenu.popup(remote.getCurrentWindow())
+        return
+    }
+    if (parentById(ev, "task-box")) {
+        let prj = currentProject()
+        let grp = currentGroup()
+        let unit = currentUnit()
+        let task = currentPart()
+        let div = parentByClassName(ev, "item")
+        let dir = div.dataset.dir
+        let taskMenu = new Menu()
+        let openTaskDir = new MenuItem({
+            label: "디렉토리 열기",
+            click: function() {
+                try {
+                    openDir(dir)
+                } catch(err) {
+                    console.log(err)
+                    notify(err.message)
+                }
+            }
+        })
+        taskMenu.append(openTaskDir)
+        taskMenu.popup(remote.getCurrentWindow())
+        return
+    }
+})
 
 // ensureElementExist는 해당 HTML 엘리먼트가 존재하는지 검사한다.
 // 존재하지 않는다면 에러를 낸다.
