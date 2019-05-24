@@ -65,9 +65,11 @@ window.addEventListener("contextmenu", function(ev) {
             label: "상단에 고정",
             click: function() {
                 try {
+                    let cur = currentProject()
                     pinProject(prj)
                     reloadProjects()
-                    restoreProjectSelection(prj)
+                    selectProject(cur)
+                    restoreProjectSelection(cur)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -78,9 +80,11 @@ window.addEventListener("contextmenu", function(ev) {
             label: "상단에서 제거",
             click: function() {
                 try {
+                    let cur = currentProject()
                     unpinProject(prj)
                     reloadProjects()
-                    restoreProjectSelection(prj)
+                    selectProject(cur)
+                    restoreProjectSelection(cur)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -408,6 +412,7 @@ function loadProject() {
     let data = fs.readFileSync(fname)
     let prj = data.toString("utf8")
     selectProject(prj)
+    restoreProjectSelection(prj)
 }
 
 // saveProject는 현재 프로젝트를 설정 디렉토리에 저장한다.
@@ -565,6 +570,8 @@ function addMyPartMenuItems() {
 function selectProjectEv(prj) {
     try {
         selectProject(prj)
+        restoreProjectSelection(prj)
+        saveProject()
         saveProjectSelection()
     } catch(err) {
         console.log(err)
@@ -587,14 +594,6 @@ function selectProject(prj) {
     let selected = document.getElementById("project-" + prj)
     selected.classList.add("selected")
     reloadGroups()
-
-    try {
-        restoreProjectSelection(prj)
-    } catch(err) {
-        console.log("해당 프로젝트에 대한 이전의 선택을 되돌리는데 실패했습니다: " + err)
-    }
-    saveProjectSelection()
-    saveProject()
 }
 
 // restoreProjectSelection은 특정 프로젝트의 이전에 선택된 항목들로 되돌린다.
