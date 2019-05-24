@@ -1019,6 +1019,11 @@ function clearBox(id) {
     box.innerText = ""
 }
 
+// clearProjects는 프로젝트 박스의 내용을 지운다.
+function clearProjects() {
+    clearBox("project-box")
+}
+
 // clearGroups는 그룹 박스의 내용을 지운다.
 function clearGroups() {
     clearBox("group-box")
@@ -1037,6 +1042,16 @@ function clearParts() {
 // clearTasks는 요소 박스의 내용을 지운다.
 function clearTasks() {
     clearBox("task-box")
+}
+
+// clearAll은 모든 박스 및 알림 바의 내용을 지운다.
+function clearAll() {
+    clearNotify()
+    clearProjects()
+    clearGroups()
+    clearUnits()
+    clearParts()
+    clearTasks()
 }
 
 // configDir은 elo의 설정 디렉토리 경로를 반환한다.
@@ -1232,10 +1247,12 @@ function openDir(dir) {
     throw Error("파일 탐색기를 찾지 못했습니다.")
 }
 
+
 // 초기화 실행
 try {
     init()
 } catch(err) {
+    clearAll()
     console.log(err)
-    notify(err.message)
+    notify("초기화에 실패: " + err.message)
 }
