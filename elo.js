@@ -67,6 +67,7 @@ window.addEventListener("contextmenu", function(ev) {
                 try {
                     pinProject(prj)
                     reloadProjects()
+                    restoreProjectSelection(prj)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -79,6 +80,7 @@ window.addEventListener("contextmenu", function(ev) {
                 try {
                     unpinProject(prj)
                     reloadProjects()
+                    restoreProjectSelection(prj)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -116,6 +118,7 @@ window.addEventListener("contextmenu", function(ev) {
                 try {
                     pinGroup(prj, ctg, grp)
                     reloadGroups()
+                    restoreProjectSelection(prj)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -128,6 +131,7 @@ window.addEventListener("contextmenu", function(ev) {
                 try {
                     unpinGroup(prj, ctg, grp)
                     reloadGroups()
+                    restoreProjectSelection(prj)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -166,6 +170,7 @@ window.addEventListener("contextmenu", function(ev) {
                 try {
                     pinUnit(prj, ctg, grp, unit)
                     reloadUnits()
+                    restoreProjectSelection(prj)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -178,6 +183,7 @@ window.addEventListener("contextmenu", function(ev) {
                 try {
                     unpinUnit(prj, ctg, grp, unit)
                     reloadUnits()
+                    restoreProjectSelection(prj)
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
