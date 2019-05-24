@@ -451,13 +451,25 @@ function loadSelected() {
         return
     }
     let data = JSON.parse(fs.readFileSync(fname))
-    if (!data.project) {
+    if (!data["project"]) {
         return
     }
     selectProject(data["project"])
+    if (!data["group"]) {
+        return
+    }
     selectGroup(data["group"])
+    if (!data["unit"]) {
+        return
+    }
     selectUnit(data["unit"])
+    if (!data["part"]) {
+        return
+    }
     selectPart(data["part"])
+    if (!data["task"]) {
+        return
+    }
     selectTask(data["task"], data["version"])
     if (data["version"]) {
         toggleVersionVisibility(data["task"])
