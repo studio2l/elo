@@ -9,6 +9,7 @@ let projectRoot = ""
 let pinnedProject = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
+let projectSelection = {}
 
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
@@ -34,8 +35,9 @@ function init() {
     loadMyPart()
 
     reloadProjects()
-    loadSelected()
+    loadProjectSelection()
 
+    loadProject()
 }
 
 window.addEventListener("contextmenu", function(ev) {
@@ -391,6 +393,25 @@ function clearNotify() {
     notifier.innerText = ""
 }
 
+// loadProject는 설정 디렉토리에 저장된 현재 프로젝트 값을 불러온다.
+function loadProject() {
+    let fname = configDir() + "/project.json"
+    if (!fs.existsSync(fname)) {
+        return
+    }
+    let data = fs.readFileSync(fname)
+    let prj = data.toString("utf8")
+    selectProject(prj)
+}
+
+// saveProject는 현재 프로젝트를 설정 디렉토리에 저장한다.
+function saveProject() {
+    let prj = currentProject()
+    let fname = configDir() + "/project.json"
+    fs.writeFileSync(fname, prj)
+}
+exports.saveCategory = saveCategory
+
 // loadCategory는 설정 디렉토리에 저장된 내 파트 값을 불러온다.
 function loadCategory() {
     let menu = document.getElementById("category-menu")
@@ -444,50 +465,27 @@ function saveMyPart() {
 }
 exports.saveMyPart = saveMyPart
 
-// loadSelected는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
-function loadSelected() {
-    let fname = configDir() + "/selected.json"
+// loadProjectSelection는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
+function loadProjectSelection() {
+    let fname = configDir() + "/project_selection.json"
     if (!fs.existsSync(fname)) {
         return
     }
-    let data = JSON.parse(fs.readFileSync(fname))
-    if (!data["project"]) {
-        return
-    }
-    selectProject(data["project"])
-    if (!data["group"]) {
-        return
-    }
-    selectGroup(data["group"])
-    if (!data["unit"]) {
-        return
-    }
-    selectUnit(data["unit"])
-    if (!data["part"]) {
-        return
-    }
-    selectPart(data["part"])
-    if (!data["task"]) {
-        return
-    }
-    selectTask(data["task"], data["version"])
-    if (data["version"]) {
-        toggleVersionVisibility(data["task"])
-    }
+    projectSelection = JSON.parse(fs.readFileSync(fname))
 }
 
-// saveSelected는 현재 선택된 항목들을 파일로 저장한다.
-function saveSelected() {
-    let data = JSON.stringify({
-        "project": currentProject(),
-        "category": currentCategory(),
+// saveProjectSelection는 현재 선택된 항목들을 파일로 저장한다.
+function saveProjectSelection() {
+    let sel = {
         "group": currentGroup(),
         "unit": currentUnit(),
         "part": currentPart(),
         "task": currentTask(),
         "version": currentVersion(),
-    })
-    let fname = configDir() + "/selected.json"
+    }
+    projectSelection[currentProject()] = sel
+    let data = JSON.stringify(projectSelection)
+    let fname = configDir() + "/project_selection.json"
     fs.writeFileSync(fname, data)
 }
 
@@ -561,7 +559,7 @@ function addMyPartMenuItems() {
 function selectProjectEv(prj) {
     try {
         selectProject(prj)
-        saveSelected()
+        saveProjectSelection()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -583,13 +581,48 @@ function selectProject(prj) {
     let selected = document.getElementById("project-" + prj)
     selected.classList.add("selected")
     reloadGroups()
+
+    try {
+        restoreProjectSelection(prj)
+    } catch(err) {
+        console.log("해당 프로젝트에 대한 이전의 선택을 되돌리는데 실패했습니다: " + err)
+    }
+    saveProjectSelection()
+    saveProject()
+}
+
+// restoreProjectSelection은 특정 프로젝트의 이전에 선택된 항목들로 되돌린다.
+function restoreProjectSelection(prj) {
+    prjSelection = projectSelection[prj]
+    if (!prjSelection) {
+        return
+    }
+    if (!prjSelection["group"]) {
+        return
+    }
+    selectGroup(prjSelection["group"])
+    if (!prjSelection["unit"]) {
+        return
+    }
+    selectUnit(prjSelection["unit"])
+    if (!prjSelection["part"]) {
+        return
+    }
+    selectPart(prjSelection["part"])
+    if (!prjSelection["task"]) {
+        return
+    }
+    selectTask(prjSelection["task"], prjSelection["version"])
+    if (prjSelection["version"]) {
+        toggleVersionVisibility(prjSelection["task"])
+    }
 }
 
 // selectGroupEv는 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
 function selectGroupEv(grp) {
     try {
         selectGroup(grp)
-        saveSelected()
+        saveProjectSelection()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -617,7 +650,7 @@ function selectGroup(grp) {
 function selectUnitEv(unit) {
     try {
         selectUnit(unit)
-        saveSelected()
+        saveProjectSelection()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -661,7 +694,7 @@ function selectUnit(unit) {
 function selectPartEv(part) {
     try {
         selectPart(part)
-        saveSelected()
+        saveProjectSelection()
     } catch(err) {
         console.log(err)
         notify(err.message)
@@ -686,7 +719,7 @@ function selectPart(part) {
 function selectTaskEv(task, ver) {
     try {
         selectTask(task, ver)
-        saveSelected()
+        saveProjectSelection()
     } catch(err) {
         console.log(err)
         notify(err.message)
