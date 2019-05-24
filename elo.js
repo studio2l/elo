@@ -114,7 +114,7 @@ window.addEventListener("contextmenu", function(ev) {
             label: "상단에 고정",
             click: function() {
                 try {
-                    pinGroup(prj, grp)
+                    pinGroup(prj, ctg, grp)
                     reloadGroups()
                 } catch(err) {
                     console.log(err)
@@ -126,7 +126,7 @@ window.addEventListener("contextmenu", function(ev) {
             label: "상단에서 제거",
             click: function() {
                 try {
-                    unpinGroup(prj, grp)
+                    unpinGroup(prj, ctg, grp)
                     reloadGroups()
                 } catch(err) {
                     console.log(err)
@@ -134,7 +134,7 @@ window.addEventListener("contextmenu", function(ev) {
                 }
             },
         })
-        if (isPinnedGroup(prj, grp)) {
+        if (isPinnedGroup(prj, ctg, grp)) {
             groupMenu.append(unpinGroupMenuItem)
         } else {
             groupMenu.append(pinGroupMenuItem)
@@ -164,8 +164,8 @@ window.addEventListener("contextmenu", function(ev) {
             label: "상단에 고정",
             click: function() {
                 try {
-                    pinUnit(prj, grp, unit)
-                    reloadShots()
+                    pinUnit(prj, ctg, grp, unit)
+                    reloadUnits()
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
@@ -176,15 +176,15 @@ window.addEventListener("contextmenu", function(ev) {
             label: "상단에서 제거",
             click: function() {
                 try {
-                    unpinUnit(prj, grp, unit)
-                    reloadShots()
+                    unpinUnit(prj, ctg, grp, unit)
+                    reloadUnits()
                 } catch(err) {
                     console.log(err)
                     notify(err.message)
                 }
             },
         })
-        if (isPinnedUnit(prj, grp, unit)) {
+        if (isPinnedUnit(prj, ctg, grp, unit)) {
             unitMenu.append(unpinUnitMenuItem)
         } else {
             unitMenu.append(pinUnitMenuItem)
@@ -1230,7 +1230,7 @@ function pinUnit(prj, ctg, grp, unit) {
 
 // unpinUnit은 특정 샷의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function unpinUnit(prj, grp, unit) {
+function unpinUnit(prj, ctg, grp, unit) {
     delete pinnedUnit[prj][ctg][grp][unit]
     if (Object.keys(pinnedUnit[prj][ctg][grp]).length == 0) {
         delete pinnedUnit[prj][ctg][grp]
@@ -1246,9 +1246,9 @@ function unpinUnit(prj, grp, unit) {
     fs.writeFileSync(fname, data)
 }
 
-function isPinnedUnit(prj, grp, unit) {
+function isPinnedUnit(prj, ctg, grp, unit) {
     try {
-        if (pinnedUnit[prj][grp][unit]) {
+        if (pinnedUnit[prj][ctg][grp][unit]) {
             return true
         }
         return false
