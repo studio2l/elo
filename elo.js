@@ -902,17 +902,7 @@ function reloadTasks() {
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  t.Program.Name
         div.onclick = function() { selectTaskEv(task, "") }
         div.ondblclick = function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, lastver) }
-        let toggle = document.createElement("div")
-        toggle.classList.add("toggle")
-        toggle.textContent = "▷"
-        toggle.dataset.hideVersions = "t"
-        toggle.onclick = function(ev) {
-            ev.stopPropagation()
-            toggleVersionVisibility(task)
-        }
-        toggle.ondblclick = function(ev) {
-            ev.stopPropagation()
-        }
+        let toggle = newVersionToggle(task)
         div.insertBefore(toggle, div.firstChild)
         box.append(div)
         for (let ver of t.Versions.reverse()) {
@@ -928,6 +918,22 @@ function reloadTasks() {
             box.append(div)
         }
     }
+}
+
+// newVersionToggle은 해당 태스크의 버전을 열고 닫을 수 있는 토글을 생성한다.
+function newVersionToggle(task) {
+    let toggle = document.createElement("div")
+    toggle.classList.add("toggle")
+    toggle.textContent = "▷"
+    toggle.dataset.hideVersions = "t"
+    toggle.onclick = function(ev) {
+        ev.stopPropagation()
+        toggleVersionVisibility(task)
+    }
+    toggle.ondblclick = function(ev) {
+        ev.stopPropagation()
+    }
+    return toggle
 }
 
 // toggleVersionVisibility는 특정 요소의 버전을 보이거나 숨긴다.
