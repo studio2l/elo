@@ -773,7 +773,7 @@ function reloadProjects() {
         if (isPinnedProject(prj)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
-        div.addEventListener("click", function() { selectProjectEv(prj) })
+        div.onclick = function() { selectProjectEv(prj) }
         box.append(div)
     }
 }
@@ -804,7 +804,7 @@ function reloadGroups() {
         if (isPinnedGroup(prj, ctg, grp)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
-        div.addEventListener("click", function() { selectGroupEv(grp) })
+        div.onclick = function() { selectGroupEv(grp) }
         box.append(div)
     }
 }
@@ -839,7 +839,7 @@ function reloadUnits() {
         if (isPinnedUnit(prj, ctg, grp, unit)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
-        div.addEventListener("click", function() { selectUnitEv(unit) })
+        div.onclick = function() { selectUnitEv(unit) }
         box.append(div)
     }
 }
@@ -866,7 +866,7 @@ function reloadParts() {
         div.id = "part-" + part
         div.dataset.val = part
         div.getElementsByClassName("item-val")[0].textContent = part
-        div.addEventListener("click", function() { selectPartEv(part) })
+        div.onclick = function() { selectPartEv(part) }
         box.append(div)
     }
 }
@@ -902,19 +902,19 @@ function reloadTasks() {
         let lastver = t.Versions[t.Versions.length - 1]
         div.getElementsByClassName("item-val")[0].textContent = task
         div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  t.Program.Name
-        div.addEventListener("click", function() { selectTaskEv(task, "") })
-        div.addEventListener("dblclick", function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, lastver) })
+        div.onclick = function() { selectTaskEv(task, "") }
+        div.ondblclick = function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, lastver) }
         let toggle = document.createElement("div")
         toggle.classList.add("toggle")
         toggle.textContent = "▷"
         toggle.dataset.hideVersions = "t"
-        toggle.addEventListener("click", function(ev) {
+        toggle.onclick = function(ev) {
             ev.stopPropagation()
             toggleVersionVisibility(task)
-        })
-        toggle.addEventListener("dblclick", function(ev) {
+        }
+        toggle.ondblclick = function(ev) {
             ev.stopPropagation()
-        })
+        }
         div.insertBefore(toggle, div.firstChild)
         box.append(div)
         for (let ver of t.Versions.reverse()) {
@@ -924,8 +924,8 @@ function reloadTasks() {
             div.dataset.val = task + "-" + ver
             div.dataset.dir = t.Program.Dir
             div.getElementsByClassName("item-val")[0].textContent = ver
-            div.addEventListener("click", function() { selectTaskEv(task, ver) })
-            div.addEventListener("dblclick", function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, ver) })
+            div.onclick = function() { selectTaskEv(task, ver) }
+            div.ondblclick = function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, ver) }
             div.style.display = "none"
             box.append(div)
         }
