@@ -485,7 +485,7 @@ function newHoudiniAt(dir) {
         },
         // CreateScene
         function(scene, env) {
-            initScript += `hou.hipFile.save('${scene}')`
+            let initScript = `hou.hipFile.save('${scene}')`
             proc.execFileSync("hython", ["-c", initScript], { "env": env })
         },
         // OpenScene
