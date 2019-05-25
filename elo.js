@@ -752,16 +752,12 @@ function reloadProjects() {
     box.innerText = ""
     let tmpl = document.getElementById("item-tmpl")
     let prjs = site.Projects()
-    let pinned = []
-    let unpinned = []
-    for (let prj of prjs) {
-        if (pinnedProject[prj]) {
-            pinned.push(prj)
-        } else {
-            unpinned.push(prj)
-        }
+    let byPin = function(a, b) {
+        if (isPinnedProject(a)) { return -1 }
+        if (isPinnedProject(b)) { return 1 }
+        return 0
     }
-    prjs = pinned.concat(unpinned)
+    prjs.sort(byPin)
     for (let prj of prjs) {
         let frag = document.importNode(tmpl.content, true)
         let div = frag.querySelector("div")
@@ -769,7 +765,7 @@ function reloadProjects() {
         div.dataset.val = prj
         div.classList.add("pinnable-item")
         div.getElementsByClassName("item-val")[0].textContent = prj
-        if (pinned.includes(prj)) {
+        if (isPinnedProject(prj)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
         div.addEventListener("click", function() { selectProjectEv(prj) })
@@ -788,16 +784,12 @@ function reloadGroups() {
     box.innerText = ""
 
     let groups = site.Categ(ctg).GroupsOf(prj)
-    let pinned = []
-    let unpinned = []
-    for (let grp of groups) {
-        if (isPinnedGroup(prj, ctg, grp)) {
-            pinned.push(grp)
-        } else {
-            unpinned.push(grp)
-        }
+    let byPin = function(a, b) {
+        if (isPinnedGroup(prj, ctg, a)) { return -1 }
+        if (isPinnedGroup(prj, ctg, b)) { return 1 }
+        return 0
     }
-    groups = pinned.concat(unpinned)
+    groups.sort(byPin)
     let tmpl = document.getElementById("item-tmpl")
     for (let grp of groups) {
         let frag = document.importNode(tmpl.content, true)
@@ -806,7 +798,7 @@ function reloadGroups() {
         div.dataset.val = grp
         div.classList.add("pinnable-item")
         div.getElementsByClassName("item-val")[0].textContent = grp
-        if (pinned.includes(grp)) {
+        if (isPinnedGroup(prj, ctg, grp)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
         div.addEventListener("click", function() { selectGroupEv(grp) })
@@ -829,16 +821,12 @@ function reloadUnits() {
     box.innerText = ""
 
     let units = site.Categ(ctg).UnitsOf(prj, grp)
-    let pinned = []
-    let unpinned = []
-    for (let unit of units) {
-        if (isPinnedUnit(prj, ctg, grp, unit)) {
-            pinned.push(unit)
-        } else {
-            unpinned.push(unit)
-        }
+    let byPin = function(a, b) {
+        if (isPinnedUnit(prj, ctg, grp, a)) { return -1 }
+        if (isPinnedUnit(prj, ctg, grp, b)) { return 1 }
+        return 0
     }
-    units = pinned.concat(unpinned)
+    units.sort(byPin)
     let tmpl = document.getElementById("item-tmpl")
     for (let unit of units) {
         let frag = document.importNode(tmpl.content, true)
@@ -847,7 +835,7 @@ function reloadUnits() {
         div.dataset.val = unit
         div.classList.add("pinnable-item")
         div.getElementsByClassName("item-val")[0].textContent = unit
-        if (pinned.includes(unit)) {
+        if (isPinnedUnit(prj, ctg, grp, unit)) {
             div.getElementsByClassName("item-pin")[0].textContent = "*"
         }
         div.addEventListener("click", function() { selectUnitEv(unit) })
