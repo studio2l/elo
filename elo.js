@@ -787,7 +787,6 @@ function reloadGroups() {
     let ctg = currentCategory()
     let box = document.getElementById("group-box")
     box.innerText = ""
-
     let groups = site.Categ(ctg).GroupsOf(prj)
     let byPin = function(a, b) {
         if (isPinnedGroup(prj, ctg, a)) { return -1 }
@@ -815,14 +814,13 @@ function reloadUnits() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let ctg = currentCategory()
     let grp = currentGroup()
     if (!grp) {
         throw Error("선택된 그룹이 없습니다.")
     }
-    let ctg = currentCategory()
     let box = document.getElementById("unit-box")
     box.innerText = ""
-
     let units = site.Categ(ctg).UnitsOf(prj, grp)
     let byPin = function(a, b) {
         if (isPinnedUnit(prj, ctg, grp, a)) { return -1 }
@@ -850,6 +848,7 @@ function reloadParts() {
     if (!prj) {
         throw Error("선택된 프로젝트가 없습니다.")
     }
+    let ctg = currentCategory()
     let grp = currentGroup()
     if (!grp) {
         throw Error("선택된 그룹이 없습니다.")
@@ -858,7 +857,6 @@ function reloadParts() {
     if (!unit) {
         throw Error("선택된 샷이 없습니다.")
     }
-    let ctg = currentCategory()
     let box = document.getElementById("part-box")
     box.innerText = ""
     for (let part of site.Categ(ctg).PartsOf(prj, grp, unit)) {
