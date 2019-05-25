@@ -747,10 +747,14 @@ function itemValue(item) {
 }
 
 // newBoxItem은 box 클래스 안에서 사용될 item HTML 요소를 생성한다.
-function newBoxItem() {
+// 받아들이는 두 인수는 각각 왼쪽(메인)과 오른쪽(서브)에 적힐 내용이다.
+function newBoxItem(val, sub) {
     let tmpl = document.getElementById("item-tmpl")
     let frag = document.importNode(tmpl.content, true)
-    return frag.querySelector("div")
+    let item = frag.querySelector("div")
+    item.getElementsByClassName("item-val")[0].textContent = val
+    item.getElementsByClassName("item-pin")[0].textContent = sub
+    return item
 }
 
 // reloadProjects는 프로젝트를 다시 부른다.
@@ -765,14 +769,14 @@ function reloadProjects() {
     }
     prjs.sort(byPin)
     for (let prj of prjs) {
-        let div = newBoxItem()
+        let mark = ""
+        if (isPinnedProject(prj)) {
+            mark = "*"
+        }
+        let div = newBoxItem(prj, mark)
         div.id = "project-" + prj
         div.dataset.val = prj
         div.classList.add("pinnable-item")
-        div.getElementsByClassName("item-val")[0].textContent = prj
-        if (isPinnedProject(prj)) {
-            div.getElementsByClassName("item-pin")[0].textContent = "*"
-        }
         div.onclick = function() { selectProjectEv(prj) }
         box.append(div)
     }
@@ -795,14 +799,14 @@ function reloadGroups() {
     }
     groups.sort(byPin)
     for (let grp of groups) {
-        let div = newBoxItem()
+        let mark = ""
+        if (isPinnedGroup(prj, ctg, grp)) {
+            mark = "*"
+        }
+        let div = newBoxItem(grp, mark)
         div.id = "group-" + grp
         div.dataset.val = grp
         div.classList.add("pinnable-item")
-        div.getElementsByClassName("item-val")[0].textContent = grp
-        if (isPinnedGroup(prj, ctg, grp)) {
-            div.getElementsByClassName("item-pin")[0].textContent = "*"
-        }
         div.onclick = function() { selectGroupEv(grp) }
         box.append(div)
     }
@@ -829,14 +833,14 @@ function reloadUnits() {
     }
     units.sort(byPin)
     for (let unit of units) {
-        let div = newBoxItem()
+        let mark = ""
+        if (isPinnedUnit(prj, ctg, grp, unit)) {
+            mark = "*"
+        }
+        let div = newBoxItem(unit, mark)
         div.id = "unit-" + unit
         div.dataset.val = unit
         div.classList.add("pinnable-item")
-        div.getElementsByClassName("item-val")[0].textContent = unit
-        if (isPinnedUnit(prj, ctg, grp, unit)) {
-            div.getElementsByClassName("item-pin")[0].textContent = "*"
-        }
         div.onclick = function() { selectUnitEv(unit) }
         box.append(div)
     }
@@ -860,10 +864,9 @@ function reloadParts() {
     let box = document.getElementById("part-box")
     box.innerText = ""
     for (let part of site.Categ(ctg).PartsOf(prj, grp, unit)) {
-        let div = newBoxItem()
+        let div = newBoxItem(part, "")
         div.id = "part-" + part
         div.dataset.val = part
-        div.getElementsByClassName("item-val")[0].textContent = part
         div.onclick = function() { selectPartEv(part) }
         box.append(div)
     }
@@ -893,25 +896,22 @@ function reloadTasks() {
     let tasks = site.Categ(ctg).TasksOf(prj, grp, unit, part)
     for (let task in tasks) {
         let t = tasks[task]
-        let div = newBoxItem()
+        let lastver = t.Versions[t.Versions.length - 1]
+        let div = newBoxItem(task, lastver + ", " + t.Program.Name)
         div.id = "task-" + task
         div.dataset.val = task
         div.dataset.dir = t.Program.Dir
-        let lastver = t.Versions[t.Versions.length - 1]
-        div.getElementsByClassName("item-val")[0].textContent = task
-        div.getElementsByClassName("item-pin")[0].textContent = lastver + ", " +  t.Program.Name
         div.onclick = function() { selectTaskEv(task, "") }
         div.ondblclick = function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, lastver) }
         let toggle = newVersionToggle(task)
         div.insertBefore(toggle, div.firstChild)
         box.append(div)
         for (let ver of t.Versions.reverse()) {
-            let div = newBoxItem()
+            let div = newBoxItem(ver, "")
             div.classList.add("task-" + task + "-versions")
             div.id = "task-" + task + "-" + ver
             div.dataset.val = task + "-" + ver
             div.dataset.dir = t.Program.Dir
-            div.getElementsByClassName("item-val")[0].textContent = ver
             div.onclick = function() { selectTaskEv(task, ver) }
             div.ondblclick = function() { openTaskEv(prj, ctg, grp, unit, part, task, t.Program.Name, ver) }
             div.style.display = "none"
