@@ -776,7 +776,6 @@ function reloadProjects() {
         let div = newBoxItem(prj, mark)
         div.id = "project-" + prj
         div.dataset.val = prj
-        div.classList.add("pinnable-item")
         div.onclick = function() { selectProjectEv(prj) }
         box.append(div)
     }
@@ -806,7 +805,6 @@ function reloadGroups() {
         let div = newBoxItem(grp, mark)
         div.id = "group-" + grp
         div.dataset.val = grp
-        div.classList.add("pinnable-item")
         div.onclick = function() { selectGroupEv(grp) }
         box.append(div)
     }
@@ -840,7 +838,6 @@ function reloadUnits() {
         let div = newBoxItem(unit, mark)
         div.id = "unit-" + unit
         div.dataset.val = unit
-        div.classList.add("pinnable-item")
         div.onclick = function() { selectUnitEv(unit) }
         box.append(div)
     }
