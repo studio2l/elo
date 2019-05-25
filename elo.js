@@ -746,11 +746,17 @@ function itemValue(item) {
     return item.dataset.val
 }
 
+// newBoxItem은 box 클래스 안에서 사용될 item HTML 요소를 생성한다.
+function newBoxItem() {
+    let tmpl = document.getElementById("item-tmpl")
+    let frag = document.importNode(tmpl.content, true)
+    return frag.querySelector("div")
+}
+
 // reloadProjects는 프로젝트를 다시 부른다.
 function reloadProjects() {
     let box = document.getElementById("project-box")
     box.innerText = ""
-    let tmpl = document.getElementById("item-tmpl")
     let prjs = site.Projects()
     let byPin = function(a, b) {
         if (isPinnedProject(a)) { return -1 }
@@ -759,8 +765,7 @@ function reloadProjects() {
     }
     prjs.sort(byPin)
     for (let prj of prjs) {
-        let frag = document.importNode(tmpl.content, true)
-        let div = frag.querySelector("div")
+        let div = newBoxItem()
         div.id = "project-" + prj
         div.dataset.val = prj
         div.classList.add("pinnable-item")
@@ -790,10 +795,8 @@ function reloadGroups() {
         return 0
     }
     groups.sort(byPin)
-    let tmpl = document.getElementById("item-tmpl")
     for (let grp of groups) {
-        let frag = document.importNode(tmpl.content, true)
-        let div = frag.querySelector("div")
+        let div = newBoxItem()
         div.id = "group-" + grp
         div.dataset.val = grp
         div.classList.add("pinnable-item")
@@ -827,10 +830,8 @@ function reloadUnits() {
         return 0
     }
     units.sort(byPin)
-    let tmpl = document.getElementById("item-tmpl")
     for (let unit of units) {
-        let frag = document.importNode(tmpl.content, true)
-        let div = frag.querySelector("div")
+        let div = newBoxItem()
         div.id = "unit-" + unit
         div.dataset.val = unit
         div.classList.add("pinnable-item")
@@ -860,10 +861,8 @@ function reloadParts() {
     let ctg = currentCategory()
     let box = document.getElementById("part-box")
     box.innerText = ""
-    let tmpl = document.getElementById("item-tmpl")
     for (let part of site.Categ(ctg).PartsOf(prj, grp, unit)) {
-        let frag = document.importNode(tmpl.content, true)
-        let div = frag.querySelector("div")
+        let div = newBoxItem()
         div.id = "part-" + part
         div.dataset.val = part
         div.getElementsByClassName("item-val")[0].textContent = part
@@ -893,12 +892,10 @@ function reloadTasks() {
     }
     let box = document.getElementById("task-box")
     box.innerText = ""
-    let tmpl = document.getElementById("item-tmpl")
     let tasks = site.Categ(ctg).TasksOf(prj, grp, unit, part)
     for (let task in tasks) {
         let t = tasks[task]
-        let frag = document.importNode(tmpl.content, true)
-        let div = frag.querySelector("div")
+        let div = newBoxItem()
         div.id = "task-" + task
         div.dataset.val = task
         div.dataset.dir = t.Program.Dir
@@ -921,8 +918,7 @@ function reloadTasks() {
         div.insertBefore(toggle, div.firstChild)
         box.append(div)
         for (let ver of t.Versions.reverse()) {
-            let frag = document.importNode(tmpl.content, true)
-            let div = frag.querySelector("div")
+            let div = newBoxItem()
             div.classList.add("task-" + task + "-versions")
             div.id = "task-" + task + "-" + ver
             div.dataset.val = task + "-" + ver
