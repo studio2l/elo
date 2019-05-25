@@ -63,33 +63,23 @@ window.addEventListener("contextmenu", function(ev) {
         let projectMenu = new Menu()
         let pinProjectMenuItem = new MenuItem({
             label: "상단에 고정",
-            click: function() {
-                try {
-                    let cur = currentProject()
-                    pinProject(prj)
-                    reloadProjects()
-                    selectProject(cur)
-                    restoreProjectSelection(cur)
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            },
+            click: event(function() {
+                let cur = currentProject()
+                pinProject(prj)
+                reloadProjects()
+                selectProject(cur)
+                restoreProjectSelection(cur)
+            }),
         })
         let unpinProjectMenuItem = new MenuItem({
             label: "상단에서 제거",
-            click: function() {
-                try {
-                    let cur = currentProject()
-                    unpinProject(prj)
-                    reloadProjects()
-                    selectProject(cur)
-                    restoreProjectSelection(cur)
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            },
+            click: event(function() {
+                let cur = currentProject()
+                unpinProject(prj)
+                reloadProjects()
+                selectProject(cur)
+                restoreProjectSelection(cur)
+            }),
         })
         if (isPinnedProject(prj)) {
             projectMenu.append(unpinProjectMenuItem)
@@ -98,14 +88,9 @@ window.addEventListener("contextmenu", function(ev) {
         }
         let openProjectDir = new MenuItem({
             label: "디렉토리 열기",
-            click: function() {
-                try {
-                    openDir(site.ProjectDir(prj))
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            }
+            click: event(function() {
+                openDir(site.ProjectDir(prj))
+            }),
         })
         projectMenu.append(openProjectDir)
         projectMenu.popup(remote.getCurrentWindow())
@@ -118,29 +103,19 @@ window.addEventListener("contextmenu", function(ev) {
         let groupMenu = new Menu()
         let pinGroupMenuItem = new MenuItem({
             label: "상단에 고정",
-            click: function() {
-                try {
-                    pinGroup(prj, ctg, grp)
-                    reloadGroups()
-                    restoreProjectSelection(prj)
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            },
+            click: event(function() {
+                pinGroup(prj, ctg, grp)
+                reloadGroups()
+                restoreProjectSelection(prj)
+            }),
         })
         let unpinGroupMenuItem = new MenuItem({
             label: "상단에서 제거",
-            click: function() {
-                try {
-                    unpinGroup(prj, ctg, grp)
-                    reloadGroups()
-                    restoreProjectSelection(prj)
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            },
+            click: event(function() {
+                unpinGroup(prj, ctg, grp)
+                reloadGroups()
+                restoreProjectSelection(prj)
+            }),
         })
         if (isPinnedGroup(prj, ctg, grp)) {
             groupMenu.append(unpinGroupMenuItem)
@@ -149,14 +124,9 @@ window.addEventListener("contextmenu", function(ev) {
         }
         let openGroupDir = new MenuItem({
             label: "디렉토리 열기",
-            click: function() {
-                try {
-                    openDir(site.Categ(ctg).GroupDir(prj, grp))
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            }
+            click: event(function() {
+                openDir(site.Categ(ctg).GroupDir(prj, grp))
+            }),
         })
         groupMenu.append(openGroupDir)
         groupMenu.popup(remote.getCurrentWindow())
@@ -170,29 +140,19 @@ window.addEventListener("contextmenu", function(ev) {
         let unitMenu = new Menu()
         let pinUnitMenuItem = new MenuItem({
             label: "상단에 고정",
-            click: function() {
-                try {
-                    pinUnit(prj, ctg, grp, unit)
-                    reloadUnits()
-                    restoreProjectSelection(prj)
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            },
+            click: event(function() {
+                pinUnit(prj, ctg, grp, unit)
+                reloadUnits()
+                restoreProjectSelection(prj)
+            }),
         })
         let unpinUnitMenuItem = new MenuItem({
             label: "상단에서 제거",
-            click: function() {
-                try {
-                    unpinUnit(prj, ctg, grp, unit)
-                    reloadUnits()
-                    restoreProjectSelection(prj)
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            },
+            click: event(function() {
+                unpinUnit(prj, ctg, grp, unit)
+                reloadUnits()
+                restoreProjectSelection(prj)
+            }),
         })
         if (isPinnedUnit(prj, ctg, grp, unit)) {
             unitMenu.append(unpinUnitMenuItem)
@@ -201,14 +161,9 @@ window.addEventListener("contextmenu", function(ev) {
         }
         let openUnitDir = new MenuItem({
             label: "디렉토리 열기",
-            click: function() {
-                try {
-                    openDir(site.Categ(ctg).UnitDir(prj, grp, unit))
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            }
+            click: event(function() {
+                openDir(site.Categ(ctg).UnitDir(prj, grp, unit))
+            }),
         })
         unitMenu.append(openUnitDir)
         unitMenu.popup(remote.getCurrentWindow())
@@ -223,14 +178,9 @@ window.addEventListener("contextmenu", function(ev) {
         let taskMenu = new Menu()
         let openPartDir = new MenuItem({
             label: "디렉토리 열기",
-            click: function() {
-                try {
-                    openDir(site.Categ(ctg).PartDir(prj, grp, unit, task))
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            }
+            click: event(function() {
+                openDir(site.Categ(ctg).PartDir(prj, grp, unit, task))
+            }),
         })
         taskMenu.append(openPartDir)
         taskMenu.popup(remote.getCurrentWindow())
@@ -246,20 +196,28 @@ window.addEventListener("contextmenu", function(ev) {
         let taskMenu = new Menu()
         let openTaskDir = new MenuItem({
             label: "디렉토리 열기",
-            click: function() {
-                try {
-                    openDir(dir)
-                } catch(err) {
-                    console.log(err)
-                    notify(err.message)
-                }
-            }
+            click: event(function() {
+                openDir(dir)
+            }),
         })
         taskMenu.append(openTaskDir)
         taskMenu.popup(remote.getCurrentWindow())
         return
     }
 })
+
+// event 함수는 받아들인 함수를 이벤트 함수로 만들어 반환한다.
+// 즉, 실행한 결과에 문제가 있었을 때 상태줄에 표시하고 로그로 기록하게 한다.
+function event(f) {
+    return function() {
+        try {
+            f()
+        } catch(err) {
+            console.log(err)
+            notify(err.message)
+        }
+    }
+}
 
 // ensureElementExist는 해당 HTML 엘리먼트가 존재하는지 검사한다.
 // 존재하지 않는다면 에러를 낸다.
@@ -291,12 +249,9 @@ exports.openModalEv = function(kind) {
         return
     }
 
-    try {
+    event(function() {
         openModal(kind)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // openModal은 생성할 항목의 종류에 맞는 모달 창을 연다.
@@ -355,34 +310,23 @@ function openModal(kind) {
     }
     input.onkeydown = function(ev) {
         if (ev.key == "Enter") {
-            try {
+            event(function() {
                 createItem()
-            } catch(err) {
-                notify(err.message)
-                throw err
-            }
+            })()
         }
     }
     input.focus()
     let apply = document.getElementById("modal-apply")
-    apply.onclick = function() {
-        try {
-            createItem()
-        } catch(err) {
-            notify(err.message)
-            throw err
-        }
-    }
+    apply.onclick = event(function() {
+        createItem()
+    })
 }
 
 // closeModalEv는 모달 사용중 사용자가 닫음 버튼을 눌렀을 때 모달을 닫는다.
 exports.closeModalEv = function() {
-    try {
+    event(function() {
         closeModal()
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // closeModal은 모달을 보이지 않도록 한다.
@@ -568,15 +512,12 @@ function addMyPartMenuItems() {
 
 // selectProjectEv는 사용자가 프로젝트를 선택했을 때 그에 맞는 샷 리스트를 보인다.
 function selectProjectEv(prj) {
-    try {
+    event(function() {
         selectProject(prj)
         restoreProjectSelection(prj)
         saveProject()
         saveProjectSelection()
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // selectProject는 사용자가 프로젝트를 선택했을 때 그에 맞는 샷 리스트를 보인다.
@@ -625,13 +566,10 @@ function restoreProjectSelection(prj) {
 
 // selectGroupEv는 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
 function selectGroupEv(grp) {
-    try {
+    event(function() {
         selectGroup(grp)
         saveProjectSelection()
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // selectGroup은 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
@@ -653,13 +591,10 @@ function selectGroup(grp) {
 // selectUnitEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
 // 추가로 내 태스크가 설정되어 있다면 그 태스크를 자동으로 선택해 준다.
 function selectUnitEv(unit) {
-    try {
+    event(function() {
         selectUnit(unit)
         saveProjectSelection()
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // selectUnit은 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
@@ -687,23 +622,17 @@ function selectUnit(unit) {
     if (!site.Categ(ctg).PartsOf(prj, grp, unit).includes(part)) {
         return
     }
-    try {
+    event(function() {
         selectPart(part)
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // selectPartEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectPartEv(part) {
-    try {
+    event(function() {
         selectPart(part)
         saveProjectSelection()
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // selectPart는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
@@ -722,13 +651,10 @@ function selectPart(part) {
 
 // selectTaskEv는 요소를 선택했을 때 그 선택을 표시한다.
 function selectTaskEv(task, ver) {
-    try {
+    event(function() {
         selectTask(task, ver)
         saveProjectSelection()
-    } catch(err) {
-        console.log(err)
-        notify(err.message)
-    }
+    })()
 }
 
 // selectTask는 요소를 선택했을 때 그 선택을 표시한다.
