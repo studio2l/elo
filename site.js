@@ -144,7 +144,7 @@ class Category {
         let tasksInfo = this.defaultTasksInfo[part]
         if (tasksInfo) {
             for (let ti of tasksInfo) {
-                this.CreateTask(prj, grp, unit, part, "v001", ti.name, ti.prog)
+                this.CreateTask(prj, grp, unit, part, ti.name, "v001", ti.prog)
             }
         }
     }
