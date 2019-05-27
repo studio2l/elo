@@ -9,7 +9,28 @@ let projectRoot = ""
 let pinnedProject = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
-let projectSelection = {}
+
+class SelectionTree {
+    constructor() {
+        this.sel = ""
+        this.sub = {}
+    }
+    Select(k) {
+        this.sel = k
+        if (!this.sub[this.sel]) {
+            this.sub[this.sel] = new SelectionTree()
+        }
+        return this.sub[this.sel]
+    }
+    Selected() {
+        return this.sel
+    }
+    Get(k) {
+        return this.sub[k]
+    }
+}
+
+let selection = new SelectionTree()
 
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
@@ -35,9 +56,13 @@ function init() {
     loadMyPart()
 
     reloadProjects()
-    loadProjectSelection()
+    loadSelection()
 
-    loadProject()
+    event(function() {
+        // 원래 있던 항목들이 사라지는 경우 아래 함수는 에러가 난다.
+        // 이런 경우에 elo가 멈춰서는 안된다.
+        restoreProjectSelection()
+    })()
 }
 
 window.addEventListener("contextmenu", function(ev) {
@@ -68,7 +93,7 @@ window.addEventListener("contextmenu", function(ev) {
                 pinProject(prj)
                 reloadProjects()
                 selectProject(cur)
-                restoreProjectSelection(cur)
+                restoreGroupSelection(cur)
             }),
         })
         let unpinProjectMenuItem = new MenuItem({
@@ -78,7 +103,7 @@ window.addEventListener("contextmenu", function(ev) {
                 unpinProject(prj)
                 reloadProjects()
                 selectProject(cur)
-                restoreProjectSelection(cur)
+                restoreGroupSelection(cur)
             }),
         })
         if (isPinnedProject(prj)) {
@@ -106,7 +131,7 @@ window.addEventListener("contextmenu", function(ev) {
             click: event(function() {
                 pinGroup(prj, ctg, grp)
                 reloadGroups()
-                restoreProjectSelection(prj)
+                restoreGroupSelection(prj)
             }),
         })
         let unpinGroupMenuItem = new MenuItem({
@@ -114,7 +139,7 @@ window.addEventListener("contextmenu", function(ev) {
             click: event(function() {
                 unpinGroup(prj, ctg, grp)
                 reloadGroups()
-                restoreProjectSelection(prj)
+                restoreGroupSelection(prj)
             }),
         })
         if (isPinnedGroup(prj, ctg, grp)) {
@@ -143,7 +168,7 @@ window.addEventListener("contextmenu", function(ev) {
             click: event(function() {
                 pinUnit(prj, ctg, grp, unit)
                 reloadUnits()
-                restoreProjectSelection(prj)
+                restoreUnitSelection(prj, ctg, grp)
             }),
         })
         let unpinUnitMenuItem = new MenuItem({
@@ -151,7 +176,7 @@ window.addEventListener("contextmenu", function(ev) {
             click: event(function() {
                 unpinUnit(prj, ctg, grp, unit)
                 reloadUnits()
-                restoreProjectSelection(prj)
+                restoreUnitSelection(prj, ctg, grp)
             }),
         })
         if (isPinnedUnit(prj, ctg, grp, unit)) {
@@ -347,26 +372,6 @@ function clearNotify() {
     notifier.innerText = ""
 }
 
-// loadProject는 설정 디렉토리에 저장된 현재 프로젝트 값을 불러온다.
-function loadProject() {
-    let fname = configDir() + "/project.json"
-    if (!fs.existsSync(fname)) {
-        return
-    }
-    let data = fs.readFileSync(fname)
-    let prj = data.toString("utf8")
-    selectProject(prj)
-    restoreProjectSelection(prj)
-}
-
-// saveProject는 현재 프로젝트를 설정 디렉토리에 저장한다.
-function saveProject() {
-    let prj = currentProject()
-    let fname = configDir() + "/project.json"
-    fs.writeFileSync(fname, prj)
-}
-exports.saveCategory = saveCategory
-
 // loadCategory는 설정 디렉토리에 저장된 내 파트 값을 불러온다.
 function loadCategory() {
     let menu = document.getElementById("category-menu")
@@ -420,28 +425,68 @@ function saveMyPart() {
 }
 exports.saveMyPart = saveMyPart
 
-// loadProjectSelection는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
-function loadProjectSelection() {
+// selectionTreeFromJSON은 json 오브젝트를 참조하여 SelectionTree 클래스를 만든다.
+function selectionTreeFromJSON(tree, json) {
+    tree.sel = json.sel
+    tree.sub = {}
+    for (let s in json.sub) {
+        tree.sub[s] = new SelectionTree()
+        selectionTreeFromJSON(tree.sub[s], json.sub[s])
+    }
+    return tree
+}
+
+// loadSelection는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
+function loadSelection() {
     let fname = configDir() + "/project_selection.json"
     if (!fs.existsSync(fname)) {
         return
     }
-    projectSelection = JSON.parse(fs.readFileSync(fname))
+    selection = selectionTreeFromJSON(selection, JSON.parse(fs.readFileSync(fname)))
 }
 
-// saveProjectSelection는 현재 선택된 항목들을 파일로 저장한다.
-function saveProjectSelection() {
-    let sel = {
-        "group": currentGroup(),
-        "unit": currentUnit(),
-        "part": currentPart(),
-        "task": currentTask(),
-        "version": currentVersion(),
-    }
-    projectSelection[currentProject()] = sel
-    let data = JSON.stringify(projectSelection)
+// saveSelection는 현재 선택된 항목들을 파일로 저장한다.
+function saveSelection() {
+    selectionChanged()
+    let data = JSON.stringify(selection, null, 2)
     let fname = configDir() + "/project_selection.json"
     fs.writeFileSync(fname, data)
+}
+
+function selectionChanged() {
+    let prj = currentProject()
+    if (!prj) {
+        return
+    }
+    let prjSel = selection.Select(prj)
+    let ctg = currentCategory()
+    if (!ctg) {
+        return
+    }
+    let ctgSel = prjSel.Select(ctg)
+    let grp = currentGroup()
+    if (!grp) {
+        return
+    }
+    let grpSel = ctgSel.Select(grp)
+    let unit = currentUnit()
+    if (!unit) {
+        return
+    }
+    let unitSel = grpSel.Select(unit)
+    let part = currentPart()
+    if (!part) {
+        return
+    }
+    let partSel = unitSel.Select(part)
+    let task = currentTask()
+    if (!task) {
+        return
+    }
+    let taskSel = partSel.Select(task)
+    let ver = currentVersion()
+    // 버전은 빈 문자열일 수도 있다.
+    taskSel.Select(ver)
 }
 
 // createProject는 하나의 프로젝트를 생성한다.
@@ -449,6 +494,7 @@ function createProject(prj) {
     site.CreateProject(prj)
     reloadProjects()
     selectProject(prj)
+    saveSelection()
 }
 
 // createGroup은 하나의 그룹을 생성한다.
@@ -456,6 +502,7 @@ function createGroup(prj, ctg, grp) {
     site.Categ(ctg).CreateGroup(prj, grp)
     reloadGroups()
     selectGroup(grp)
+    saveSelection()
 }
 
 // createUnit은 하나의 샷을 생성한다.
@@ -470,6 +517,7 @@ function createPart(prj, ctg, grp, unit, part) {
     site.Categ(ctg).CreatePart(prj, grp, unit, part)
     reloadParts()
     selectPart(part)
+    saveSelection()
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
@@ -477,6 +525,7 @@ function createTask(prj, ctg, grp, unit, part, task, ver, prog) {
     site.Categ(ctg).CreateTask(prj, grp, unit, part, task, ver, prog)
     reloadTasks()
     selectTask(task, "")
+    saveSelection()
 }
 
 // addCategoryMenuItems는 사용가능한 카테고리들을 내 태스크 메뉴에 추가한다.
@@ -514,9 +563,8 @@ function addMyPartMenuItems() {
 function selectProjectEv(prj) {
     event(function() {
         selectProject(prj)
-        restoreProjectSelection(prj)
-        saveProject()
-        saveProjectSelection()
+        restoreGroupSelection(prj)
+        saveSelection()
     })()
 }
 
@@ -537,38 +585,95 @@ function selectProject(prj) {
     reloadGroups()
 }
 
-// restoreProjectSelection은 특정 프로젝트의 이전에 선택된 항목들로 되돌린다.
-function restoreProjectSelection(prj) {
-    prjSelection = projectSelection[prj]
-    if (!prjSelection) {
+// restoreProjectSelection은 마지막으로 선택되었던 프로젝트로 선택을 되돌린다.
+// 기억된 하위 요소들도 함께 되돌린다.
+function restoreProjectSelection() {
+    let prj = selection.Selected()
+    selectProject(prj)
+    let prjSel = selection.Get(prj)
+    if (!prjSel) {
         return
     }
-    if (!prjSelection["group"]) {
+    restoreGroupSelection(prj)
+}
+
+// restoreGroupSelection은 해당 프로젝트에서 마지막으로 선택되었던 그룹으로 선택을 되돌린다.
+// 기억된 하위 요소들도 함께 되돌린다.
+function restoreGroupSelection(prj) {
+    let ctg = currentCategory()
+    let ctgSel = selection.Get(prj).Get(ctg)
+    if (!ctgSel) {
         return
     }
-    selectGroup(prjSelection["group"])
-    if (!prjSelection["unit"]) {
+    let grp = ctgSel.Selected()
+    if (!grp) {
         return
     }
-    selectUnit(prjSelection["unit"])
-    if (!prjSelection["part"]) {
+    selectGroup(grp)
+    restoreUnitSelection(prj, ctg, grp)
+}
+
+// restoreUnitSelection은 해당 그룹에서 마지막으로 선택되었던 유닛으로 선택을 되돌린다.
+// 기억된 하위 요소들도 함께 되돌린다.
+function restoreUnitSelection(prj, ctg, grp) {
+    let grpSel = selection.Get(prj).Get(ctg).Get(grp)
+    if (!grpSel) {
         return
     }
-    selectPart(prjSelection["part"])
-    if (!prjSelection["task"]) {
+    let unit = grpSel.Selected()
+    if (!unit) {
         return
     }
-    selectTask(prjSelection["task"], prjSelection["version"])
-    if (prjSelection["version"]) {
-        toggleVersionVisibility(prjSelection["task"])
+    selectUnit(unit)
+    restorePartSelection(prj, ctg, grp, unit)
+}
+
+// restorePartSelection은 해당 유닛에서 마지막으로 선택되었던 파트로 선택을 되돌린다.
+// 기억된 하위 요소들도 함께 되돌린다.
+function restorePartSelection(prj, ctg, grp, unit) {
+    let unitSel = selection.Get(prj).Get(ctg).Get(grp).Get(unit)
+    if (!unitSel) {
+        return
     }
+    let part = unitSel.Selected()
+    if (!part) {
+        part = myPart()
+        if (!site.Categ(ctg).PartsOf(prj, grp, unit).includes(part)) {
+            return
+        }
+    }
+    if (!part) {
+        return
+    }
+    selectPart(part)
+    restoreTaskSelection(prj, ctg, grp, unit, part)
+}
+
+// restoreTaskSelection은 해당 파트에서 마지막으로 선택되었던 (버전 포함) 태스크로 선택을 되돌린다.
+function restoreTaskSelection(prj, ctg, grp, unit, part) {
+    let partSel = selection.Get(prj).Get(ctg).Get(grp).Get(unit).Get(part)
+    if (!partSel) {
+        return
+    }
+    let task = partSel.Selected()
+    if (!task) {
+        return
+    }
+    let taskSel = partSel.Get(task)
+    let ver = taskSel.Selected()
+    // 버전은 빈 문자열일 수도 있다.
+    if (ver) {
+        toggleVersionVisibility(task)
+    }
+    selectTask(task, ver)
 }
 
 // selectGroupEv는 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
 function selectGroupEv(grp) {
     event(function() {
         selectGroup(grp)
-        saveProjectSelection()
+        saveSelection()
+        restoreUnitSelection(currentProject(), currentCategory(), grp)
     })()
 }
 
@@ -593,7 +698,8 @@ function selectGroup(grp) {
 function selectUnitEv(unit) {
     event(function() {
         selectUnit(unit)
-        saveProjectSelection()
+        saveSelection()
+        restorePartSelection(currentProject(), currentCategory(), currentGroup(), unit)
     })()
 }
 
@@ -611,27 +717,14 @@ function selectUnit(unit) {
     let selected = document.getElementById("unit-" + unit)
     selected.classList.add("selected")
     reloadParts()
-
-    let part = myPart()
-    if (!part) {
-        return
-    }
-    let prj = currentProject()
-    let ctg = currentCategory()
-    let grp = currentGroup()
-    if (!site.Categ(ctg).PartsOf(prj, grp, unit).includes(part)) {
-        return
-    }
-    event(function() {
-        selectPart(part)
-    })()
 }
 
 // selectPartEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectPartEv(part) {
     event(function() {
         selectPart(part)
-        saveProjectSelection()
+        saveSelection()
+        restoreTaskSelection(currentProject(), currentCategory(), currentGroup(), currentUnit(), part)
     })()
 }
 
@@ -653,7 +746,7 @@ function selectPart(part) {
 function selectTaskEv(task, ver) {
     event(function() {
         selectTask(task, ver)
-        saveProjectSelection()
+        saveSelection()
     })()
 }
 
