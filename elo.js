@@ -25,9 +25,6 @@ class SelectionTree {
     Selected() {
         return this.sel
     }
-    Get(k) {
-        return this.sub[k]
-    }
 }
 
 let selection = new SelectionTree()
@@ -589,11 +586,10 @@ function selectProject(prj) {
 // 기억된 하위 요소들도 함께 되돌린다.
 function restoreProjectSelection() {
     let prj = selection.Selected()
-    selectProject(prj)
-    let prjSel = selection.Get(prj)
-    if (!prjSel) {
+    if (!prj) {
         return
     }
+    selectProject(prj)
     restoreGroupSelection(prj)
 }
 
@@ -601,10 +597,7 @@ function restoreProjectSelection() {
 // 기억된 하위 요소들도 함께 되돌린다.
 function restoreGroupSelection(prj) {
     let ctg = currentCategory()
-    let ctgSel = selection.Get(prj).Get(ctg)
-    if (!ctgSel) {
-        return
-    }
+    let ctgSel = selection.Select(prj).Select(ctg)
     let grp = ctgSel.Selected()
     if (!grp) {
         return
@@ -616,10 +609,7 @@ function restoreGroupSelection(prj) {
 // restoreUnitSelection은 해당 그룹에서 마지막으로 선택되었던 유닛으로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
 function restoreUnitSelection(prj, ctg, grp) {
-    let grpSel = selection.Get(prj).Get(ctg).Get(grp)
-    if (!grpSel) {
-        return
-    }
+    let grpSel = selection.Select(prj).Select(ctg).Select(grp)
     let unit = grpSel.Selected()
     if (!unit) {
         return
@@ -631,10 +621,7 @@ function restoreUnitSelection(prj, ctg, grp) {
 // restorePartSelection은 해당 유닛에서 마지막으로 선택되었던 파트로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
 function restorePartSelection(prj, ctg, grp, unit) {
-    let unitSel = selection.Get(prj).Get(ctg).Get(grp).Get(unit)
-    if (!unitSel) {
-        return
-    }
+    let unitSel = selection.Select(prj).Select(ctg).Select(grp).Select(unit)
     let part = unitSel.Selected()
     if (!part) {
         part = myPart()
@@ -651,15 +638,12 @@ function restorePartSelection(prj, ctg, grp, unit) {
 
 // restoreTaskSelection은 해당 파트에서 마지막으로 선택되었던 (버전 포함) 태스크로 선택을 되돌린다.
 function restoreTaskSelection(prj, ctg, grp, unit, part) {
-    let partSel = selection.Get(prj).Get(ctg).Get(grp).Get(unit).Get(part)
-    if (!partSel) {
-        return
-    }
+    let partSel = selection.Select(prj).Select(ctg).Select(grp).Select(unit).Select(part)
     let task = partSel.Selected()
     if (!task) {
         return
     }
-    let taskSel = partSel.Get(task)
+    let taskSel = partSel.Select(task)
     let ver = taskSel.Selected()
     // 버전은 빈 문자열일 수도 있다.
     if (ver) {
