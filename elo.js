@@ -332,6 +332,7 @@ function openModal(kind) {
         if (ev.key == "Enter") {
             event(function() {
                 createItem()
+                saveSelection()
             })()
         }
     }
@@ -339,6 +340,7 @@ function openModal(kind) {
     let apply = document.getElementById("modal-apply")
     apply.onclick = event(function() {
         createItem()
+        saveSelection()
     })
 }
 
@@ -489,7 +491,6 @@ function createProject(prj) {
     site.CreateProject(prj)
     reloadProjects()
     selectProject(prj)
-    saveSelection()
 }
 
 // createGroup은 하나의 그룹을 생성한다.
@@ -497,7 +498,6 @@ function createGroup(prj, ctg, grp) {
     site.Categ(ctg).CreateGroup(prj, grp)
     reloadGroups()
     selectGroup(grp)
-    saveSelection()
 }
 
 // createUnit은 하나의 샷을 생성한다.
@@ -512,7 +512,6 @@ function createPart(prj, ctg, grp, unit, part) {
     site.Categ(ctg).CreatePart(prj, grp, unit, part)
     reloadParts()
     selectPart(part)
-    saveSelection()
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
@@ -520,7 +519,6 @@ function createTask(prj, ctg, grp, unit, part, task, ver, prog) {
     site.Categ(ctg).CreateTask(prj, grp, unit, part, task, ver, prog)
     reloadTasks()
     selectTask(task, "")
-    saveSelection()
 }
 
 // addCategoryMenuItems는 사용가능한 카테고리들을 내 태스크 메뉴에 추가한다.
