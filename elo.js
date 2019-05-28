@@ -251,8 +251,6 @@ function ensureElementExist(id) {
 }
 
 // openModalEv는 사용자가 항목 추가 버튼을 눌렀을 때 그에 맞는 모달 창을 연다.
-// 예외적으로 자동으로 생성할 수 있다고 판단하는 몇 몇의 경우에는 창은 열리지 않고
-// 해당 항목을 자동으로 만든다.
 exports.openModalEv = function(kind) {
     if (kind == "group" && !currentProject()) {
         notify("아직 프로젝트를 선택하지 않았습니다.")
