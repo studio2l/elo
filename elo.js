@@ -435,7 +435,7 @@ function selectionTreeFromJSON(tree, json) {
 
 // loadSelection는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
 function loadSelection() {
-    let fname = configDir() + "/project_selection.json"
+    let fname = configDir() + "/selection.json"
     if (!fs.existsSync(fname)) {
         return
     }
@@ -446,7 +446,7 @@ function loadSelection() {
 function saveSelection() {
     selectionChanged()
     let data = JSON.stringify(selection, null, 2)
-    let fname = configDir() + "/project_selection.json"
+    let fname = configDir() + "/selection.json"
     fs.writeFileSync(fname, data)
 }
 
