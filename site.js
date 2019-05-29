@@ -451,11 +451,19 @@ standalone.initialize(name="python")
 cmds.file(rename="` + scene + `")
 cmds.file(save=True)
 `
-            proc.execFileSync("mayapy", ["-c", initScript], { "env": env })
+            let cmd = "mayapy"
+            if (process.platform == "win32") {
+                cmd = "C:\\Program Files\\Autodesk\\Maya2018\\bin\\mayapy"
+            }
+            proc.execFileSync(cmd, ["-c", initScript], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            proc.execFile("maya", [scene], { "env": env }, handleError)
+            let cmd = "maya"
+            if (process.platform == "win32") {
+                cmd = "C:\\Program Files\\Autodesk\\Maya2018\\bin\\maya"
+            }
+            proc.execFile(cmd, [scene], { "env": env }, handleError)
         },
     )
     return maya
