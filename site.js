@@ -495,7 +495,7 @@ function newHoudiniAt(dir) {
             if (process.platform == "win32") {
                 cmd = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin\\houdini"
             }
-            proc.execFile(cmd, [scene], { "env": env }, handleError)
+            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         },
     )
     return houdini
