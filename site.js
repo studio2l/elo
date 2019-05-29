@@ -431,12 +431,12 @@ function newMayaAt(dir) {
         ".mb",
         // Env
         function() {
+            let env = cloneEnv()
             if (process.platform == "win32") {
-                let env = cloneEnv()
                 env.PATH = "C:\\Program Files\\Autodesk\\Maya2018\\bin;" + env.PATH
                 return env
             }
-            return process.env
+            return env
         },
         // CreateScene
         function(scene, env) {
@@ -471,12 +471,12 @@ function newHoudiniAt(dir) {
         ".hip",
         // Env
         function() {
+            let env = cloneEnv()
             if (process.platform == "win32") {
-                let env = cloneEnv()
                 env.PATH = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin;" + env.PATH
                 return env
             }
-            return process.env
+            return env
         },
         // CreateScene
         function(scene, env) {
@@ -502,12 +502,12 @@ function newNukeAt(dir) {
         ".nk",
         // Env
         function() {
+            let env = cloneEnv()
             if (process.platform == "win32") {
-                let env = cloneEnv()
                 env.PATH = "C:\\Program Files\\Nuke10.0v3;" + env.PATH
                 return env
             }
-            return process.env
+            return env
         },
         // CreateScene
         function(scene, env) {
