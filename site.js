@@ -474,11 +474,7 @@ function newHoudiniAt(dir) {
         function() {
             let env = cloneEnv()
             env.SITE_HOUDINI_PATH = siteRoot + "/global/houdini"
-            if (process.platform == "win32") {
-                env.HOUDINI_PATH = env.SITE_HOUDINI_PATH + ";&"
-            } else {
-                env.HOUDINI_PATH = env.SITE_HOUDINI_PATH + ":&"
-            }
+            env.HOUDINI_PATH = joinEnvValues([env.SITE_HOUDINI_PATH, "&"])
             return env
         },
         // CreateScene
@@ -591,6 +587,17 @@ function cloneEnv() {
         env[e] = process.env[e]
     }
     return env
+}
+
+// joinEnv는 환경변수 값이 리스트 형식일 때 이를 OS별 환경변수 구분자를 이용해 합쳐준다.
+function joinEnvValues(vals) {
+    if (!Array.isArray(vals)) {
+        throw Error("vals가 array 형식이어야 합니다.")
+    }
+    if (process.platform == "win32") {
+        return vals.join(";")
+    }
+    return vals.join(":")
 }
 
 // subdir은 서브 디렉토리의 이름과 권한을 하나의 오브젝트로 묶어 반환한다.
