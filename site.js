@@ -473,7 +473,6 @@ function newHoudiniAt(dir) {
         function() {
             let env = cloneEnv()
             if (process.platform == "win32") {
-                env.PATH = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin;" + env.PATH
                 return env
             }
             return env
@@ -481,11 +480,19 @@ function newHoudiniAt(dir) {
         // CreateScene
         function(scene, env) {
             let initScript = `hou.hipFile.save('${scene}')`
-            proc.execFileSync("hython", ["-c", initScript], { "env": env })
+            let cmd = "hython"
+            if (process.platform == "win32") {
+                cmd = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin\\hython"
+            }
+            proc.execFileSync(cmd, ["-c", initScript], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            proc.execFile("houdini", [scene], { "env": env }, handleError)
+            let cmd = "houdini"
+            if (process.platform == "win32") {
+                cmd = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin\\houdini"
+            }
+            proc.execFile(cmd, [scene], { "env": env }, handleError)
         },
     )
     return houdini
