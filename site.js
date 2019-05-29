@@ -510,19 +510,25 @@ function newNukeAt(dir) {
         // Env
         function() {
             let env = cloneEnv()
-            if (process.platform == "win32") {
-                env.PATH = "C:\\Program Files\\Nuke10.0v3;" + env.PATH
-                return env
-            }
+            env.SITE_NUKE_PATH = siteRoot + "/global/nuke"
+            env.NUKE_PATH = joinEnvValues([env.SITE_NUKE_PATH, env.NUKE_PATH])
             return env
         },
         // CreateScene
         function(scene, env) {
-            proc.execFileSync("python", ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
+            let cmd = "python"
+            if (process.platform == "win32") {
+                cmd = "C:\\Program Files\\Nuke10.0v3\\python"
+            }
+            proc.execFileSync(cmd, ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            proc.execFile("Nuke10.0", ["--nukex", scene], { "env": env }, handleError)
+            let cmd = "Nuke10.0"
+            if (process.platform == "win32") {
+                cmd = "C:\\Program Files\\Nuke10.0v3\\Nuke10.0"
+            }
+            proc.execFile(cmd, ["--nukex", scene], { "env": env }, handleError)
         },
     )
     return nuke
