@@ -3,43 +3,38 @@
 const fs = require("fs")
 const proc = require("child_process")
 
+let siteRoot = ""
+let projectRoot = ""
+
 // Init은 사이트 설정을 초기화한다.
 function Init() {
-    let prjRoot = projectRoot()
-    if (!prjRoot) {
-        throw Error("Elo를 사용하시기 전, 우선 PROJECT_ROOT 또는 SITE_ROOT 환경변수를 설정해 주세요.")
+    siteRoot = process.env.SITE_ROOT
+    if (!siteRoot) {
+        throw Error("Elo를 사용하시기 전, 우선 SITE_ROOT 환경변수를 설정해 주세요.")
     }
-    if (!fs.existsSync(prjRoot)) {
-        fs.mkdirSync(prjRoot)
+    projectRoot = process.env.PROJECT_ROOT
+    if (!projectRoot) {
+        projectRoot = siteRoot + "/project"
+    }
+    if (!fs.existsSync(projectRoot)) {
+        fs.mkdirSync(projectRoot)
     }
 }
 exports.Init = Init
 
 // 루트
 
-// projectRoot는 사이트의 프로젝트 루트를 반환한다.
-// 만일 아직 잡혀있지 않다면 null을 반환한다.
-function projectRoot() {
-    if (process.env.PROJECT_ROOT) {
-        return process.env.PROJECT_ROOT.replace(/\\/g, "/")
-    }
-    if (process.env.SITE_ROOT) {
-        return process.env.SITE_ROOT.replace(/\\/g, "/") + "/project"
-    }
-    return null
-}
-
 // 프로젝트
 
 // ProjectDir은 해당 프로젝트의 디렉토리 경로를 반환한다.
 function ProjectDir(prj) {
-    return projectRoot() + "/" + prj
+    return projectRoot + "/" + prj
 }
 exports.ProjectDir = ProjectDir
 
 // Projects는 사이트의 프로젝트들을 반환한다.
 function Projects() {
-    let d = projectRoot()
+    let d = projectRoot
     return childDirs(d)
 }
 exports.Projects = Projects
