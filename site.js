@@ -472,8 +472,11 @@ function newHoudiniAt(dir) {
         // Env
         function() {
             let env = cloneEnv()
+            env.SITE_HOUDINI_PATH = siteRoot + "/global/houdini"
             if (process.platform == "win32") {
-                return env
+                env.HOUDINI_PATH = env.SITE_HOUDINI_PATH + ";&"
+            } else {
+                env.HOUDINI_PATH = env.SITE_HOUDINI_PATH + ":&"
             }
             return env
         },
