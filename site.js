@@ -100,9 +100,7 @@ class Category {
         return childDirs(d)
     }
     CreateGroup(prj, grp) {
-        console.log(prj, grp)
         let d = this.GroupDir(prj, grp)
-        console.log(d)
         fs.mkdirSync(d)
     }
 
@@ -176,7 +174,11 @@ class Category {
         let progs = this.ProgramsOf(prj, grp, unit, part)
         let p = progs[prog]
         let scene = p.SceneName(prj, grp, unit, part, task, ver)
-        let env = p.Env(prj, grp, unit, part, task)
+        let env = cloneEnv()
+        let sceneEnv = this.SceneEnviron(prj, grp, unit, part, task)
+        for (let e in sceneEnv) {
+            env[e] = sceneEnv[e]
+        }
         p.CreateScene(scene, env)
     }
     OpenTask(prj, grp, unit, part, task, prog, ver, handleError) {
@@ -186,7 +188,7 @@ class Category {
             notify(task + " 태스크에 " + prog + " 프로그램 정보가 등록되어 있지 않습니다.")
         }
         let scene = p.SceneName(prj, grp, unit, part, task, ver)
-        let env = p.Env()
+        let env = cloneEnv()
         let sceneEnv = this.SceneEnviron(prj, grp, unit, part, task)
         for (let e in sceneEnv) {
             env[e] = sceneEnv[e]
@@ -375,11 +377,10 @@ class Task {
 
 // Program은 씬을 생성하고 실행할 프로그램이다.
 class Program {
-    constructor(name, dir, ext, Env, CreateScene, OpenScene) {
+    constructor(name, dir, ext, CreateScene, OpenScene) {
         this.Name = name
         this.Dir = dir
         this.Ext = ext
-        this.Env = Env
         this.CreateScene = CreateScene
         this.OpenScene = OpenScene
     }
@@ -430,38 +431,19 @@ function newMayaAt(dir) {
         dir,
         // ext
         ".mb",
-        // Env
-        function() {
-            let env = cloneEnv()
-            if (process.platform == "win32") {
-                env.PATH = "C:\\Program Files\\Autodesk\\Maya2018\\bin;" + env.PATH
-                return env
-            }
-            return env
-        },
         // CreateScene
         function(scene, env) {
-            let initScript = `
-# encoding: utf-8
-
-from maya import standalone
-from maya import cmds
-
-standalone.initialize(name="python")
-cmds.file(rename="` + scene + `")
-cmds.file(save=True)
-`
-            let cmd = "mayapy"
+            let cmd = "runner/maya_create.sh"
             if (process.platform == "win32") {
-                cmd = "C:\\Program Files\\Autodesk\\Maya2018\\bin\\mayapy"
+                cmd = "runner/maya_create.bat"
             }
-            proc.execFileSync(cmd, ["-c", initScript], { "env": env })
+            proc.execFileSync(cmd, [scene], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            let cmd = "maya"
+            let cmd = "runner/maya_open.sh"
             if (process.platform == "win32") {
-                cmd = "C:\\Program Files\\Autodesk\\Maya2018\\bin\\maya"
+                cmd = "runner/maya_open.bat"
             }
             proc.execFile(cmd, [scene], { "env": env }, handleError)
         },
@@ -478,27 +460,19 @@ function newHoudiniAt(dir) {
         dir,
         // ext
         ".hip",
-        // Env
-        function() {
-            let env = cloneEnv()
-            env.SITE_HOUDINI_PATH = siteRoot + "/global/houdini"
-            env.HOUDINI_PATH = joinEnvValues([env.SITE_HOUDINI_PATH, "&"])
-            return env
-        },
         // CreateScene
         function(scene, env) {
-            let initScript = `hou.hipFile.save('${scene}')`
-            let cmd = "hython"
+            let cmd = "runner/houdini_create.sh"
             if (process.platform == "win32") {
-                cmd = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin\\hython"
+                cmd = "runner/houdini_create.bat"
             }
-            proc.execFileSync(cmd, ["-c", initScript], { "env": env })
+            proc.execFileSync(cmd, [scene], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            let cmd = "houdini"
+            let cmd = "runner/houdini_open.sh"
             if (process.platform == "win32") {
-                cmd = "C:\\Program Files\\Side Effects Software\\Houdini 16.5.378\\bin\\houdini"
+                cmd = "runner/houdini_open.bat"
             }
             proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         },
@@ -515,28 +489,21 @@ function newNukeAt(dir) {
         dir,
         // ext
         ".nk",
-        // Env
-        function() {
-            let env = cloneEnv()
-            env.SITE_NUKE_PATH = siteRoot + "/global/nuke"
-            env.NUKE_PATH = joinEnvValues([env.SITE_NUKE_PATH, env.NUKE_PATH])
-            return env
-        },
         // CreateScene
         function(scene, env) {
-            let cmd = "python"
+            let cmd = "runner/nuke_create.sh"
             if (process.platform == "win32") {
-                cmd = "C:\\Program Files\\Nuke10.0v3\\python"
+                cmd = "runner/nuke_create.bat"
             }
-            proc.execFileSync(cmd, ["-c", `import nuke;nuke.scriptSaveAs('${scene}')`], { "env": env })
+            proc.execFileSync(cmd, [scene], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            let cmd = "Nuke10.0"
+            let cmd = "runner/nuke_open.sh"
             if (process.platform == "win32") {
-                cmd = "C:\\Program Files\\Nuke10.0v3\\Nuke10.0"
+                cmd = "runner/nuke_open.bat"
             }
-            proc.execFile(cmd, ["--nukex", scene], { "env": env }, handleError)
+            proc.execFile(cmd, [scene], { "env": env }, handleError)
         },
     )
     return nuke
