@@ -20,6 +20,7 @@ function Init() {
         fs.mkdirSync(projectRoot)
     }
 }
+
 exports.Init = Init
 
 // 루트
@@ -433,20 +434,20 @@ function newMayaAt(dir) {
         ".mb",
         // CreateScene
         function(scene, env) {
-            let cmd = "runner/maya_create.sh"
+            let cmd = siteRoot + "/runner/maya_create.sh"
             if (process.platform == "win32") {
-                cmd = "runner/maya_create.bat"
+                cmd = siteRoot + "/runner/maya_create.bat"
             }
             proc.execFileSync(cmd, [scene], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            let cmd = "runner/maya_open.sh"
+            let cmd = siteRoot + "/runner/maya_open.sh"
             if (process.platform == "win32") {
-                cmd = "runner/maya_open.bat"
+                cmd = siteRoot + "/runner/maya_open.bat"
             }
             proc.execFile(cmd, [scene], { "env": env }, handleError)
-        },
+        }
     )
     return maya
 }
@@ -462,20 +463,20 @@ function newHoudiniAt(dir) {
         ".hip",
         // CreateScene
         function(scene, env) {
-            let cmd = "runner/houdini_create.sh"
+            let cmd = siteRoot + "/runner/houdini_create.sh"
             if (process.platform == "win32") {
-                cmd = "runner/houdini_create.bat"
+                cmd = siteRoot + "/runner/houdini_create.bat"
             }
             proc.execFileSync(cmd, [scene], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            let cmd = "runner/houdini_open.sh"
+            let cmd = siteRoot + "/runner/houdini_open.sh"
             if (process.platform == "win32") {
-                cmd = "runner/houdini_open.bat"
+                cmd = siteRoot + "/runner/houdini_open.bat"
             }
-            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
-        },
+            proc.execFile(cmd, [scene], { "env": env }, handleError)
+        }
     )
     return houdini
 }
@@ -491,17 +492,17 @@ function newNukeAt(dir) {
         ".nk",
         // CreateScene
         function(scene, env) {
-            let cmd = "runner/nuke_create.sh"
+            let cmd = siteRoot + "/runner/nuke_create.sh"
             if (process.platform == "win32") {
-                cmd = "runner/nuke_create.bat"
+                cmd = siteRoot + "/runner/nuke_create.bat"
             }
             proc.execFileSync(cmd, [scene], { "env": env })
         },
         // OpenScene
         function(scene, env, handleError) {
-            let cmd = "runner/nuke_open.sh"
+            let cmd = siteRoot + "/runner/nuke_open.sh"
             if (process.platform == "win32") {
-                cmd = "runner/nuke_open.bat"
+                cmd = siteRoot + "/runner/nuke_open.bat"
             }
             proc.execFile(cmd, [scene], { "env": env }, handleError)
         },
