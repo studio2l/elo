@@ -446,7 +446,7 @@ function newMayaAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/maya_open.bat"
             }
-            proc.execFile(cmd, [scene], { "env": env }, handleError)
+            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         }
     )
     return maya
@@ -475,7 +475,7 @@ function newHoudiniAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/houdini_open.bat"
             }
-            proc.execFile(cmd, [scene], { "env": env }, handleError)
+            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         }
     )
     return houdini
@@ -504,7 +504,7 @@ function newNukeAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/nuke_open.bat"
             }
-            proc.execFile(cmd, [scene], { "env": env }, handleError)
+            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         },
     )
     return nuke
