@@ -49,7 +49,7 @@ function init() {
     addCategoryMenuItems()
     loadCategory()
 
-    addMyPartMenuItems()
+    reloadMyPartMenuItems()
     loadMyPart()
 
     reloadProjects()
@@ -392,6 +392,8 @@ function saveCategory() {
     document.getElementById("unit-label").innerText = site.Categ(ctg).Label
     let fname = configDir() + "/category.json"
     fs.writeFileSync(fname, ctg)
+    reloadMyPartMenuItems()
+    loadMyPart()
     selectProject(currentProject())
 }
 exports.saveCategory = saveCategory
@@ -402,10 +404,14 @@ function myPart() {
     return menu.value
 }
 
-// loadMyPart는 설정 디렉토리에 저장된 내 파트 값을 불러온다.
+// loadMyPart는 설정 디렉토리에 저장된 현재 카테고리에 대한 내 파트 값을 불러온다.
 function loadMyPart() {
+    let ctg = currentCategory()
+    if (!ctg) {
+        return
+    }
     let menu = document.getElementById("my-part-menu")
-    let fname = configDir() + "/my-part.json"
+    let fname = configDir() + "/my-" + ctg + "-part.json"
     if (!fs.existsSync(fname)) {
         menu.value = ""
         return
@@ -414,10 +420,14 @@ function loadMyPart() {
     menu.value = data.toString("utf8")
 }
 
-// saveMyPart는 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
+// saveMyPart는 현재 카테고리에서 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
 function saveMyPart() {
+    let ctg = currentCategory()
+    if (!ctg) {
+        return
+    }
     let menu = document.getElementById("my-part-menu")
-    let fname = configDir() + "/my-part.json"
+    let fname = configDir() + "/my-" + ctg + "-part.json"
     fs.writeFileSync(fname, menu.value)
 }
 exports.saveMyPart = saveMyPart
@@ -534,17 +544,21 @@ function addCategoryMenuItems() {
     }
 }
 
-// addMyPartMenuItems는 사용가능한 태스크들을 내 태스크 메뉴에 추가한다.
-function addMyPartMenuItems() {
+// reloadMyPartMenuItems는 현재 카테고리의 사용 가능한 태스크들을 내 태스크 메뉴에 추가한다.
+function reloadMyPartMenuItems() {
+    let ctg = currentCategory()
+    if (!ctg) {
+        return
+    }
     let menu = document.getElementById("my-part-menu")
     if (!menu) {
         throw Error("my-part-menu가 없습니다.")
     }
+    menu.innerText = ""
     let opt = document.createElement("option")
     opt.text = "없음"
     opt.value = ""
     menu.add(opt)
-    let ctg = currentCategory()
     for (let part of site.Categ(ctg).Parts) {
         let opt = document.createElement("option")
         opt.text = part
