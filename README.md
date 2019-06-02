@@ -19,3 +19,14 @@ $ npm install
 ```bash
 $ npm start
 ```
+
+# 배포
+
+```bash
+# electron은 yarn을 이용한 배포를 추천하고 있습니다.
+# 아래 명령을 통해 yarn을 설치할 수 있습니다.
+# npm install --global yarn
+$ yarn build
+```
+
+이렇게 하면 dist 폴더에 해당 OS에 대한 설치 파일이 생깁니다.
