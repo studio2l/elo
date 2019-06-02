@@ -20,7 +20,9 @@ $ npm install
 $ npm start
 ```
 
-<img src="https://raw.githubusercontent.com/studio2l/elo/master/asset/elo.png" width="640"></img>
+실행이 잘 되었다면 아래와 같은 프로그램 화면을 볼 수 있습니다.
+
+<img src="https://raw.githubusercontent.com/studio2l/elo/master/asset/elo.png" width="480"></img>
 
 ## 배포
 
