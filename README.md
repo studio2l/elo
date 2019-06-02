@@ -2,7 +2,7 @@
 
 elo는 투엘의 씬 오프너입니다.
 
-# 설치
+## 설치
 
 elo는 node.js 10.15.3 버전을 사용하여 만들어지고 있습니다. `https://nodejs.org/` 에서 node.js를 설치하세요.
 
@@ -14,13 +14,13 @@ $ cd elo
 $ npm install
 ```
 
-# 실행
+## 실행
 
 ```bash
 $ npm start
 ```
 
-# 배포
+## 배포
 
 ```bash
 # electron은 yarn을 이용한 배포를 추천하고 있습니다.
