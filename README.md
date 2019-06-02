@@ -20,7 +20,7 @@ $ npm install
 $ npm start
 ```
 
-![](asset/elo.png)
+<img src="https://raw.githubusercontent.com/studio2l/elo/master/asset/elo.png" width="640"></img>
 
 ## 배포
 
