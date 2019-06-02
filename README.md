@@ -2,6 +2,8 @@
 
 elo는 투엘의 씬 오프너입니다.
 
+<img src="https://raw.githubusercontent.com/studio2l/elo/master/asset/elo.png" width="480"></img>
+
 ## 설치
 
 elo는 node.js 10.15.3 버전을 사용하여 만들어지고 있습니다. `https://nodejs.org/` 에서 node.js를 설치하세요.
@@ -19,10 +21,6 @@ $ npm install
 ```bash
 $ npm start
 ```
-
-실행이 잘 되었다면 아래와 같은 프로그램 화면을 볼 수 있습니다.
-
-<img src="https://raw.githubusercontent.com/studio2l/elo/master/asset/elo.png" width="480"></img>
 
 ## 배포
 
