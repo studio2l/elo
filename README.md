@@ -20,6 +20,8 @@ $ npm install
 $ npm start
 ```
 
+![](asset/elo.png)
+
 ## 배포
 
 ```bash
