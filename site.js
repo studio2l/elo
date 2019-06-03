@@ -249,7 +249,6 @@ let Shot = new Category({
         subdir("pub/cam", "2775"),
         subdir("pub/geo", "2775"),
         subdir("pub/char", "2775"),
-        subdir("render", "2775"),
         subdir("work", "2775"),
     ],
     Parts: [
