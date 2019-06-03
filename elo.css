@@ -13,6 +13,28 @@ body {
 	font-family: 'Open Sans', sans-serif;
 }
 
+#console {
+	display: none;
+	position: fixed;
+	z-index: 2;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	flex-direction:column;
+	background-color: #FFFFFF;
+}
+
+#console-display {
+	flex:1;
+	border:solid 1px #AAAAAA;
+	margin: 0.5rem;
+}
+
+#console-close {
+	margin: 0.5rem;
+}
+
 #modal {
 	display: none;
 	position: fixed;

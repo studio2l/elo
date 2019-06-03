@@ -250,6 +250,28 @@ function ensureElementExist(id) {
     }
 }
 
+exports.openConsoleEv = function() {
+    event(function() {
+        openConsole()
+    })()
+}
+
+function openConsole() {
+    let m = document.getElementById("console")
+    m.style.display = "flex"
+}
+
+exports.closeConsoleEv = function() {
+    event(function() {
+        closeConsole()
+    })()
+}
+
+function closeConsole() {
+    let m = document.getElementById("console")
+    m.style.display = "none"
+}
+
 // openModalEv는 사용자가 항목 추가 버튼을 눌렀을 때 그에 맞는 모달 창을 연다.
 exports.openModalEv = function(kind) {
     if (kind == "group" && !currentProject()) {
