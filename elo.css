@@ -13,7 +13,7 @@ body {
 	font-family: 'Open Sans', sans-serif;
 }
 
-#console {
+#history {
 	display: none;
 	position: fixed;
 	z-index: 2;
@@ -25,14 +25,16 @@ body {
 	background-color: #FFFFFF;
 }
 
-#console-display {
+#history-content {
 	flex:1;
 	border:solid 1px #AAAAAA;
-	margin: 0.5rem;
+	margin: 1rem;
+	overflow: auto;
 }
 
-#console-close {
-	margin: 0.5rem;
+#history-close {
+	height:2rem;
+	margin:0rem 1rem 1rem 1rem;
 }
 
 #modal {

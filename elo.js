@@ -250,25 +250,25 @@ function ensureElementExist(id) {
     }
 }
 
-exports.openConsoleEv = function() {
+exports.openHistoryEv = function() {
     event(function() {
-        openConsole()
+        openHistory()
     })()
 }
 
-function openConsole() {
-    let m = document.getElementById("console")
+function openHistory() {
+    let m = document.getElementById("history")
     m.style.display = "flex"
 }
 
-exports.closeConsoleEv = function() {
+exports.closeHistoryEv = function() {
     event(function() {
-        closeConsole()
+        closeHistory()
     })()
 }
 
-function closeConsole() {
-    let m = document.getElementById("console")
+function closeHistory() {
+    let m = document.getElementById("history")
     m.style.display = "none"
 }
 
@@ -381,8 +381,16 @@ function closeModal() {
 
 // notify는 아래쪽 표시줄에 text를 표시한다.
 function notify(text) {
+    let historyBox = document.getElementById("history-content")
+    let pre = document.createElement("pre")
+    pre.style.color = "black"
+    pre.innerText = text
+    historyBox.appendChild(pre)
+    // notifier는 한줄의 메세지만 보일 수 있다.
+    // 마지막 줄을 보이기로 한다.
+    let line = text.trim().split("\n")
     let notifier = document.getElementById("notifier")
-    notifier.innerText = text
+    notifier.innerText = line
 }
 
 // clearNotify는 아래쪽 표시줄에 기존에 표시된 내용을 지운다.
