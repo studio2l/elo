@@ -1,7 +1,7 @@
 {
   "name": "elo",
   "version": "0.0.2",
-  "description": "A minimal Electron application",
+  "description": "2L's Scene Opener",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
@@ -20,11 +20,10 @@
   },
   "repository": "https://github.com/studio2l/elo",
   "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
+    "2L",
+    "VFX",
+    "Scene",
+    "Open",
   ],
   "author": "Studio 2L",
   "license": "BSD 3-Clause",
@@ -32,6 +31,6 @@
     "electron": "^4.1.1",
     "electron-builder": "^20.39.0"
   },
-  "dependencies": {  
+  "dependencies": {
   }
 }
