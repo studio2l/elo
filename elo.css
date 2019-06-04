@@ -13,7 +13,7 @@ body {
 	font-family: 'Open Sans', sans-serif;
 }
 
-#history {
+#log {
 	display: none;
 	position: fixed;
 	z-index: 2;
@@ -25,14 +25,14 @@ body {
 	background-color: #FFFFFF;
 }
 
-#history-content {
+#log-content {
 	flex:1;
 	border:solid 1px #AAAAAA;
 	margin: 1rem;
 	overflow: auto;
 }
 
-#history-close {
+#log-close {
 	height:2rem;
 	margin:0rem 1rem 1rem 1rem;
 }

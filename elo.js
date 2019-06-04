@@ -250,25 +250,25 @@ function ensureElementExist(id) {
     }
 }
 
-exports.openHistoryEv = function() {
+exports.openLogEv = function() {
     event(function() {
-        openHistory()
+        openLog()
     })()
 }
 
-function openHistory() {
-    let m = document.getElementById("history")
+function openLog() {
+    let m = document.getElementById("log")
     m.style.display = "flex"
 }
 
-exports.closeHistoryEv = function() {
+exports.closeLogEv = function() {
     event(function() {
-        closeHistory()
+        closeLog()
     })()
 }
 
-function closeHistory() {
-    let m = document.getElementById("history")
+function closeLog() {
+    let m = document.getElementById("log")
     m.style.display = "none"
 }
 
@@ -381,11 +381,11 @@ function closeModal() {
 
 // notify는 아래쪽 표시줄에 text를 표시한다.
 function notify(text) {
-    let historyBox = document.getElementById("history-content")
+    let logContent = document.getElementById("log-content")
     let pre = document.createElement("pre")
     pre.style.color = "black"
     pre.innerText = text
-    historyBox.appendChild(pre)
+    logContent.appendChild(pre)
     // notifier는 한줄의 메세지만 보일 수 있다.
     // 마지막 줄을 보이기로 한다.
     let line = text.trim().split("\n")
