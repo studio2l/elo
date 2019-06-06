@@ -12,7 +12,7 @@ let pinnedUnit = {}
 
 class SelectionTree {
     sel: string
-    sub: object
+    sub: { [s: string]: SelectionTree }
     constructor() {
         this.sel = ""
         this.sub = {}
