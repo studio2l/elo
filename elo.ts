@@ -864,7 +864,7 @@ function selectedItemValue(boxId): string {
 
 // newBoxItem은 box 클래스 안에서 사용될 item HTML 요소를 생성한다.
 // 받아들이는 두 인수는 각각 왼쪽(메인)과 오른쪽(서브)에 적힐 내용이다.
-function newBoxItem(val, sub) {
+function newBoxItem(val, sub): HTMLElement {
     let tmpl = <HTMLTemplateElement>document.getElementById("item-tmpl")
     let frag = document.importNode(tmpl.content, true)
     let item = frag.querySelector("div")
@@ -1034,7 +1034,7 @@ function reloadTasks() {
 }
 
 // newVersionToggle은 해당 태스크의 버전을 열고 닫을 수 있는 토글을 생성한다.
-function newVersionToggle(task) {
+function newVersionToggle(task): HTMLElement {
     let toggle = document.createElement("div")
     toggle.classList.add("toggle")
     toggle.textContent = "▷"
