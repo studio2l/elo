@@ -795,33 +795,33 @@ function selectTask(task, ver) {
 }
 
 // currentProject는 현재 선택된 프로젝트 이름을 반환한다.
-function currentProject() {
+function currentProject(): string {
     return selectedItemValue("project-box")
 }
 
 // currentCategory는 현재 선택된 카테고리 이름을 반환한다.
-function currentCategory() {
+function currentCategory(): string {
     let menu = <HTMLSelectElement>document.getElementById("category-menu")
     return menu.value
 }
 
 // currentGroup은 현재 선택된 그룹 이름을 반환한다.
-function currentGroup() {
+function currentGroup(): string {
     return selectedItemValue("group-box")
 }
 
 // currentUnit은 현재 선택된 샷 이름을 반환한다.
-function currentUnit() {
+function currentUnit(): string {
     return selectedItemValue("unit-box")
 }
 
 // currentPart는 현재 선택된 샷 태스크 이름을 반환한다.
-function currentPart() {
+function currentPart(): string {
     return selectedItemValue("part-box")
 }
 
 // currentTask는 현재 선택된 샷 엘리먼트 이름을 반환한다.
-function currentTask() {
+function currentTask(): string {
     let val = selectedItemValue("task-box")
     if (!val) {
         return null
@@ -831,7 +831,7 @@ function currentTask() {
 }
 
 // currentVersion은 현재 선택된 샷 버전을 반환한다.
-function currentVersion() {
+function currentVersion(): string {
     let val = selectedItemValue("task-box")
     if (!val) {
         return null
