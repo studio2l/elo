@@ -467,7 +467,7 @@ function newMayaAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/maya_open.bat"
             }
-            spawn(cmd, [scene], { "env": env, "detached": true })
+            spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         }
     )
     return maya
