@@ -252,7 +252,7 @@ function ensureElementExist(id) {
     }
 }
 
-exports.openLogEv = function() {
+export function openLogEv() {
     uiEvent(function() {
         openLog()
     })()
@@ -263,7 +263,7 @@ function openLog() {
     m.style.display = "flex"
 }
 
-exports.closeLogEv = function() {
+export function closeLogEv() {
     uiEvent(function() {
         closeLog()
     })()
@@ -275,7 +275,7 @@ function closeLog() {
 }
 
 // openModalEv는 사용자가 항목 추가 버튼을 눌렀을 때 그에 맞는 모달 창을 연다.
-exports.openModalEv = function(kind) {
+export function openModalEv(kind: string) {
     if (kind == "group" && !currentProject()) {
         notify("아직 프로젝트를 선택하지 않았습니다.")
         return
@@ -371,7 +371,7 @@ function openModal(kind) {
 }
 
 // closeModalEv는 모달 사용중 사용자가 닫음 버튼을 눌렀을 때 모달을 닫는다.
-exports.closeModalEv = function() {
+export function closeModalEv() {
     uiEvent(function() {
         closeModal()
     })()
@@ -421,7 +421,7 @@ function loadCategory() {
 }
 
 // saveCategory는 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
-function saveCategory() {
+export function saveCategory() {
     let menu = <HTMLSelectElement>document.getElementById("category-menu")
     let ctg = menu.value
     document.getElementById("unit-label").innerText = site.Categ(ctg).Label
@@ -431,7 +431,6 @@ function saveCategory() {
     loadMyPart()
     selectProject(currentProject())
 }
-exports.saveCategory = saveCategory
 
 // myPart는 현재 내 파트로 설정된 값을 반환한다.
 function myPart() {
@@ -456,7 +455,7 @@ function loadMyPart() {
 }
 
 // saveMyPart는 현재 카테고리에서 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
-function saveMyPart() {
+export function saveMyPart() {
     let ctg = currentCategory()
     if (!ctg) {
         return
@@ -465,7 +464,6 @@ function saveMyPart() {
     let fname = configDir() + "/my-" + ctg + "-part.json"
     fs.writeFileSync(fname, menu.value)
 }
-exports.saveMyPart = saveMyPart
 
 // selectionTreeFromJSON은 json 오브젝트를 참조하여 SelectionTree 클래스를 만든다.
 function selectionTreeFromJSON(tree, json) {
