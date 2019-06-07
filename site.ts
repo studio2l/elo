@@ -467,7 +467,7 @@ function newMayaAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/maya_open.bat"
             }
-            spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
+            mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         }
     )
     return maya
@@ -496,7 +496,7 @@ function newHoudiniAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/houdini_open.bat"
             }
-            spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
+            mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         }
     )
     return houdini
@@ -525,13 +525,13 @@ function newNukeAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/nuke_open.bat"
             }
-            spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
+            mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         },
     )
     return nuke
 }
 
-function spawn(cmd: string, args: string[], opts: object, handleError: (err) => void) {
+function mySpawn(cmd: string, args: string[], opts: object, handleError: (err) => void) {
     let p = proc.spawn(cmd, args, opts)
     let stderr = ""
     p.stderr.on("data", (data) => {
