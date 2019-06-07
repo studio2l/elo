@@ -428,7 +428,7 @@ function newMayaAt(dir) {
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/maya_open.bat";
         }
-        proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError);
+        spawn(cmd, [scene], { "env": env, "detached": true });
     });
     return maya;
 }
@@ -455,7 +455,7 @@ function newHoudiniAt(dir) {
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/houdini_open.bat";
         }
-        proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError);
+        spawn(cmd, [scene], { "env": env, "detached": true }, handleError);
     });
     return houdini;
 }
@@ -482,9 +482,25 @@ function newNukeAt(dir) {
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/nuke_open.bat";
         }
-        proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError);
+        spawn(cmd, [scene], { "env": env, "detached": true }, handleError);
     });
     return nuke;
+}
+function spawn(cmd, args, opts, handleError) {
+    var p = proc.spawn(cmd, args, opts);
+    var stderr = "";
+    p.stderr.on("data", function (data) {
+        stderr += data;
+    });
+    p.on("exit", function (code) {
+        if (code != 0) {
+            var err = new Error("exit with error " + code + ": " + stderr);
+            handleError(err);
+        }
+    });
+    p.on("error", function (err) {
+        handleError(err);
+    });
 }
 // childDirs는 특정 디렉토리의 하위 디렉토리들을 검색하여 반환한다.
 // 해당 디렉토리가 없거나 검사할 수 없다면 에러가 난다.

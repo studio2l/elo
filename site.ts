@@ -467,7 +467,7 @@ function newMayaAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/maya_open.bat"
             }
-            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
+            spawn(cmd, [scene], { "env": env, "detached": true })
         }
     )
     return maya
@@ -496,7 +496,7 @@ function newHoudiniAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/houdini_open.bat"
             }
-            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
+            spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         }
     )
     return houdini
@@ -525,10 +525,27 @@ function newNukeAt(dir) {
             if (process.platform == "win32") {
                 cmd = siteRoot + "/runner/nuke_open.bat"
             }
-            proc.spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
+            spawn(cmd, [scene], { "env": env, "detached": true }, handleError)
         },
     )
     return nuke
+}
+
+function spawn(cmd: string, args: string[], opts: object, handleError: (err) => void) {
+    let p = proc.spawn(cmd, args, opts)
+    let stderr = ""
+    p.stderr.on("data", (data) => {
+        stderr += data
+    })
+    p.on("exit", (code) => {
+        if (code != 0) {
+            let err = new Error("exit with error " + code + ": " + stderr)
+            handleError(err)
+        }
+    })
+    p.on("error", (err) => {
+        handleError(err)
+    })
 }
 
 // childDirs는 특정 디렉토리의 하위 디렉토리들을 검색하여 반환한다.

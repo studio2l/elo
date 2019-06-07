@@ -381,7 +381,8 @@ function notify(text) {
     logContent.appendChild(pre);
     // notifier는 한줄의 메세지만 보일 수 있다.
     // 마지막 줄을 보이기로 한다.
-    var line = text.trim().split("\n");
+    var lines = text.trim().split("\n");
+    var line = lines[lines.length - 1];
     var notifier = document.getElementById("notifier");
     notifier.innerText = line;
 }
@@ -1062,11 +1063,8 @@ function toggleVersionVisibility(task) {
 }
 // openTaskEv는 해당 요소의 한 버전을 연다.
 function openTaskEv(prj, ctg, grp, unit, part, task, prog, ver) {
-    var handleError = function (err, stdout, stderr) {
+    var handleError = function (err) {
         if (err) {
-            if (err.errno == "ENOENT") {
-                err = Error(prog + " 씬을 열기 위한 명령어가 없습니다.");
-            }
             console.log(err);
             notify(err.message);
         }
@@ -1281,7 +1279,7 @@ function openDir(dir) {
                 // 해당 명령어 없음
                 continue;
             }
-            var handleError = function (err, stdout, stderr) {
+            var handleError = function (err) {
                 if (err) {
                     console.log(err);
                     notify(err.message);
