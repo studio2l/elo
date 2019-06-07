@@ -252,6 +252,7 @@ let Shot = new Category({
         subdir("work", "2775"),
     ],
     Parts: [
+        "lit",
         "fx",
         "comp",
     ],
@@ -259,6 +260,8 @@ let Shot = new Category({
         return ProjectDir(prj) + "/shot/" + grp + "/" + unit + "/work"
     },
     partSubdirs: {
+        "lit": [
+        ],
         "fx": [
             subdir("backup", "2775"),
             subdir("geo", "2775"),
@@ -273,6 +276,9 @@ let Shot = new Category({
         ],
     },
     defaultTasksInfo: {
+        "lit": [
+            { name: "main", prog: "maya" },
+        ],
         "fx": [
             { name: "main", prog: "houdini" },
         ],
@@ -281,6 +287,9 @@ let Shot = new Category({
         ],
     },
     programs: {
+        "lit": {
+            "maya": function(taskDir) { return newMayaAt(taskDir) },
+        },
         "fx": {
             "houdini": function(taskDir) { return newHoudiniAt(taskDir) },
             "nuke": function(taskDir) { return newNukeAt(taskDir + "/precomp") },
