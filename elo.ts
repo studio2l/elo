@@ -845,7 +845,7 @@ function currentVersion(): string {
 }
 
 // selectedItemValue는 특정 'item-box' HTML 요소에서 선틱된 값을 반환한다.
-function selectedItemValue(boxId) {
+function selectedItemValue(boxId): string {
     let box = document.getElementById(boxId)
     if (!box) {
         throw Error(boxId + "가 없습니다.")
@@ -856,15 +856,10 @@ function selectedItemValue(boxId) {
     }
     for (let item of items) {
         if (item.classList.contains("selected")) {
-            return itemValue(item)
+            return item.dataset.val
         }
     }
     return null
-}
-
-// itemValue는 특정 'item' HTML 요소에 저장된 값을 반환한다.
-function itemValue(item) {
-    return item.dataset.val
 }
 
 // newBoxItem은 box 클래스 안에서 사용될 item HTML 요소를 생성한다.
