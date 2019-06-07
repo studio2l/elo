@@ -2,6 +2,7 @@
 	"include": [
 		"./main.ts",
 		"./elo.ts",
-		"./site.ts"
+		"./site.ts",
+		"./user.ts"
 	]
 }
