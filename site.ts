@@ -1,13 +1,13 @@
 // site.js를 자신의 사이트(스튜디오)에 맞는 설정으로 수정하세요.
 
-const fs = require("fs")
-const proc = require("child_process")
+import * as fs from "fs"
+import * as proc from "child_process"
 
 let siteRoot = ""
 let projectRoot = ""
 
 // Init은 사이트 설정을 초기화한다.
-function Init() {
+export function Init() {
     siteRoot = process.env.SITE_ROOT
     if (!siteRoot) {
         throw Error("Elo를 사용하시기 전, 우선 SITE_ROOT 환경변수를 설정해 주세요.")
@@ -21,27 +21,23 @@ function Init() {
     }
 }
 
-exports.Init = Init
-
 // 루트
 
 // 프로젝트
 
 // ProjectDir은 해당 프로젝트의 디렉토리 경로를 반환한다.
-function ProjectDir(prj) {
+export function ProjectDir(prj) {
     return projectRoot + "/" + prj
 }
-exports.ProjectDir = ProjectDir
 
 // Projects는 사이트의 프로젝트들을 반환한다.
-function Projects() {
+export function Projects() {
     let d = projectRoot
     return childDirs(d)
 }
-exports.Projects = Projects
 
 // CreateProject는 프로젝트를 생성한다. 생성할 권한이 없다면 에러가 난다.
-function CreateProject(prj) {
+export function CreateProject(prj) {
     let prjDir = ProjectDir(prj)
     if (fs.existsSync(prjDir)) {
         throw Error("프로젝트 디렉토리가 이미 존재합니다.")
@@ -49,7 +45,6 @@ function CreateProject(prj) {
     fs.mkdirSync(prjDir, { recursive: true })
     createDirs(prjDir, projectSubdirs)
 }
-exports.CreateProject = CreateProject
 
 // projectSubdirs는 사이트의 프로젝트 디렉토리 구조를 정의한다.
 let projectSubdirs = [
@@ -367,8 +362,7 @@ let Asset = new Category({
     },
 })
 
-let Categories = ["shot", "asset"]
-exports.Categories = Categories
+export let Categories = ["shot", "asset"]
 
 let category = {
     "shot": Shot,
@@ -379,14 +373,13 @@ let category = {
 let current = category[Categories[0]]
 
 // Categ는 해당 카테고리를 반환한다.
-function Categ(c) {
+export function Categ(c) {
     let ctg = category[c]
     if (!ctg) {
         throw Error(c + "카테고리가 없습니다.")
     }
     return ctg
 }
-exports.Categ = Categ
 
 class Task {
     Name: string

@@ -1,4 +1,6 @@
+"use strict";
 // site.js를 자신의 사이트(스튜디오)에 맞는 설정으로 수정하세요.
+exports.__esModule = true;
 var fs = require("fs");
 var proc = require("child_process");
 var siteRoot = "";
@@ -332,14 +334,13 @@ var Asset = new Category({
         }
     }
 });
-var Categories = ["shot", "asset"];
-exports.Categories = Categories;
+exports.Categories = ["shot", "asset"];
 var category = {
     "shot": Shot,
     "asset": Asset
 };
 // current는 현재 선택된 카테고리이다.
-var current = category[Categories[0]];
+var current = category[exports.Categories[0]];
 // Categ는 해당 카테고리를 반환한다.
 function Categ(c) {
     var ctg = category[c];

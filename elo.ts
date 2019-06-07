@@ -1,8 +1,8 @@
-const fs = require("fs")
-const proc = require("child_process")
-const user = require("./user.js")
-const site = require("./site.js")
-const { remote } = require("electron")
+import * as fs from "fs"
+import * as proc from "child_process"
+import * as user from "./user.js"
+import * as site from "./site.js"
+import { remote } from "electron"
 const { Menu, MenuItem } = remote
 
 let projectRoot = ""
@@ -854,8 +854,7 @@ function selectedItemValue(boxId) {
     if (!items) {
         return null
     }
-    for (let i in items) {
-        let item = items[i]
+    for (let item of items) {
         if (item.classList.contains("selected")) {
             return itemValue(item)
         }

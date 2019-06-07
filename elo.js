@@ -1,9 +1,11 @@
+"use strict";
+exports.__esModule = true;
 var fs = require("fs");
 var proc = require("child_process");
 var user = require("./user.js");
 var site = require("./site.js");
-var remote = require("electron").remote;
-var Menu = remote.Menu, MenuItem = remote.MenuItem;
+var electron_1 = require("electron");
+var Menu = electron_1.remote.Menu, MenuItem = electron_1.remote.MenuItem;
 var projectRoot = "";
 var pinnedProject = {};
 var pinnedGroup = {};
@@ -108,7 +110,7 @@ window.addEventListener("contextmenu", function (ev) {
             })
         });
         projectMenu.append(openProjectDir);
-        projectMenu.popup(remote.getCurrentWindow());
+        projectMenu.popup(electron_1.remote.getCurrentWindow());
         return;
     }
     if (parentById(ev, "group-box")) {
@@ -145,7 +147,7 @@ window.addEventListener("contextmenu", function (ev) {
             })
         });
         groupMenu.append(openGroupDir);
-        groupMenu.popup(remote.getCurrentWindow());
+        groupMenu.popup(electron_1.remote.getCurrentWindow());
         return;
     }
     if (parentById(ev, "unit-box")) {
@@ -183,7 +185,7 @@ window.addEventListener("contextmenu", function (ev) {
             })
         });
         unitMenu.append(openUnitDir);
-        unitMenu.popup(remote.getCurrentWindow());
+        unitMenu.popup(electron_1.remote.getCurrentWindow());
         return;
     }
     if (parentById(ev, "part-box")) {
@@ -200,7 +202,7 @@ window.addEventListener("contextmenu", function (ev) {
             })
         });
         taskMenu.append(openPartDir);
-        taskMenu.popup(remote.getCurrentWindow());
+        taskMenu.popup(electron_1.remote.getCurrentWindow());
         return;
     }
     if (parentById(ev, "task-box")) {
@@ -218,7 +220,7 @@ window.addEventListener("contextmenu", function (ev) {
             })
         });
         taskMenu.append(openTaskDir);
-        taskMenu.popup(remote.getCurrentWindow());
+        taskMenu.popup(electron_1.remote.getCurrentWindow());
         return;
     }
 });
@@ -803,8 +805,8 @@ function selectedItemValue(boxId) {
     if (!items) {
         return null;
     }
-    for (var i in items) {
-        var item = items[i];
+    for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+        var item = items_1[_i];
         if (item.classList.contains("selected")) {
             return itemValue(item);
         }
