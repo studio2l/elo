@@ -464,7 +464,8 @@ function loadSelection() {
     if (!fs.existsSync(fname)) {
         return;
     }
-    selection = selectionTreeFromJSON(selection, JSON.parse(fs.readFileSync(fname)));
+    var data = fs.readFileSync(fname);
+    selection = selectionTreeFromJSON(selection, JSON.parse(data.toString("utf8")));
 }
 // saveSelection는 현재 선택된 항목들을 파일로 저장한다.
 function saveSelection() {
@@ -1127,7 +1128,7 @@ function loadPinnedProject() {
         return;
     }
     var data = fs.readFileSync(fname);
-    pinnedProject = JSON.parse(data);
+    pinnedProject = JSON.parse(data.toString("utf8"));
 }
 // pinProject는 특정 프로젝트를 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
@@ -1159,7 +1160,7 @@ function loadPinnedGroup() {
         return;
     }
     var data = fs.readFileSync(fname);
-    pinnedGroup = JSON.parse(data);
+    pinnedGroup = JSON.parse(data.toString("utf8"));
 }
 // pinGroup은 특정 샷을 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
@@ -1208,7 +1209,7 @@ function loadPinnedUnit() {
         return;
     }
     var data = fs.readFileSync(fname);
-    pinnedUnit = JSON.parse(data);
+    pinnedUnit = JSON.parse(data.toString("utf8"));
 }
 // pinUnit은 특정 샷을 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
