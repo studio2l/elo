@@ -1,5 +1,6 @@
 {
 	"include": [
+		"./main.ts",
 		"./elo.ts",
 		"./site.ts"
 	]
