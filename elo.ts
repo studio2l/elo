@@ -117,7 +117,7 @@ window.addEventListener("contextmenu", function(ev) {
             }),
         })
         projectMenu.append(openProjectDir)
-        projectMenu.popup(remote.getCurrentWindow())
+        projectMenu.popup()
         return
     }
     if (parentById(ev, "group-box")) {
@@ -153,7 +153,7 @@ window.addEventListener("contextmenu", function(ev) {
             }),
         })
         groupMenu.append(openGroupDir)
-        groupMenu.popup(remote.getCurrentWindow())
+        groupMenu.popup()
         return
     }
     if (parentById(ev, "unit-box")) {
@@ -190,7 +190,7 @@ window.addEventListener("contextmenu", function(ev) {
             }),
         })
         unitMenu.append(openUnitDir)
-        unitMenu.popup(remote.getCurrentWindow())
+        unitMenu.popup()
         return
     }
     if (parentById(ev, "part-box")) {
@@ -207,7 +207,7 @@ window.addEventListener("contextmenu", function(ev) {
             }),
         })
         taskMenu.append(openPartDir)
-        taskMenu.popup(remote.getCurrentWindow())
+        taskMenu.popup()
         return
     }
     if (parentById(ev, "task-box")) {
@@ -225,7 +225,7 @@ window.addEventListener("contextmenu", function(ev) {
             }),
         })
         taskMenu.append(openTaskDir)
-        taskMenu.popup(remote.getCurrentWindow())
+        taskMenu.popup()
         return
     }
 })
