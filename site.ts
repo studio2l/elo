@@ -33,7 +33,9 @@ export function ProjectDir(prj) {
 // Projects는 사이트의 프로젝트들을 반환한다.
 export function Projects() {
     let d = projectRoot
-    return childDirs(d)
+    let prjs = childDirs(d)
+    prjs.sort()
+    return prjs
 }
 
 // CreateProject는 프로젝트를 생성한다. 생성할 권한이 없다면 에러가 난다.
@@ -104,7 +106,9 @@ class Category {
     }
     GroupsOf(prj): string[] {
         let d = this.groupRoot(prj)
-        return childDirs(d)
+        let grps = childDirs(d)
+        grps.sort()
+        return grps
     }
     CreateGroup(prj, grp) {
         let d = this.GroupDir(prj, grp)
@@ -117,7 +121,9 @@ class Category {
     }
     UnitsOf(prj, grp): string[] {
         let d = this.unitRoot(prj, grp)
-        return childDirs(d)
+        let units = childDirs(d)
+        units.sort()
+        return units
     }
     CreateUnit(prj, grp, unit) {
         let d = this.UnitDir(prj, grp, unit)
@@ -131,7 +137,9 @@ class Category {
     }
     PartsOf(prj, grp, unit): string[] {
         let d = this.partRoot(prj, grp, unit)
-        return childDirs(d)
+        let parts = childDirs(d)
+        parts.sort()
+        return parts
     }
     CreatePart(prj, grp, unit, part) {
         let d = this.PartDir(prj, grp, unit, part)
