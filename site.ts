@@ -407,11 +407,11 @@ class Program {
         this.CreateScene = CreateScene
         this.OpenScene = OpenScene
     }
-    SceneName(prj, grp, unit, part, task, ver) {
+    SceneName(prj, grp, unit, part, task, ver): string {
         let scene = this.Dir + "/" + prj + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver + this.Ext
         return scene
     }
-    ListTasks(prj, grp, unit, part) {
+    ListTasks(prj, grp, unit, part): { [k: string]: Task } {
         let tasks = {}
         let files = fs.readdirSync(this.Dir)
         for (let f of files) {
