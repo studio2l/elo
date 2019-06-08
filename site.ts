@@ -160,17 +160,19 @@ class Category {
     }
 
     // 태스크
-    TasksOf(prj, grp, unit, part): { [k: string]: Task} {
+    TasksOf(prj, grp, unit, part): Task[] {
         let partdir = this.PartDir(prj, grp, unit, part)
         let progs = this.ProgramsOf(prj, grp, unit, part)
-        if (!progs) {
-            return {}
-        }
-        let tasks = {}
+        let tasks = []
         for (let prog in progs) {
             let p = progs[prog]
-            Object.assign(tasks, p.ListTasks(prj, grp, unit, part))
+            for (let t of p.ListTasks(prj, grp, unit, part)) {
+                tasks.push(t)
+            }
         }
+        tasks.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
         return tasks
     }
     CreateTask(prj, grp, unit, part, task, ver, prog) {
@@ -419,8 +421,8 @@ class Program {
         let scene = this.Dir + "/" + prj + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver + this.Ext
         return scene
     }
-    ListTasks(prj, grp, unit, part): { [k: string]: Task } {
-        let tasks = {}
+    ListTasks(prj, grp, unit, part): Task[] {
+        let taskMap = {}
         let files = fs.readdirSync(this.Dir)
         for (let f of files) {
             if (!fs.lstatSync(this.Dir + "/" + f).isFile()) {
@@ -443,11 +445,20 @@ class Program {
             if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
                 continue
             }
-            if (!tasks[task]) {
-                tasks[task] = new Task(task, this)
+            if (!taskMap[task]) {
+                taskMap[task] = new Task(task, this)
             }
-            tasks[task].Versions.push(version)
+            taskMap[task].Versions.push(version)
         }
+        let tasks = []
+        for (let k in taskMap) {
+            let t = taskMap[k]
+            tasks.push(t)
+        }
+        tasks.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
+        console.log(tasks)
         return tasks
     }
 }
@@ -634,4 +645,14 @@ function subdir(name, perm) {
         throw("elo에서는 파일 디렉토리 권한에 4자리 문자열 만을 사용합니다")
     }
     return { name: name, perm: perm }
+}
+
+// compare는 두 값을 받아 비교한 후 앞의 값이 더 작으면 -1, 뒤의 값이 더 작으면 1, 같으면 0을 반환한다.
+function compare(a, b): number {
+    if (a < b) {
+        return -1
+    } else if (a > b) {
+        return 1
+    }
+    return 0
 }

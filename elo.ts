@@ -1007,8 +1007,8 @@ function reloadTasks() {
     let box = document.getElementById("task-box")
     box.innerText = ""
     let tasks = site.Categ(ctg).TasksOf(prj, grp, unit, part)
-    for (let task in tasks) {
-        let t = tasks[task]
+    for (let t of tasks) {
+        let task = t.Name
         let lastver = t.Versions[t.Versions.length - 1]
         let div = newBoxItem(task, lastver + ", " + t.Program.Name)
         div.id = "task-" + task
@@ -1064,8 +1064,7 @@ function toggleVersionVisibility(task) {
         toggle.textContent = "▽"
     }
     let vers = document.getElementsByClassName("task-" + task + "-versions")
-    for (let i in vers) {
-        let v = <HTMLElement>vers[i]
+    for (let v of vers) {
         if (toggle.dataset.hideVersions == "t") {
             v.style.display = "none"
         } else {
