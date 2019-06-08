@@ -1,8 +1,5 @@
 {
 	"include": [
-		"./main.ts",
-		"./elo.ts",
-		"./site.ts",
-		"./user.ts"
+		"./*.ts",
 	]
 }

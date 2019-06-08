@@ -2,6 +2,7 @@ import * as fs from "fs"
 import * as proc from "child_process"
 import * as user from "./user.js"
 import * as site from "./site.js"
+import * as seltree from "./seltree.js"
 import { remote } from "electron"
 const { Menu, MenuItem } = remote
 
@@ -10,26 +11,7 @@ let pinnedProject = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
 
-class SelectionTree {
-    sel: string
-    sub: { [s: string]: SelectionTree }
-    constructor() {
-        this.sel = ""
-        this.sub = {}
-    }
-    Select(k) {
-        this.sel = k
-        if (!this.sub[this.sel]) {
-            this.sub[this.sel] = new SelectionTree()
-        }
-        return this.sub[this.sel]
-    }
-    Selected() {
-        return this.sel
-    }
-}
-
-let selection = new SelectionTree()
+let selection = seltree.New()
 
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
@@ -465,17 +447,6 @@ export function saveMyPart() {
     fs.writeFileSync(fname, menu.value)
 }
 
-// selectionTreeFromJSON은 json 오브젝트를 참조하여 SelectionTree 클래스를 만든다.
-function selectionTreeFromJSON(tree, json) {
-    tree.sel = json.sel
-    tree.sub = {}
-    for (let s in json.sub) {
-        tree.sub[s] = new SelectionTree()
-        selectionTreeFromJSON(tree.sub[s], json.sub[s])
-    }
-    return tree
-}
-
 // loadSelection는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
 function loadSelection() {
     let fname = configDir() + "/selection.json"
@@ -483,7 +454,7 @@ function loadSelection() {
         return
     }
     let data = fs.readFileSync(fname)
-    selection = selectionTreeFromJSON(selection, JSON.parse(data.toString("utf8")))
+    selection = seltree.FromJSON(selection, JSON.parse(data.toString("utf8")))
 }
 
 // saveSelection는 현재 선택된 항목들을 파일로 저장한다.
