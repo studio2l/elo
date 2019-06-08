@@ -445,7 +445,7 @@ class Program {
 }
 
 // newMayaAt은 지정된 위치에 마야 씬을 생성하거나 여는 프로그램을 반환한다.
-function newMayaAt(dir) {
+function newMayaAt(dir: string): Program {
     let maya = new Program(
         // name
         "maya",
@@ -474,7 +474,7 @@ function newMayaAt(dir) {
 }
 
 // newHoudiniAt은 지정된 위치에 후디니 씬을 생성하거나 여는 프로그램을 반환한다.
-function newHoudiniAt(dir) {
+function newHoudiniAt(dir: string): Program {
     let houdini = new Program(
         // name
         "houdini",
@@ -503,7 +503,7 @@ function newHoudiniAt(dir) {
 }
 
 // newNukeAt은 지정된 위치에 누크 씬을 생성하거나 여는 프로그램을 반환한다.
-function newNukeAt(dir) {
+function newNukeAt(dir: string): Program {
     let nuke = new Program(
         // name
         "nuke",
