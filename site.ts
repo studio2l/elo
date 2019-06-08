@@ -99,10 +99,10 @@ class Category {
     }
 
     // 그룹
-    GroupDir(prj, grp) {
+    GroupDir(prj, grp): string {
         return this.groupRoot(prj) + "/" + grp
     }
-    GroupsOf(prj) {
+    GroupsOf(prj): string[] {
         let d = this.groupRoot(prj)
         return childDirs(d)
     }
@@ -112,10 +112,10 @@ class Category {
     }
 
     // 유닛
-    UnitDir(prj, grp, unit) {
+    UnitDir(prj, grp, unit): string {
         return this.unitRoot(prj, grp) + "/" + unit
     }
-    UnitsOf(prj, grp) {
+    UnitsOf(prj, grp): string[] {
         let d = this.unitRoot(prj, grp)
         return childDirs(d)
     }
@@ -126,10 +126,10 @@ class Category {
     }
 
     // 파트
-    PartDir(prj, grp, unit, part) {
+    PartDir(prj, grp, unit, part): string {
         return this.partRoot(prj, grp, unit) + "/" + part
     }
-    PartsOf(prj, grp, unit) {
+    PartsOf(prj, grp, unit): string[] {
         let d = this.partRoot(prj, grp, unit)
         return childDirs(d)
     }
@@ -152,7 +152,7 @@ class Category {
     }
 
     // 태스크
-    TasksOf(prj, grp, unit, part) {
+    TasksOf(prj, grp, unit, part): { [k: string]: Task} {
         let partdir = this.PartDir(prj, grp, unit, part)
         let progs = this.ProgramsOf(prj, grp, unit, part)
         if (!progs) {
@@ -205,7 +205,7 @@ class Category {
     }
 
     // 씬 환경변수
-    SceneEnviron(prj, grp, unit, part, task) {
+    SceneEnviron(prj, grp, unit, part, task): { [k: string]: string } {
         let env = {
             "PRJ": prj,
             "GROUP": grp,
@@ -221,7 +221,7 @@ class Category {
     }
 
     // 프로그램
-    ProgramsOf(prj, grp, unit, part) {
+    ProgramsOf(prj, grp, unit, part): { [k: string]: Program } {
         // prj와 grp, unit은 아직 사용하지 않는다.
         let pgs = this.programs[part]
         if (!pgs) {
@@ -550,7 +550,7 @@ function mySpawn(cmd: string, args: string[], opts: object, handleError: (err) =
 
 // childDirs는 특정 디렉토리의 하위 디렉토리들을 검색하여 반환한다.
 // 해당 디렉토리가 없거나 검사할 수 없다면 에러가 난다.
-function childDirs(d) {
+function childDirs(d): string[] {
     if (!fs.existsSync(d)) {
         throw Error(d + " 디렉토리가 존재하지 않습니다.")
     }
