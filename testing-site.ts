@@ -2,20 +2,12 @@ import * as fs from "fs"
 import * as proc from "child_process"
 
 let siteRoot = ""
-let projectRoot = ""
 
 // Init은 사이트 설정을 초기화한다.
 export function Init() {
     siteRoot = process.env.SITE_ROOT
     if (!siteRoot) {
         throw Error("Elo를 사용하시기 전, 우선 SITE_ROOT 환경변수를 설정해 주세요.")
-    }
-    projectRoot = process.env.PROJECT_ROOT
-    if (!projectRoot) {
-        projectRoot = siteRoot + "/project"
-    }
-    if (!fs.existsSync(projectRoot)) {
-        fs.mkdirSync(projectRoot)
     }
 }
 
