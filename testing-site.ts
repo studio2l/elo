@@ -45,6 +45,17 @@ class Branch {
         }
         return listDirs(this.ChildRoot)
     }
+    Environ(): { [k: string]: string } {
+        let env = cloneEnv()
+        let parent = this.Parent
+        while (parent != null) {
+            for (let k in parent.Env) {
+                env[k] = parent.Env[k]
+            }
+            parent = parent.Parent
+        }
+        return env
+    }
 }
 
 function newSite() {
@@ -304,4 +315,14 @@ function listDirs(d): string[] {
         }
     }
     return dirs
+}
+
+// cloneEnv는 현재 프로세스의 환경을 복제한 환경을 생성한다.
+// 요소를 생성하거나 실행할 때 프로그램에 맞게 환경을 수정할 때 사용한다.
+function cloneEnv() {
+    let env = {}
+    for (let e in process.env) {
+        env[e] = process.env[e]
+    }
+    return env
 }
