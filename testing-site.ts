@@ -673,7 +673,7 @@ function listDirs(d): string[] {
     if (!fs.existsSync(d)) {
         throw Error(d + " 디렉토리가 존재하지 않습니다.")
     }
-    let dirs: string[]
+    let dirs: string[] = []
     for (let ent of fs.readdirSync(d)) {
         let isDir = fs.lstatSync(d + "/" + ent).isDirectory()
         if (isDir) {
@@ -705,3 +705,4 @@ function compare(a, b): number {
 
 Init()
 
+console.log(Projects())
