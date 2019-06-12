@@ -1,7 +1,7 @@
 import * as fs from "fs"
 import * as proc from "child_process"
 
-let Here: Site
+let Site: Root
 let siteRoot = ""
 
 // Init은 사이트 설정을 초기화한다.
@@ -10,10 +10,67 @@ export function Init() {
     if (!siteRoot) {
         throw Error("Elo를 사용하시기 전, 우선 SITE_ROOT 환경변수를 설정해 주세요.")
     }
-    Here = new Site("2L")
+    Site = new Root("2L")
 }
 
-let typeOrder = ["site", "show", "category", "group", "unit", "part", "task"]
+export function Projects() {
+    return Site.Shows()
+}
+
+export function CreateShow(prj: string) {
+    return Site.CreateShow(prj)
+}
+
+export function GroupsOf(prj: string, ctg: string) {
+    return Site.Show(prj).Groups(ctg)
+}
+
+export function CreateGroup(prj: string, ctg: string, grp: string) {
+    return Site.Show(prj).CreateGroup(ctg, grp)
+}
+
+export function UnitsOf(prj: string, ctg: string, grp: string) {
+    return Site.Show(prj).Group(ctg, grp).Units()
+}
+
+export function CreateUnit(prj: string, ctg: string, grp: string, unit: string) {
+    return Site.Show(prj).Group(ctg, grp).CreateUnit(unit)
+}
+
+export function PartsOf(prj: string, ctg: string, grp: string, unit: string) {
+    return Site.Show(prj).Group(ctg, grp).Unit(unit).Parts()
+}
+
+export function CreatePart(prj: string, ctg: string, grp: string, unit: string, part: string) {
+    return Site.Show(prj).Group(ctg, grp).Unit(unit).CreatePart(part)
+}
+
+
+export function TasksOf(prj: string, ctg: string, grp: string, unit: string, part: string): Task[] {
+    let programs = Site.Show(prj).Group(ctg, grp).Unit(unit).Part(part).Programs()
+    let tasks = []
+    for (let p of programs) {
+        for (let t of p.ListTasks(prj, grp, unit, part)) {
+            tasks.push(t)
+        }
+    }
+    tasks.sort(function(a, b) {
+        return compare(a.Name, b.Name)
+    })
+    return tasks
+}
+
+export function CreateTask(prj: string, ctg: string, grp: string, unit: string, part: string, task: string, prog: string) {
+    let programs = Site.Show(prj).Group(ctg, grp).Unit(unit).Part(part).Programs()
+    let p = programs[prog]
+    let scene = p.SceneName(prj, grp, unit, part, task, "v001")
+    let env = cloneEnv()
+    let sceneEnv = this.SceneEnviron(prj, grp, unit, part, task)
+    for (let e in sceneEnv) {
+        env[e] = sceneEnv[e]
+    }
+    p.CreateScene(scene, env)
+}
 
 interface Branch {
     Parent: Branch | null
@@ -23,12 +80,9 @@ interface Branch {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Create: () => void
-    Child: (name: string) => Branch
-    Children: () => Branch[]
 }
 
-class Site implements Branch {
+class Root implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -50,18 +104,23 @@ class Site implements Branch {
         ]
         this.ChildRoot = this.Dir + "/show"
     }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    CreateShow(name: string) {
+        let show = new Show(this, name)
+        for (let d of show.Subdirs) {
+            makeDirAt(show.Dir, d)
         }
     }
-    Child(name: string): Show {
-        return new Show(this, name)
+    Show(name: string): Show {
+        let show = new Show(this, name)
+        if (!fs.existsSync(show.Dir)) {
+            throw Error("show not exists: " + name)
+        }
+        return show
     }
-    Children(): Show[] {
+    Shows(): Show[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Child(d))
+            children.push(this.Show(d))
         }
         return children
     }
@@ -76,7 +135,7 @@ class Show {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: Site, name: string) {
+    constructor(parent: Root, name: string) {
         this.Parent = parent
         this.Type = "show"
         this.Label = "쇼"
@@ -107,66 +166,39 @@ class Show {
         ]
         this.ChildRoot = this.Dir
     }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    categoryGroup(ctg: string, name: string): Group {
+        if (ctg == "asset") {
+            return new AssetGroup(this, name)
+        }
+        if (ctg == "shot") {
+            return new ShotGroup(this, name)
+        }
+        throw Error("invalid category name: " + ctg)
+    }
+    CreateGroup(ctg: string, name: string) {
+        let group = this.categoryGroup(ctg, name)
+        for (let d of group.Subdirs) {
+            makeDirAt(group.Dir, d)
         }
     }
-    Child(name: string): Category {
-        if (name == "asset") {
-            return new AssetCategory(this)
+    Group(ctg: string, name): Group {
+        let group = this.categoryGroup(ctg, name)
+        if (!fs.existsSync(group.Dir)) {
+            throw Error("no group: " + name)
         }
-        if (name == "shot") {
-            return new ShotCategory(this)
-        }
-        throw Error("invalid category name: " + name)
+        return group
     }
-    Children(): Category[] {
-        return [
-            this.Child("asset"),
-            this.Child("shot"),
-        ]
-    }
-}
-
-type Category = AssetCategory | ShotCategory
-
-class AssetCategory {
-    Parent: Branch
-    Type: string
-    Label: string
-    Name: string
-    Dir: string
-    Subdirs: Dir[]
-    ChildRoot: string
-
-    constructor(parent: Show) {
-        this.Parent = parent
-        this.Type = "category"
-        this.Label = "카테고리"
-        this.Name = "asset"
-        this.Dir = parent.ChildRoot + "/asset"
-        this.Subdirs = [
-            // dirEnt("", "2775") => 이미 생성되어 있다
-        ]
-        this.ChildRoot = this.Dir
-    }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
-        }
-    }
-    Child(name: string): AssetGroup {
-        return new AssetGroup(this, name)
-    }
-    Children(): AssetGroup[] {
+    Groups(ctg: string): Group[] {
         let children = []
-        for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Child(d))
+        let groupRoot = this.ChildRoot + "/" + ctg
+        for (let d in listDirs(groupRoot)) {
+            children.push(this.Group(ctg, d))
         }
         return children
     }
 }
+
+type Group = AssetGroup | ShotGroup
 
 class AssetGroup {
     Parent: Branch
@@ -177,29 +209,34 @@ class AssetGroup {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: AssetCategory, name) {
+    constructor(parent: Show, name) {
         this.Parent = parent
         this.Type = "group"
         this.Label = "그룹"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
+        this.Dir = parent.ChildRoot + "/asset/" + name
         this.Subdirs = [
             dirEnt("", "2775"),
         ]
         this.ChildRoot = this.Dir
     }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    CreateUnit() {
+        let unit = new AssetUnit(this, name)
+        for (let d of unit.Subdirs) {
+            makeDirAt(unit.Dir, d)
         }
     }
-    Child(name: string): AssetUnit {
-        return new AssetUnit(this, name)
+    Unit(name: string): AssetUnit {
+        let unit = new AssetUnit(this, name)
+        if (!fs.existsSync(unit.Dir)) {
+            throw Error("no unit: " + name)
+        }
+        return unit
     }
-    Children(): AssetUnit[] {
+    Units(): AssetUnit[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Child(d))
+            children.push(this.Unit(d))
         }
         return children
     }
@@ -225,18 +262,19 @@ class AssetUnit {
         ]
         this.ChildRoot = this.Dir + "/wip"
     }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    CreatePart(name: string) {
+        let part = new AssetPart(this, name)
+        for (let d of part.Subdirs) {
+            makeDirAt(part.Dir, d)
         }
     }
-    Child(name: string): AssetPart {
+    Part(name: string): AssetPart {
         return new AssetPart(this, name)
     }
-    Children(): AssetPart[] {
+    Parts(): AssetPart[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Child(d))
+            children.push(this.Part(d))
         }
         return children
     }
@@ -257,65 +295,30 @@ class AssetPart {
         this.Label = "파트"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = []
-        this.ChildRoot = this.Dir
-    }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
-        }
-    }
-    Child(name: string): null {
-        throw Error("leaf")
-    }
-    Children(): null {
-        throw Error("leaf")
-    }
-    Tasks(): Task[] {
-        let programs = partPrograms[this.Name]
-        let children = []
-        for (let p of programs) {
-            children.push(p.ListTasks())
-        }
-        return children
-    }
-}
-
-class ShotCategory {
-    Parent: Branch
-    Type: string
-    Label: string
-    Name: string
-    Dir: string
-    Subdirs: Dir[]
-    ChildRoot: string
-
-    constructor(parent: Show) {
-        this.Parent = parent
-        this.Type = "category"
-        this.Label = "카테고리"
-        this.Name = "shot"
-        this.Dir = parent.ChildRoot + "/shot"
         this.Subdirs = [
-            // dirEnt("", "2775"),
+            dirEnt("", "2775"),
         ]
         this.ChildRoot = this.Dir
     }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    Programs(): Program[] {
+        let programs = assetPartPrograms[this.Name]
+        if (!programs) {
+            throw Error("unknown part for asset")
         }
+        return programs
     }
-    Child(name: string): ShotGroup {
-        return new ShotGroup(this, name)
-    }
-    Children(): ShotGroup[] {
-        let children = []
-        for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Child(d))
-        }
-        return children
-    }
+}
+
+let assetPartPrograms = {
+    "model": {
+        "maya": function(taskDir) { return newMayaAt(taskDir) },
+    },
+    "lookdev": {
+        "nuke": function(taskDir) { return newMayaAt(taskDir) },
+    },
+    "rig": {
+        "nuke": function(taskDir) { return newMayaAt(taskDir) },
+    },
 }
 
 class ShotGroup {
@@ -327,29 +330,34 @@ class ShotGroup {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: ShotCategory, name) {
+    constructor(parent: Show, name) {
         this.Parent = parent
         this.Type = "group"
         this.Label = "시퀀스"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
+        this.Dir = parent.ChildRoot + "/shot/" + name
         this.Subdirs = [
             dirEnt("", "2775"),
         ]
         this.ChildRoot = this.Dir
     }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    CreateUnit(name: string) {
+        let unit = new ShotUnit(this, name)
+        for (let d of unit.Subdirs) {
+            makeDirAt(unit.Dir, d)
         }
     }
-    Child(name: string): ShotUnit {
-        return new ShotUnit(this, name)
+    Unit(name: string): ShotUnit {
+        let unit = new ShotUnit(this, name)
+        if (!fs.existsSync(unit.Dir)) {
+            throw Error("no unit: " + unit.Dir)
+        }
+        return unit
     }
-    Children(): ShotUnit[] {
+    Units(): ShotUnit[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Child(d))
+            children.push(this.Unit(d))
         }
         return children
     }
@@ -384,18 +392,23 @@ class ShotUnit {
         ]
         this.ChildRoot = this.Dir + "/wip"
     }
-    Create() {
+    CreatePart(name: string) {
+        let part = new ShotPart(this, name)
         for (let d of this.Subdirs) {
             makeDirAt(this.Dir, d)
         }
     }
-    Child(name: string): ShotPart {
-        return new ShotPart(this, name)
+    Part(name: string): ShotPart {
+        let part = new ShotPart(this, name)
+        if (!fs.existsSync(part.Dir)) {
+            throw Error("no part: " + part.Dir)
+        }
+        return part
     }
-    Children(): ShotPart[] {
+    Parts(): ShotPart[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Child(d))
+            children.push(this.Part(d))
         }
         return children
     }
@@ -421,24 +434,12 @@ class ShotPart implements Branch {
         ]
         this.ChildRoot = this.Dir
     }
-    Create() {
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    Programs(): Program[] {
+        let programs = shotPartPrograms[this.Name]
+        if (!programs) {
+            throw Error("unknown part for asset")
         }
-    }
-    Child(name: string): Branch {
-        throw Error("leaf")
-    }
-    Children(): Branch[] {
-        throw Error("leaf")
-    }
-    Tasks(): Task[] {
-        let programs = partPrograms[this.Name]
-        let children = []
-        for (let p of programs) {
-            children.push(p.ListTasks())
-        }
-        return children
+        return programs
     }
 }
 
@@ -454,7 +455,7 @@ class Task {
     }
 }
 
-let partPrograms = {
+let shotPartPrograms = {
     "lit": {
         "maya": function(taskDir) { return newMayaAt(taskDir) },
     },
@@ -522,7 +523,6 @@ class Program {
         tasks.sort(function(a, b) {
             return compare(a.Name, b.Name)
         })
-        console.log(tasks)
         return tasks
     }
 }
