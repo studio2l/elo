@@ -10,14 +10,13 @@ let showRoot = ""
 let pinnedShow = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
+let root = site.New()
 
 let selection = seltree.New()
 
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
 function init() {
-    site.Init()
-
     ensureDirExist(configDir())
     loadPinnedShow()
     loadPinnedGroup()
@@ -95,7 +94,7 @@ window.addEventListener("contextmenu", function(ev) {
         let openShowDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(site.ShowDir(show))
+                openDir(root.Show(show).Dir)
             }),
         })
         showMenu.append(openShowDir)
@@ -131,7 +130,7 @@ window.addEventListener("contextmenu", function(ev) {
         let openGroupDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(site.GroupDir(show, ctg, grp))
+                openDir(root.Show(show).Category(ctg).Group(grp).Dir)
             }),
         })
         groupMenu.append(openGroupDir)
@@ -168,7 +167,7 @@ window.addEventListener("contextmenu", function(ev) {
         let openUnitDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(site.UnitDir(show, ctg, grp, unit))
+                openDir(root.Show(show).Category(ctg).Group(grp).Unit(unit).Dir)
             }),
         })
         unitMenu.append(openUnitDir)
@@ -180,16 +179,16 @@ window.addEventListener("contextmenu", function(ev) {
         let ctg = currentCategory()
         let grp = currentGroup()
         let unit = currentUnit()
-        let task = parentByClassName(ev, "item").id.split("-")[1]
-        let taskMenu = new Menu()
+        let part = parentByClassName(ev, "item").id.split("-")[1]
+        let partMenu = new Menu()
         let openPartDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(site.PartDir(show, ctg, grp, unit, task))
+                openDir(root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).Dir)
             }),
         })
-        taskMenu.append(openPartDir)
-        taskMenu.popup()
+        partMenu.append(openPartDir)
+        partMenu.popup()
         return
     }
     if (parentById(ev, "task-box")) {
@@ -294,7 +293,7 @@ function openModal(kind) {
         progInput.innerText = ""
         let progs = Array()
         try {
-            progs = site.Categ(ctg).ProgramsOf(currentShow(), currentGroup(), currentUnit(), currentPart())
+            progs = site.ValidPrograms(currentCategory(), currentPart())
         } catch(err) {
             m.style.display = "none"
             throw err
@@ -305,7 +304,7 @@ function openModal(kind) {
             progInput.add(opt)
         }
     }
-    let ctgLabel = site.Categ(ctg).Label
+    let ctgLabel = site.CategoryLabel[ctg]
     let kor = {
         "show": "쇼",
         "group": "그룹",
@@ -393,20 +392,20 @@ function loadCategory() {
     if (!fs.existsSync(fname)) {
         let ctg = site.Categories[0]
         menu.value = ctg
-        document.getElementById("unit-label").innerText = site.Categ(ctg).Label
+        document.getElementById("unit-label").innerText = site.CategoryLabel[ctg]
         return
     }
     let data = fs.readFileSync(fname)
     let ctg = data.toString("utf8")
     menu.value = ctg
-    document.getElementById("unit-label").innerText = site.Categ(ctg).Label
+    document.getElementById("unit-label").innerText = site.CategoryLabel[ctg]
 }
 
 // saveCategory는 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
 export function saveCategory() {
     let menu = <HTMLSelectElement>document.getElementById("category-menu")
     let ctg = menu.value
-    document.getElementById("unit-label").innerText = site.Categ(ctg).Label
+    document.getElementById("unit-label").innerText = site.CategoryLabel[ctg]
     let fname = configDir() + "/category.json"
     fs.writeFileSync(fname, ctg)
     reloadMyPartMenuItems()
@@ -503,35 +502,35 @@ function selectionChanged() {
 
 // createShow는 하나의 쇼를 생성한다.
 function createShow(show) {
-    site.CreateShow(show)
+    root.CreateShow(show)
     reloadShows()
     selectShow(show)
 }
 
 // createGroup은 하나의 그룹을 생성한다.
 function createGroup(show, ctg, grp) {
-    site.CreateGroup(show, ctg, grp)
+    root.Show(show).Category(ctg).CreateGroup(grp)
     reloadGroups()
     selectGroup(grp)
 }
 
 // createUnit은 하나의 샷을 생성한다.
 function createUnit(show, ctg, grp, unit) {
-    site.CreateUnit(show, ctg, grp, unit)
+    root.Show(show).Category(ctg).Group(grp).CreateUnit(unit)
     reloadUnits()
     selectUnit(unit)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
 function createPart(show, ctg, grp, unit, part) {
-    site.CreatePart(show, ctg, grp, unit, part)
+    root.Show(show).Category(ctg).Group(grp).Unit(unit).CreatePart(part)
     reloadParts()
     selectPart(part)
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
 function createTask(show, ctg, grp, unit, part, prog, task, ver) {
-    site.CreateTask(show, ctg, grp, unit, part, prog, task, ver)
+    root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).CreateTask(prog, task, ver)
     reloadTasks()
     selectTask(task, "")
 }
@@ -640,9 +639,6 @@ function restorePartSelection(show, ctg, grp, unit) {
     let part = unitSel.Selected()
     if (!part) {
         part = myPart()
-        if (!site.PartsOf(show, ctg, grp, unit).includes(part)) {
-            return
-        }
     }
     if (!part) {
         return
@@ -848,7 +844,7 @@ function newBoxItem(val, sub): HTMLElement {
 function reloadShows() {
     let box = document.getElementById("show-box")
     box.innerText = ""
-    let shows = site.Shows()
+    let shows = names(root.Shows())
     let byPin = function(a, b) {
         if (isPinnedShow(a)) { return -1 }
         if (isPinnedShow(b)) { return 1 }
@@ -877,7 +873,7 @@ function reloadGroups() {
     let ctg = currentCategory()
     let box = document.getElementById("group-box")
     box.innerText = ""
-    let groups = site.GroupsOf(show, ctg)
+    let groups = names(root.Show(show).Category(ctg).Groups())
     let byPin = function(a, b) {
         if (isPinnedGroup(show, ctg, a)) { return -1 }
         if (isPinnedGroup(show, ctg, b)) { return 1 }
@@ -910,7 +906,7 @@ function reloadUnits() {
     }
     let box = document.getElementById("unit-box")
     box.innerText = ""
-    let units = site.UnitsOf(show, ctg, grp)
+    let units = names(root.Show(show).Category(ctg).Group(grp).Units())
     let byPin = function(a, b) {
         if (isPinnedUnit(show, ctg, grp, a)) { return -1 }
         if (isPinnedUnit(show, ctg, grp, b)) { return 1 }
@@ -947,7 +943,8 @@ function reloadParts() {
     }
     let box = document.getElementById("part-box")
     box.innerText = ""
-    for (let part of site.PartsOf(show, ctg, grp, unit)) {
+    for (let p of root.Show(show).Category(ctg).Group(grp).Unit(unit).Parts()) {
+        let part = p.Name
         let div = newBoxItem(part, "")
         div.id = "part-" + part
         div.dataset.val = part
@@ -977,16 +974,16 @@ function reloadTasks() {
     }
     let box = document.getElementById("task-box")
     box.innerText = ""
-    let tasks = site.TasksOf(show, ctg, grp, unit, part)
+    let tasks = root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).Tasks()
     for (let t of tasks) {
         let task = t.Name
         let lastver = t.Versions[t.Versions.length - 1]
-        let div = newBoxItem(task, lastver + ", " + t.Program.Name)
+        let div = newBoxItem(task, lastver + ", " + t.Program)
         div.id = "task-" + task
         div.dataset.val = task
-        div.dataset.dir = t.Program.Dir
+        div.dataset.dir = t.Dir
         div.onclick = function() { selectTaskEv(task, "") }
-        div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program.Name, task, lastver) }
+        div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, lastver) }
         let toggle = newVersionToggle(task)
         div.insertBefore(toggle, div.firstChild)
         box.append(div)
@@ -995,9 +992,9 @@ function reloadTasks() {
             div.classList.add("task-" + task + "-versions")
             div.id = "task-" + task + "-" + ver
             div.dataset.val = task + "-" + ver
-            div.dataset.dir = t.Program.Dir
+            div.dataset.dir = t.Dir
             div.onclick = function() { selectTaskEv(task, ver) }
-            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program.Name, task, ver) }
+            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, ver) }
             div.style.display = "none"
             box.append(div)
         }
@@ -1052,7 +1049,7 @@ function openTaskEv(show, ctg, grp, unit, part, prog, task, ver) {
             notify(err.message)
         }
     }
-    site.OpenTask(show, ctg, grp, unit, part, prog, task, ver, handleError)
+    root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).OpenTask(prog, task, ver, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
@@ -1292,6 +1289,17 @@ function openDir(dir) {
     throw Error("파일 탐색기를 찾지 못했습니다.")
 }
 
+interface Namer {
+    Name: string
+}
+
+function names(vals: Namer[]): string[] {
+    let ns: string[] = []
+    for (let v of vals) {
+        ns.push(v.Name)
+    }
+    return ns
+}
 
 // 초기화 실행
 try {

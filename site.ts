@@ -1,87 +1,53 @@
 import * as fs from "fs"
 import * as proc from "child_process"
 
-let Site: Root
-let siteRoot = ""
-let siteParts: { [k: string]: string[] }
-let sitePartPrograms: { [k: string]: any }
-export let Categories = [ "asset", "shot" ]
+import * as program from "./program"
 
-// Init은 사이트 설정을 초기화한다.
-export function Init() {
-    siteRoot = process.env.SITE_ROOT
-    if (!siteRoot) {
-        throw Error("Elo를 사용하시기 전, 우선 SITE_ROOT 환경변수를 설정해 주세요.")
-    }
-    Site = new Root("2L")
+let siteRoot = process.env.SITE_ROOT
+if (!siteRoot) {
+    throw Error("SITE_ROOT 환경변수가 설정되어 있지 않습니다.")
+}
 
-    siteParts = {
-        "asset": ["model", "look", "rig"],
-        "shot": ["fx", "lit", "comp"],
-    }
+export let Categories = ["asset", "shot"]
 
-    sitePartPrograms = {
-        "asset": {
-            "model": {
-                "maya": new Maya(""),
-            },
-            "look": {
-                "nuke": new Maya(""),
-            },
-            "rig": {
-                "nuke": new Maya(""),
-            },
+export let CategoryLabel = {
+    "asset": "애셋",
+    "shot": "샷",
+}
+
+let siteParts = {
+    "asset": ["model", "look", "rig"],
+    "shot": ["fx", "lit", "comp"],
+}
+
+let sitePartPrograms = {
+    "asset": {
+        "model": {
+            "maya": new program.Maya(""),
         },
-        "shot": {
-            "lit": {
-                "maya": new Maya(""),
-            },
-            "fx": {
-                "houdini": new Houdini(""),
-                "nuke": new Nuke("precomp"),
-            },
-            "comp": {
-                "nuke": new Nuke(""),
-            },
+        "look": {
+            "nuke": new program.Maya(""),
         },
-    }
+        "rig": {
+            "nuke": new program.Maya(""),
+        },
+    },
+    "shot": {
+        "lit": {
+            "maya": new program.Maya(""),
+        },
+        "fx": {
+            "houdini": new program.Houdini(""),
+            "nuke": new program.Nuke("precomp"),
+        },
+        "comp": {
+            "nuke": new program.Nuke(""),
+        },
+    },
 }
 
-
-export function Shows() {
-    return names(Site.Shows())
-}
-
-export function CreateShow(show: string) {
-    return Site.CreateShow(show)
-}
-
-export function ShowDir(show: string) {
-    return Site.Show(show).Dir
-}
-
-export function GroupsOf(show: string, ctg: string) {
-    return names(Site.Show(show).Groups(ctg))
-}
-
-export function CreateGroup(show: string, ctg: string, grp: string) {
-    return Site.Show(show).CreateGroup(ctg, grp)
-}
-
-export function GroupDir(show: string, ctg: string, grp: string) {
-    return Site.Show(show).Group(ctg, grp).Dir
-}
-
-export function UnitsOf(show: string, ctg: string, grp: string) {
-    return names(Site.Show(show).Group(ctg, grp).Units())
-}
-
-export function CreateUnit(show: string, ctg: string, grp: string, unit: string) {
-    return Site.Show(show).Group(ctg, grp).CreateUnit(unit)
-}
-
-export function UnitDir(show: string, ctg: string, grp: string, unit: string) {
-    return Site.Show(show).Group(ctg, grp).Unit(unit).Dir
+export function New(): Root {
+    return new Root("2L")
 }
 
 export function ValidParts(ctg: string): string[] {
@@ -92,66 +58,17 @@ export function ValidParts(ctg: string): string[] {
     return parts
 }
 
-export function PartsOf(show: string, ctg: string, grp: string, unit: string) {
-    return names(Site.Show(show).Group(ctg, grp).Unit(unit).Parts())
-}
-
-export function CreatePart(show: string, ctg: string, grp: string, unit: string, part: string) {
-    return Site.Show(show).Group(ctg, grp).Unit(unit).CreatePart(part)
-}
-
-export function PartDir(show: string, ctg: string, grp: string, unit: string, part: string) {
-    return Site.Show(show).Group(ctg, grp).Unit(unit).Part(part).Dir
-}
-
-export function TasksOf(show: string, ctg: string, grp: string, unit: string, part: string): Task[] {
-    let p = Site.Show(show).Group(ctg, grp).Unit(unit).Part(part)
-    let programs = p.Programs()
-    let tasks = []
-    for (let pg of programs) {
-        let tasks = ListTasks(p.Dir + "/" + pg.Subdir, show, grp, unit, part, pg.Ext)
-        for (let t of tasks) {
-            tasks.push(t)
-        }
+export function ValidPrograms(ctg: string, part: string): string[] {
+    let parts = sitePartPrograms[ctg]
+    if (!parts) {
+        throw Error("unknown category")
     }
-    tasks.sort(function(a, b) {
-        return compare(a.Name, b.Name)
-    })
-    return tasks
-}
-
-export function CreateTask(show: string, ctg: string, grp: string, unit: string, part: string, prog: string, task: string, ver: string) {
-    let p = Site.Show(show).Group(ctg, grp).Unit(unit).Part(part)
-    let programs = p.Programs()
-    let pg = p.Programs()[prog]
-    let dir = p.Dir
-    if (pg.Subdir) {
-        dir += "/" + pg.Subdir
+    let progs = parts[part]
+    let names: string[] = []
+    for (let name in progs) {
+        names.push(name)
     }
-    let scene = SceneName(dir, show, grp, unit, part, task, ver, pg.Ext)
-    let env = cloneEnv()
-    let sceneEnv = pg.SceneEnviron(show, grp, unit, part, task)
-    for (let e in sceneEnv) {
-        env[e] = sceneEnv[e]
-    }
-    pg.CreateScene(scene, env)
-}
-
-export function OpenTask(show: string, ctg: string, grp: string, unit: string, part: string, prog: string, task: string, ver: string, handleError: (err: Error) => void) {
-    let p = Site.Show(show).Group(ctg, grp).Unit(unit).Part(part)
-    let programs, at = p.Programs()
-    let pg, subdir = p.Programs()[prog]
-    let dir = p.Dir
-    if (pg.Subdir) {
-        dir += "/" + pg.Subdir
-    }
-    let scene = SceneName(dir, show, grp, unit, part, task, ver, pg.Ext)
-    let env = cloneEnv()
-    let sceneEnv = pg.SceneEnviron(show, grp, unit, part, task)
-    for (let e in sceneEnv) {
-        env[e] = sceneEnv[e]
-    }
-    pg.OpenScene(scene, env, handleError)
+    return names
 }
 
 function SceneName(dir, show, grp, unit, part, task, ver, ext): string {
@@ -159,17 +76,17 @@ function SceneName(dir, show, grp, unit, part, task, ver, ext): string {
     return scene
 }
 
-function ListTasks(dir, show, grp, unit, part, ext): Task[] {
+function ListTasks(dir, show, grp, unit, part, pg): Task[] {
     let taskMap = {}
     let files = fs.readdirSync(dir)
     for (let f of files) {
         if (!fs.lstatSync(dir + "/" + f).isFile()) {
             continue
         }
-        if (!f.endsWith(ext)) {
+        if (!f.endsWith(pg.Ext)) {
             continue
         }
-        f = f.substring(0, f.length - ext.length)
+        f = f.substring(0, f.length - pg.Ext.length)
         let prefix = show + "_" + grp + "_" + unit + "_" + part + "_"
         if (!f.startsWith(prefix)) {
             continue
@@ -184,7 +101,7 @@ function ListTasks(dir, show, grp, unit, part, ext): Task[] {
             continue
         }
         if (!taskMap[task]) {
-            taskMap[task] = new Task(task, this)
+            taskMap[task] = new Task(task, pg.Name, dir)
         }
         taskMap[task].Versions.push(version)
     }
@@ -208,6 +125,7 @@ interface Branch {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
+    Env: { [k: string]: string }
 }
 
 class Root implements Branch {
@@ -218,6 +136,7 @@ class Root implements Branch {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
+    Env: { [k: string]: string }
 
     constructor(name: string) {
         this.Parent = null
@@ -225,12 +144,16 @@ class Root implements Branch {
         this.Label = "사이트"
         this.Name = name
         this.Dir = siteRoot
+        console.log(this.Dir)
         this.Subdirs = [
             dirEnt("", "0755"),
             dirEnt("runner", "0755"),
             dirEnt("show", "0755"),
         ]
         this.ChildRoot = this.Dir + "/show"
+        this.Env = {
+            "SHOW_ROOT": siteRoot + "/show"
+        }
     }
     CreateShow(name: string) {
         let show = new Show(this, name)
@@ -254,7 +177,7 @@ class Root implements Branch {
     }
 }
 
-class Show {
+class Show implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -262,6 +185,7 @@ class Show {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
+    Env: { [k: string]: string }
 
     constructor(parent: Root, name: string) {
         this.Parent = parent
@@ -293,42 +217,26 @@ class Show {
             dirEnt("shot", "2775"),
         ]
         this.ChildRoot = this.Dir
-    }
-    categoryGroup(ctg: string, name: string): Group {
-        if (ctg == "asset") {
-            return new AssetGroup(this, name)
-        }
-        if (ctg == "shot") {
-            return new ShotGroup(this, name)
-        }
-        throw Error("invalid category name: " + ctg)
-    }
-    CreateGroup(ctg: string, name: string) {
-        let group = this.categoryGroup(ctg, name)
-        for (let d of group.Subdirs) {
-            makeDirAt(group.Dir, d)
+        this.Env = {
+            "SHOW": name,
+            "SHOWD": this.Dir,
+            "SHOT_ROOT": this.Dir + "/shot",
+            "ASSET_ROOT": this.Dir + "/asset",
         }
     }
-    Group(ctg: string, name): Group {
-        let group = this.categoryGroup(ctg, name)
-        if (!fs.existsSync(group.Dir)) {
-            throw Error("no group: " + name)
-        }
-        return group
+    Category(name: string): Category {
+        return new Category(this, name)
     }
-    Groups(ctg: string): Group[] {
-        let children = []
-        let groupRoot = this.ChildRoot + "/" + ctg
-        for (let d in listDirs(groupRoot)) {
-            children.push(this.Group(ctg, d))
-        }
+    Categories(): Category[] {
+        let children = [
+            this.Category("asset"),
+            this.Category("shot"),
+        ]
         return children
     }
 }
 
-type Group = AssetGroup | ShotGroup
-
-class AssetGroup {
+class Category {
     Parent: Branch
     Type: string
     Label: string
@@ -336,32 +244,81 @@ class AssetGroup {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
+    Env: { [k: string]: string }
 
-    constructor(parent: Show, name) {
+    constructor(parent: Show, name: string) {
+        if (name != "asset" && name != "shot") {
+            throw Error("only accept 'asset' or 'shot' as category name currently, got: " + name)
+        }
         this.Parent = parent
-        this.Type = "group"
-        this.Label = "그룹"
+        this.Type = "category"
+        this.Label = "카테고리"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/asset/" + name
+        this.Dir = parent.ChildRoot + "/" + name
         this.Subdirs = [
             dirEnt("", "2775"),
         ]
         this.ChildRoot = this.Dir
+        this.Env = {}
     }
-    CreateUnit() {
-        let unit = new AssetUnit(this, name)
+    CreateGroup(name: string) {
+        let unit = new Group(this, name)
         for (let d of unit.Subdirs) {
             makeDirAt(unit.Dir, d)
         }
     }
-    Unit(name: string): AssetUnit {
-        let unit = new AssetUnit(this, name)
+    Group(name: string): Group {
+        let unit = new Group(this, name)
+        if (!fs.existsSync(unit.Dir)) {
+            throw Error("no group: " + name)
+        }
+        return unit
+    }
+    Groups(): Group[] {
+        let children = []
+        for (let d of listDirs(this.ChildRoot)) {
+            children.push(this.Group(d))
+        }
+        return children
+    }
+}
+
+class Group {
+    Parent: Branch
+    Type: string
+    Label: string
+    Name: string
+    Dir: string
+    Subdirs: Dir[]
+    ChildRoot: string
+    Env: { [k: string]: string }
+
+    constructor(parent: Category, name) {
+        this.Parent = parent
+        this.Type = "group"
+        this.Label = "그룹"
+        this.Name = name
+        this.Dir = parent.ChildRoot + "/" + name
+        this.Subdirs = [
+            dirEnt("", "2775"),
+        ]
+        this.ChildRoot = this.Dir
+        this.Env = {}
+    }
+    CreateUnit(name: string) {
+        let unit = new Unit(this, name)
+        for (let d of unit.Subdirs) {
+            makeDirAt(unit.Dir, d)
+        }
+    }
+    Unit(name: string): Unit {
+        let unit = new Unit(this, name)
         if (!fs.existsSync(unit.Dir)) {
             throw Error("no unit: " + name)
         }
         return unit
     }
-    Units(): AssetUnit[] {
+    Units(): Unit[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Unit(d))
@@ -370,7 +327,7 @@ class AssetGroup {
     }
 }
 
-class AssetUnit {
+class Unit {
     Parent: Branch
     Type: string
     Label: string
@@ -378,28 +335,56 @@ class AssetUnit {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
+    Env: { [k: string]: string }
 
-    constructor(parent: AssetGroup, name) {
+    constructor(parent: Group, name) {
         this.Parent = parent
         this.Type = "unit"
-        this.Label = "애셋"
+        let ctg = getParent(this, "category").Name
+        this.Label = "유닛"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = [
-            dirEnt("", "2775"),
-        ]
+        if (ctg == "asset") {
+            this.Subdirs = [
+                dirEnt("", "2775")
+            ]
+        } else if (ctg == "shot") {
+            this.Subdirs = [
+                dirEnt("", "2775"),
+                dirEnt("scan", "0755"),
+                dirEnt("scan/base", "0755"),
+                dirEnt("scan/source", "0755"),
+                dirEnt("ref", "0755"),
+                dirEnt("pub", "0755"),
+                dirEnt("pub/cam", "2775"),
+                dirEnt("pub/geo", "2775"),
+                dirEnt("pub/char", "2775"),
+                dirEnt("work", "2775"),
+            ]
+        }
         this.ChildRoot = this.Dir + "/wip"
+        if (ctg == "asset") {
+            this.Env = {
+                "ASSET": name,
+                "ASSETD": this.Dir,
+            }
+        } else if (ctg == "shot") {
+            this.Env = {
+                "SHOT": getParent(this, "group").Name + "_" + name,
+                "SHOTD": this.Dir,
+            }
+        }
     }
     CreatePart(name: string) {
-        let part = new AssetPart(this, name)
+        let part = new Part(this, name)
         for (let d of part.Subdirs) {
             makeDirAt(part.Dir, d)
         }
     }
-    Part(name: string): AssetPart {
-        return new AssetPart(this, name)
+    Part(name: string): Part {
+        return new Part(this, name)
     }
-    Parts(): AssetPart[] {
+    Parts(): Part[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Part(d))
@@ -408,7 +393,7 @@ class AssetUnit {
     }
 }
 
-class AssetPart {
+class Part {
     Parent: Branch
     Type: string
     Label: string
@@ -416,8 +401,9 @@ class AssetPart {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
+    Env: { [k: string]: string }
 
-    constructor(parent: AssetUnit, name) {
+    constructor(parent: Unit, name) {
         this.Parent = parent
         this.Type = "part"
         this.Label = "파트"
@@ -427,252 +413,106 @@ class AssetPart {
             dirEnt("", "2775"),
         ]
         this.ChildRoot = this.Dir
+        this.Env = {
+            "PART": name,
+            "PARTD": this.Dir,
+        }
     }
-    Programs(): Program[] {
-        let programs = sitePartPrograms["asset"][this.Name]
+    Program(name: string): program.Program {
+        let ctg = getParent(this, "category").Name
+        let part = this.Name
+        let programs = sitePartPrograms[ctg][part]
         if (!programs) {
-            throw Error("unknown part for asset")
+            throw Error("unknown part for " + ctg)
+        }
+        let p = programs[name]
+        if (!p) {
+            throw Error("no " + name + " program for " + ctg + " category")
+        }
+        return p
+    }
+    Programs(): { [k: string]: program.Program } {
+        let ctg = getParent(this, "category").Name
+        let part = this.Name
+        let programs = sitePartPrograms[ctg][part]
+        if (!programs) {
+            throw Error("unknown part for " + ctg)
         }
         return programs
     }
-}
-
-class ShotGroup {
-    Parent: Branch
-    Type: string
-    Label: string
-    Name: string
-    Dir: string
-    Subdirs: Dir[]
-    ChildRoot: string
-
-    constructor(parent: Show, name) {
-        this.Parent = parent
-        this.Type = "group"
-        this.Label = "시퀀스"
-        this.Name = name
-        this.Dir = parent.ChildRoot + "/shot/" + name
-        this.Subdirs = [
-            dirEnt("", "2775"),
-        ]
-        this.ChildRoot = this.Dir
-    }
-    CreateUnit(name: string) {
-        let unit = new ShotUnit(this, name)
-        for (let d of unit.Subdirs) {
-            makeDirAt(unit.Dir, d)
+    Task(name: string): Task {
+        let show = getParent(this, "show")
+        let grp = getParent(this, "group")
+        let unit = getParent(this, "unit")
+        let progs = this.Programs()
+        for (let prog in progs) {
+            let pg = progs[prog]
+            let tasks = ListTasks(this.Dir + "/" + pg.Subdir, show, grp, unit, this.Name, pg)
+            for (let t of tasks) {
+                if (t.Name == name) {
+                    return t
+                }
+            }
         }
+        throw Error("no task: " + name)
     }
-    Unit(name: string): ShotUnit {
-        let unit = new ShotUnit(this, name)
-        if (!fs.existsSync(unit.Dir)) {
-            throw Error("no unit: " + unit.Dir)
+    Tasks(): Task[] {
+        let show = getParent(this, "show")
+        let grp = getParent(this, "group")
+        let unit = getParent(this, "unit")
+        let tasks = []
+        let progs = this.Programs()
+        for (let prog in progs) {
+            let pg = progs[prog]
+            let tasks = ListTasks(this.Dir + "/" + pg.Subdir, show, grp, unit, this.Name, pg)
+            for (let t of tasks) {
+                tasks.push(t)
+            }
         }
-        return unit
+        return tasks
     }
-    Units(): ShotUnit[] {
-        let children = []
-        for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Unit(d))
+    CreateTask(prog: string, task: string, ver: string) {
+        let pg = this.Program(prog)
+        let dir = this.Dir
+        if (pg.Subdir) {
+            dir += "/" + pg.Subdir
         }
-        return children
+        let show = getParent(this, "show").Name
+        let ctg = getParent(this, "category").Name
+        let grp = getParent(this, "group").Name
+        let unit = getParent(this, "unit").Name
+        let scene = SceneName(dir, show, grp, unit, this.Name, task, ver, pg.Ext)
+        let env = getEnviron(this)
+        pg.CreateScene(scene, env)
     }
-}
-
-class ShotUnit {
-    Parent: Branch
-    Type: string
-    Label: string
-    Name: string
-    Dir: string
-    Subdirs: Dir[]
-    ChildRoot: string
-
-    constructor(parent: ShotGroup, name) {
-        this.Parent = parent
-        this.Type = "unit"
-        this.Label = "샷"
-        this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = [
-            dirEnt("", "2775"),
-            dirEnt("scan", "0755"),
-            dirEnt("scan/base", "0755"),
-            dirEnt("scan/source", "0755"),
-            dirEnt("ref", "0755"),
-            dirEnt("pub", "0755"),
-            dirEnt("pub/cam", "2775"),
-            dirEnt("pub/geo", "2775"),
-            dirEnt("pub/char", "2775"),
-            dirEnt("work", "2775"),
-        ]
-        this.ChildRoot = this.Dir + "/wip"
-    }
-    CreatePart(name: string) {
-        let part = new ShotPart(this, name)
-        for (let d of this.Subdirs) {
-            makeDirAt(this.Dir, d)
+    OpenTask(prog: string, task: string, ver: string, handleError: (err: Error) => void) {
+        let pg = this.Program(prog)
+        let dir = this.Dir
+        if (pg.Subdir) {
+            dir += "/" + pg.Subdir
         }
-    }
-    Part(name: string): ShotPart {
-        let part = new ShotPart(this, name)
-        if (!fs.existsSync(part.Dir)) {
-            throw Error("no part: " + part.Dir)
-        }
-        return part
-    }
-    Parts(): ShotPart[] {
-        let children = []
-        for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Part(d))
-        }
-        return children
-    }
-}
-
-class ShotPart implements Branch {
-    Parent: Branch
-    Type: string
-    Label: string
-    Name: string
-    Dir: string
-    Subdirs: Dir[]
-    ChildRoot: string
-
-    constructor(parent: ShotUnit, name) {
-        this.Parent = parent
-        this.Type = "part"
-        this.Label = "파트"
-        this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = [
-            dirEnt("", "2775"),
-        ]
-        this.ChildRoot = this.Dir
-    }
-    Programs(): Program[] {
-        let programs = sitePartPrograms["shot"][this.Name]
-        if (!programs) {
-            throw Error("unknown part for shot")
-        }
-        return programs
+        let show = getParent(this, "show").Name
+        let ctg = getParent(this, "category").Name
+        let grp = getParent(this, "group").Name
+        let unit = getParent(this, "unit").Name
+        let scene = SceneName(dir, show, grp, unit, this.Name, task, ver, pg.Ext)
+        let env = getEnviron(this)
+        pg.OpenScene(scene, env, handleError)
     }
 }
 
 class Task {
     Name: string
-    Program: Program
+    Program: string
+    Dir: string
     Versions: string[]
 
-    constructor(name, program) {
+    constructor(name, prog, dir) {
         this.Name = name
-        this.Program = program
+        this.Program = prog
+        this.Dir = dir
         this.Versions = []
     }
-}
-
-// Program은 씬을 생성하고 실행할 프로그램이다.
-interface Program {
-    Name: string
-    Ext: string
-    Subdir: string
-    CreateScene: (scene: string, env: { [k: string]: string }) => void
-    OpenScene: (scene: string, env: { [k: string]: string }, handleError: (err: Error) => void) => void
-}
-
-class Maya implements Program {
-    Name: string
-    Ext: string
-    Subdir: string
-
-    constructor(subdir: string) {
-        this.Name = "maya"
-        this.Ext = ".mb"
-        this.Subdir = subdir
-    }
-    CreateScene(scene, env) {
-        let cmd = siteRoot + "/runner/maya_create.sh"
-        if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/maya_create.bat"
-        }
-        proc.execFileSync(cmd, [scene], { "env": env })
-    }
-    OpenScene(scene, env, handleError) {
-        let cmd = siteRoot + "/runner/maya_open.sh"
-        if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/maya_open.bat"
-        }
-        mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
-    }
-}
-
-class Houdini implements Program {
-    Name: string
-    Ext: string
-    Subdir: string
-
-    constructor(subdir: string) {
-        this.Name = "houdini"
-        this.Ext = ".hip"
-        this.Subdir = subdir
-    }
-    CreateScene(scene, env) {
-        let cmd = siteRoot + "/runner/houdini_create.sh"
-        if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/houdini_create.bat"
-        }
-        proc.execFileSync(cmd, [scene], { "env": env })
-    }
-    OpenScene(scene, env, handleError) {
-        let cmd = siteRoot + "/runner/houdini_open.sh"
-        if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/houdini_open.bat"
-        }
-        mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
-    }
-}
-
-class Nuke implements Program {
-    Name: string
-    Ext: string
-    Subdir: string
-
-    constructor(subdir: string) {
-        this.Name = "nuke"
-        this.Ext = ".nk"
-        this.Subdir = subdir
-    }
-    CreateScene(scene, env) {
-        let cmd = siteRoot + "/runner/nuke_create.sh"
-        if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/nuke_create.bat"
-        }
-        proc.execFileSync(cmd, [scene], { "env": env })
-    }
-    OpenScene(scene, env, handleError) {
-        let cmd = siteRoot + "/runner/nuke_open.sh"
-        if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/nuke_open.bat"
-        }
-        mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
-    }
-}
-
-function mySpawn(cmd: string, args: string[], opts: object, handleError: (err) => void) {
-    let p = proc.spawn(cmd, args, opts)
-    let stderr = ""
-    p.stderr.on("data", (data) => {
-        stderr += data
-    })
-    p.on("exit", (code) => {
-        if (code != 0) {
-            let err = new Error("exit with error " + code + ": " + stderr)
-            handleError(err)
-        }
-    })
-    p.on("error", (err) => {
-        handleError(err)
-    })
 }
 
 interface Dir {
@@ -747,14 +587,31 @@ function compare(a, b): number {
     return 0
 }
 
-interface Namer {
-    Name: string
+function getParent(b: Branch, type: string): Branch {
+    console.log("finding: " + type)
+    while (b.Parent) {
+        b = b.Parent
+        console.log(b.Type)
+        if (b.Type == type) {
+            return b
+        }
+    }
+    throw Error(name + " branch not found")
 }
 
-function names(vals: Namer[]): string[] {
-    let ns: string[] = []
-    for (let v of vals) {
-        ns.push(v.Name)
+function getEnviron(b: Branch): { [k: string]: string } {
+    let env = cloneEnv()
+    // 계층 아래의 환경변수가 우선이다
+    while (true) {
+        for (let k in b.Env) {
+            if (!env[k]) {
+                env[k] = b.Env[k]
+            }
+        }
+        b = b.Parent
+        if (!b) {
+            break
+        }
     }
-    return ns
+    return env
 }
