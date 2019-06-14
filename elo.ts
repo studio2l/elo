@@ -298,7 +298,7 @@ function openModal(kind) {
             m.style.display = "none"
             throw err
         }
-        for (let p in progs) {
+        for (let p of progs) {
             let opt = document.createElement("option")
             opt.text = p
             progInput.add(opt)

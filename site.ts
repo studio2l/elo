@@ -46,6 +46,32 @@ let sitePartPrograms = {
     },
 }
 
+let sitePartSubdirs = {
+    "asset": {
+        "model": [
+            dirEnt("", "2775"),
+        ],
+        "look": [
+            dirEnt("", "2775"),
+        ],
+        "rig": [
+            dirEnt("", "2775"),
+        ],
+    },
+    "shot": {
+        "lit": [
+            dirEnt("", "2775"),
+        ],
+        "fx": [
+            dirEnt("", "2775"),
+            dirEnt("precomp", "2775"),
+        ],
+        "comp": [
+            dirEnt("", "2775"),
+        ],
+    }
+}
+
 export function New(): Root {
     return new Root("2L")
 }
@@ -144,7 +170,6 @@ class Root implements Branch {
         this.Label = "사이트"
         this.Name = name
         this.Dir = siteRoot
-        console.log(this.Dir)
         this.Subdirs = [
             dirEnt("", "0755"),
             dirEnt("runner", "0755"),
@@ -359,7 +384,7 @@ class Unit {
                 dirEnt("pub/cam", "2775"),
                 dirEnt("pub/geo", "2775"),
                 dirEnt("pub/char", "2775"),
-                dirEnt("work", "2775"),
+                dirEnt("wip", "2775"),
             ]
         }
         this.ChildRoot = this.Dir + "/wip"
@@ -409,9 +434,8 @@ class Part {
         this.Label = "파트"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = [
-            dirEnt("", "2775"),
-        ]
+        let ctg = getParent(this, "category").Name
+        this.Subdirs = sitePartSubdirs[ctg][this.Name]
         this.ChildRoot = this.Dir
         this.Env = {
             "PART": name,
@@ -441,14 +465,18 @@ class Part {
         return programs
     }
     Task(name: string): Task {
-        let show = getParent(this, "show")
-        let grp = getParent(this, "group")
-        let unit = getParent(this, "unit")
+        let show = getParent(this, "show").Name
+        let grp = getParent(this, "group").Name
+        let unit = getParent(this, "unit").Name
         let progs = this.Programs()
         for (let prog in progs) {
             let pg = progs[prog]
-            let tasks = ListTasks(this.Dir + "/" + pg.Subdir, show, grp, unit, this.Name, pg)
-            for (let t of tasks) {
+            let dir = this.Dir
+            if (pg.Subdir) {
+                dir += "/" + pg.Subdir
+            }
+            let progTasks = ListTasks(dir, show, grp, unit, this.Name, pg)
+            for (let t of progTasks) {
                 if (t.Name == name) {
                     return t
                 }
@@ -457,15 +485,19 @@ class Part {
         throw Error("no task: " + name)
     }
     Tasks(): Task[] {
-        let show = getParent(this, "show")
-        let grp = getParent(this, "group")
-        let unit = getParent(this, "unit")
+        let show = getParent(this, "show").Name
+        let grp = getParent(this, "group").Name
+        let unit = getParent(this, "unit").Name
         let tasks = []
         let progs = this.Programs()
         for (let prog in progs) {
             let pg = progs[prog]
-            let tasks = ListTasks(this.Dir + "/" + pg.Subdir, show, grp, unit, this.Name, pg)
-            for (let t of tasks) {
+            let dir = this.Dir
+            if (pg.Subdir) {
+                dir += "/" + pg.Subdir
+            }
+            let progTasks = ListTasks(dir, show, grp, unit, this.Name, pg)
+            for (let t of progTasks) {
                 tasks.push(t)
             }
         }
@@ -588,10 +620,8 @@ function compare(a, b): number {
 }
 
 function getParent(b: Branch, type: string): Branch {
-    console.log("finding: " + type)
     while (b.Parent) {
         b = b.Parent
-        console.log(b.Type)
         if (b.Type == type) {
             return b
         }
