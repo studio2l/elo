@@ -345,7 +345,7 @@ let partInfo = {
                 dirEnt("", "2775"),
             ],
             Programs: {
-                "nuke": [program.Maya, ""],
+                "maya": [program.Maya, ""],
             },
         }),
         "rig": new PartInfo({
@@ -353,7 +353,7 @@ let partInfo = {
                 dirEnt("", "2775"),
             ],
             Programs: {
-                "nuke": [program.Maya, ""],
+                "maya": [program.Maya, ""],
             },
         }),
     },
