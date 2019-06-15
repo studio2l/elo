@@ -15,60 +15,13 @@ export let CategoryLabel = {
     "shot": "샷",
 }
 
-let siteParts = {
-    "asset": ["model", "look", "rig"],
-    "shot": ["fx", "lit", "comp"],
-}
+class PartInfo {
+    Subdirs: Dir[]
+    Programs: { [k: string]: [program.Program, string] }
 
-let sitePartPrograms = {
-    "asset": {
-        "model": {
-            "maya": new program.Maya(""),
-        },
-        "look": {
-            "nuke": new program.Maya(""),
-        },
-        "rig": {
-            "nuke": new program.Maya(""),
-        },
-    },
-    "shot": {
-        "lit": {
-            "maya": new program.Maya(""),
-        },
-        "fx": {
-            "houdini": new program.Houdini(""),
-            "nuke": new program.Nuke("precomp"),
-        },
-        "comp": {
-            "nuke": new program.Nuke(""),
-        },
-    },
-}
-
-let sitePartSubdirs = {
-    "asset": {
-        "model": [
-            dirEnt("", "2775"),
-        ],
-        "look": [
-            dirEnt("", "2775"),
-        ],
-        "rig": [
-            dirEnt("", "2775"),
-        ],
-    },
-    "shot": {
-        "lit": [
-            dirEnt("", "2775"),
-        ],
-        "fx": [
-            dirEnt("", "2775"),
-            dirEnt("precomp", "2775"),
-        ],
-        "comp": [
-            dirEnt("", "2775"),
-        ],
+    constructor(opt) {
+        this.Subdirs = opt.subdirs
+        this.Programs = opt.Programs
     }
 }
 
@@ -85,11 +38,11 @@ export function ValidParts(ctg: string): string[] {
 }
 
 export function ValidPrograms(ctg: string, part: string): string[] {
-    let parts = sitePartPrograms[ctg]
+    let parts = partInfo[ctg]
     if (!parts) {
         throw Error("unknown category")
     }
-    let progs = parts[part]
+    let progs = parts[part].Programs
     let names: string[] = []
     for (let name in progs) {
         names.push(name)
@@ -372,6 +325,68 @@ class Unit {
     }
 }
 
+let siteParts = {
+    "asset": ["model", "look", "rig"],
+    "shot": ["fx", "lit", "comp"],
+}
+
+let partInfo = {
+    "asset": {
+        "model": new PartInfo({
+            Subdirs: [
+                dirEnt("", "2775"),
+            ],
+            Programs: {
+                "maya": [program.Maya, ""],
+            },
+        }),
+        "look": new PartInfo({
+            Subdirs: [
+                dirEnt("", "2775"),
+            ],
+            Programs: {
+                "nuke": [program.Maya, ""],
+            },
+        }),
+        "rig": new PartInfo({
+            Subdirs: [
+                dirEnt("", "2775"),
+            ],
+            Programs: {
+                "nuke": [program.Maya, ""],
+            },
+        }),
+    },
+    "shot": {
+        "lit": new PartInfo({
+            Subdirs: [
+                dirEnt("", "2775"),
+            ],
+            Programs: {
+                "maya": [program.Maya, ""],
+            },
+        }),
+        "fx": new PartInfo({
+            Subdirs: [
+                dirEnt("", "2775"),
+                dirEnt("precomp", "2775"),
+            ],
+            Programs: {
+                "houdini": [program.Houdini, ""],
+                "nuke": [program.Nuke, "precomp"],
+            },
+        }),
+        "comp": new PartInfo({
+            Subdirs: [
+                dirEnt("", "2775")
+            ],
+            Programs: {
+                "nuke": [program.Nuke, ""],
+            }
+        }),
+    },
+}
+
 class Part {
     Parent: Branch
     Type: string
@@ -381,6 +396,7 @@ class Part {
     Subdirs: Dir[]
     ChildRoot: string
     Env: { [k: string]: string }
+    Programs: [program.Program, string][]
 
     constructor(parent: Unit, name) {
         this.Parent = parent
@@ -389,42 +405,27 @@ class Part {
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctg = getParent(this, "category").Name
-        this.Subdirs = sitePartSubdirs[ctg][this.Name]
+        this.Subdirs = partInfo[ctg][this.Name].Subdirs
         this.ChildRoot = this.Dir
         this.Env = {
             "PART": name,
             "PARTD": this.Dir,
         }
+        this.Programs = partInfo[ctg][this.Name].Programs
     }
-    Program(name: string): program.Program {
-        let ctg = getParent(this, "category").Name
-        let part = this.Name
-        let programs = sitePartPrograms[ctg][part]
-        if (!programs) {
-            throw Error("unknown part for " + ctg)
-        }
-        let p = programs[name]
+    Program(name: string): [program.Program, string] {
+        let [p, at] = this.Programs[name]
         if (!p) {
-            throw Error("no " + name + " program for " + ctg + " category")
+            throw Error("no " + name + " program")
         }
-        return p
-    }
-    Programs(): { [k: string]: program.Program } {
-        let ctg = getParent(this, "category").Name
-        let part = this.Name
-        let programs = sitePartPrograms[ctg][part]
-        if (!programs) {
-            throw Error("unknown part for " + ctg)
-        }
-        return programs
+        return [p, at]
     }
     Task(name: string): Task {
-        let progs = this.Programs()
-        for (let prog in progs) {
-            let pg = progs[prog]
+        for (let prog in this.Programs) {
+            let [pg, at] = this.Programs[prog]
             let dir = this.Dir
-            if (pg.Subdir) {
-                dir += "/" + pg.Subdir
+            if (at) {
+                dir += "/" + at
             }
             let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
@@ -437,12 +438,11 @@ class Part {
     }
     Tasks(): Task[] {
         let tasks = []
-        let progs = this.Programs()
-        for (let prog in progs) {
-            let pg = progs[prog]
+        for (let prog in this.Programs) {
+            let [pg, at] = this.Programs[prog]
             let dir = this.Dir
-            if (pg.Subdir) {
-                dir += "/" + pg.Subdir
+            if (at) {
+                dir += "/" + at
             }
             let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
@@ -495,20 +495,20 @@ class Part {
         return tasks
     }
     CreateTask(prog: string, task: string, ver: string) {
-        let pg = this.Program(prog)
+        let [pg, at] = this.Program(prog)
         let dir = this.Dir
-        if (pg.Subdir) {
-            dir += "/" + pg.Subdir
+        if (at) {
+            dir += "/" + at
         }
         let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
         let env = getEnviron(this)
         pg.CreateScene(scene, env)
     }
     OpenTask(prog: string, task: string, ver: string, handleError: (err: Error) => void) {
-        let pg = this.Program(prog)
+        let [pg, at] = this.Program(prog)
         let dir = this.Dir
-        if (pg.Subdir) {
-            dir += "/" + pg.Subdir
+        if (at) {
+            dir += "/" + at
         }
         let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
         let env = getEnviron(this)

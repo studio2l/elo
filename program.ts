@@ -6,91 +6,75 @@ if (!siteRoot) {
 }
 
 // Program은 씬을 생성하고 실행할 프로그램이다.
-export interface Program {
+export class Program {
     Name: string
     Ext: string
-    Subdir: string
     CreateScene: (scene: string, env: { [k: string]: string }) => void
     OpenScene: (scene: string, env: { [k: string]: string }, handleError: (err: Error) => void) => void
+    constructor(opt) {
+        this.Name = opt.Name
+        this.Ext = opt.Ext
+        this.CreateScene = opt.CreateScene
+        this.OpenScene = opt.OpenScene
+    }
 }
 
-export class Maya implements Program {
-    Name: string
-    Ext: string
-    Subdir: string
-
-    constructor(subdir: string) {
-        this.Name = "maya"
-        this.Ext = ".mb"
-        this.Subdir = subdir
-    }
-    CreateScene(scene, env) {
+export let Maya = new Program({
+    Name: "maya",
+    Ext: ".mb",
+    CreateScene: function(scene, env) {
         let cmd = siteRoot + "/runner/maya_create.sh"
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/maya_create.bat"
         }
         proc.execFileSync(cmd, [scene], { "env": env })
-    }
-    OpenScene(scene, env, handleError) {
+    },
+    OpenScene: function(scene, env, handleError) {
         let cmd = siteRoot + "/runner/maya_open.sh"
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/maya_open.bat"
         }
         mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
-    }
-}
+    },
+})
 
-export class Houdini implements Program {
-    Name: string
-    Ext: string
-    Subdir: string
-
-    constructor(subdir: string) {
-        this.Name = "houdini"
-        this.Ext = ".hip"
-        this.Subdir = subdir
-    }
-    CreateScene(scene, env) {
+export let Houdini = new Program({
+    Name: "houdini",
+    Ext: ".hip",
+    CreateScene: function(scene, env) {
         let cmd = siteRoot + "/runner/houdini_create.sh"
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/houdini_create.bat"
         }
         proc.execFileSync(cmd, [scene], { "env": env })
-    }
-    OpenScene(scene, env, handleError) {
+    },
+    OpenScene: function(scene, env, handleError) {
         let cmd = siteRoot + "/runner/houdini_open.sh"
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/houdini_open.bat"
         }
         mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
-    }
-}
+    },
+})
 
-export class Nuke implements Program {
-    Name: string
-    Ext: string
-    Subdir: string
-
-    constructor(subdir: string) {
-        this.Name = "nuke"
-        this.Ext = ".nk"
-        this.Subdir = subdir
-    }
-    CreateScene(scene, env) {
+export let Nuke = new Program({
+    Name: "nuke",
+    Ext: ".nk",
+    CreateScene: function(scene, env) {
         let cmd = siteRoot + "/runner/nuke_create.sh"
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/nuke_create.bat"
         }
         proc.execFileSync(cmd, [scene], { "env": env })
-    }
-    OpenScene(scene, env, handleError) {
+    },
+    OpenScene: function(scene, env, handleError) {
         let cmd = siteRoot + "/runner/nuke_open.sh"
         if (process.platform == "win32") {
             cmd = siteRoot + "/runner/nuke_open.bat"
         }
         mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
-    }
-}
+    },
+})
 
 function mySpawn(cmd: string, args: string[], opts: object, handleError: (err) => void) {
     let p = proc.spawn(cmd, args, opts)
@@ -108,5 +92,3 @@ function mySpawn(cmd: string, args: string[], opts: object, handleError: (err) =
         handleError(err)
     })
 }
-
-
