@@ -97,52 +97,6 @@ export function ValidPrograms(ctg: string, part: string): string[] {
     return names
 }
 
-function SceneName(dir, show, grp, unit, part, task, ver, ext): string {
-    let scene = dir + "/" + show + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver + ext
-    return scene
-}
-
-function ListTasks(dir, show, grp, unit, part, pg): Task[] {
-    let taskMap = {}
-    let files = fs.readdirSync(dir)
-    for (let f of files) {
-        if (!fs.lstatSync(dir + "/" + f).isFile()) {
-            continue
-        }
-        if (!f.endsWith(pg.Ext)) {
-            continue
-        }
-        f = f.substring(0, f.length - pg.Ext.length)
-        let prefix = show + "_" + grp + "_" + unit + "_" + part + "_"
-        if (!f.startsWith(prefix)) {
-            continue
-        }
-        f = f.substring(prefix.length, f.length)
-        let ws = f.split("_")
-        if (ws.length != 2) {
-            continue
-        }
-        let [task, version] = ws
-        if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
-            continue
-        }
-        if (!taskMap[task]) {
-            taskMap[task] = new Task(task, pg.Name, dir)
-        }
-        taskMap[task].Versions.push(version)
-    }
-    let tasks = []
-    for (let k in taskMap) {
-        let t = taskMap[k]
-        tasks.push(t)
-    }
-    tasks.sort(function(a, b) {
-        return compare(a.Name, b.Name)
-    })
-    return tasks
-}
-
-
 interface Branch {
     Parent: Branch | null
     Type: string
@@ -465,9 +419,6 @@ class Part {
         return programs
     }
     Task(name: string): Task {
-        let show = getParent(this, "show").Name
-        let grp = getParent(this, "group").Name
-        let unit = getParent(this, "unit").Name
         let progs = this.Programs()
         for (let prog in progs) {
             let pg = progs[prog]
@@ -475,7 +426,7 @@ class Part {
             if (pg.Subdir) {
                 dir += "/" + pg.Subdir
             }
-            let progTasks = ListTasks(dir, show, grp, unit, this.Name, pg)
+            let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
                 if (t.Name == name) {
                     return t
@@ -485,9 +436,6 @@ class Part {
         throw Error("no task: " + name)
     }
     Tasks(): Task[] {
-        let show = getParent(this, "show").Name
-        let grp = getParent(this, "group").Name
-        let unit = getParent(this, "unit").Name
         let tasks = []
         let progs = this.Programs()
         for (let prog in progs) {
@@ -496,11 +444,54 @@ class Part {
             if (pg.Subdir) {
                 dir += "/" + pg.Subdir
             }
-            let progTasks = ListTasks(dir, show, grp, unit, this.Name, pg)
+            let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
                 tasks.push(t)
             }
         }
+        return tasks
+    }
+    ListTasks(dir, pg): Task[] {
+        let show = getParent(this, "show").Name
+        let grp = getParent(this, "group").Name
+        let unit = getParent(this, "unit").Name
+        let part = this.Name
+        let taskMap = {}
+        let files = fs.readdirSync(dir)
+        for (let f of files) {
+            if (!fs.lstatSync(dir + "/" + f).isFile()) {
+                continue
+            }
+            if (!f.endsWith(pg.Ext)) {
+                continue
+            }
+            f = f.substring(0, f.length - pg.Ext.length)
+            let prefix = show + "_" + grp + "_" + unit + "_" + part + "_"
+            if (!f.startsWith(prefix)) {
+                continue
+            }
+            f = f.substring(prefix.length, f.length)
+            let ws = f.split("_")
+            if (ws.length != 2) {
+                continue
+            }
+            let [task, version] = ws
+            if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
+                continue
+            }
+            if (!taskMap[task]) {
+                taskMap[task] = new Task(task, pg.Name, dir)
+            }
+            taskMap[task].Versions.push(version)
+        }
+        let tasks = []
+        for (let k in taskMap) {
+            let t = taskMap[k]
+            tasks.push(t)
+        }
+        tasks.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
         return tasks
     }
     CreateTask(prog: string, task: string, ver: string) {
@@ -509,11 +500,7 @@ class Part {
         if (pg.Subdir) {
             dir += "/" + pg.Subdir
         }
-        let show = getParent(this, "show").Name
-        let ctg = getParent(this, "category").Name
-        let grp = getParent(this, "group").Name
-        let unit = getParent(this, "unit").Name
-        let scene = SceneName(dir, show, grp, unit, this.Name, task, ver, pg.Ext)
+        let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
         let env = getEnviron(this)
         pg.CreateScene(scene, env)
     }
@@ -523,13 +510,17 @@ class Part {
         if (pg.Subdir) {
             dir += "/" + pg.Subdir
         }
-        let show = getParent(this, "show").Name
-        let ctg = getParent(this, "category").Name
-        let grp = getParent(this, "group").Name
-        let unit = getParent(this, "unit").Name
-        let scene = SceneName(dir, show, grp, unit, this.Name, task, ver, pg.Ext)
+        let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
         let env = getEnviron(this)
         pg.OpenScene(scene, env, handleError)
+    }
+    SceneName(task, ver): string {
+        let show = getParent(this, "show").Name
+        let grp = getParent(this, "group").Name
+        let unit = getParent(this, "unit").Name
+        let part = this.Name
+        let scene = show + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver
+        return scene
     }
 }
 
