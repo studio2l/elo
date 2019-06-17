@@ -280,7 +280,9 @@ class Unit {
         this.Dir = parent.ChildRoot + "/" + name
         if (ctg == "asset") {
             this.Subdirs = [
-                dirEnt("", "2775")
+                dirEnt("", "2775"),
+                dirEnt("pub", "2775"),
+                dirEnt("wip", "2775"),
             ]
         } else if (ctg == "shot") {
             this.Subdirs = [
