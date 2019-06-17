@@ -339,53 +339,48 @@ class Unit {
     }
 }
 
-class PartInfo {
+interface PartInfo {
     Subdirs: Dir[]
     Programs: { [k: string]: [program.Program, string] }
-
-    constructor(opt) {
-        this.Subdirs = opt.subdirs
-        this.Programs = opt.Programs
-    }
 }
 
-let partInfo = {
+let partInfo: { [k: string]: { [k: string]: PartInfo } } = {
     "asset": {
-        "model": new PartInfo({
+        "model": <PartInfo>{
+            subdirs: [
+                dirEnt("", "2775"),
+            ],
+            Programs: {
+                "maya": [program.Maya, ""],
+            },
+        },
+        "look": <PartInfo>{
             Subdirs: [
                 dirEnt("", "2775"),
             ],
             Programs: {
                 "maya": [program.Maya, ""],
             },
-        }),
-        "look": new PartInfo({
+        },
+        "rig": <PartInfo>{
             Subdirs: [
                 dirEnt("", "2775"),
             ],
             Programs: {
                 "maya": [program.Maya, ""],
             },
-        }),
-        "rig": new PartInfo({
-            Subdirs: [
-                dirEnt("", "2775"),
-            ],
-            Programs: {
-                "maya": [program.Maya, ""],
-            },
-        }),
+        },
     },
     "shot": {
-        "lit": new PartInfo({
+        "lit": <PartInfo>{
             Subdirs: [
                 dirEnt("", "2775"),
             ],
             Programs: {
                 "maya": [program.Maya, ""],
             },
-        }),
-        "fx": new PartInfo({
+        },
+        "fx": <PartInfo>{
             Subdirs: [
                 dirEnt("", "2775"),
                 dirEnt("precomp", "2775"),
@@ -394,15 +389,15 @@ let partInfo = {
                 "houdini": [program.Houdini, ""],
                 "nuke": [program.Nuke, "precomp"],
             },
-        }),
-        "comp": new PartInfo({
+        },
+        "comp": <PartInfo>{
             Subdirs: [
                 dirEnt("", "2775")
             ],
             Programs: {
                 "nuke": [program.Nuke, ""],
             }
-        }),
+        },
     },
 }
 
@@ -415,7 +410,7 @@ class Part {
     Subdirs: Dir[]
     ChildRoot: string
     Env: { [k: string]: string }
-    Programs: [program.Program, string][]
+    Programs: { [k: string]: [program.Program, string] }
 
     constructor(parent: Unit, name) {
         this.Parent = parent
