@@ -304,7 +304,7 @@ function openModal(kind) {
             progInput.add(opt)
         }
     }
-    let ctgLabel = site.CategoryLabel[ctg]
+    let ctgLabel = site.CategoryLabel(ctg)
     let kor = {
         "show": "쇼",
         "group": "그룹",
@@ -390,22 +390,22 @@ function loadCategory() {
     let menu = <HTMLSelectElement>document.getElementById("category-menu")
     let fname = configDir() + "/category.json"
     if (!fs.existsSync(fname)) {
-        let ctg = site.Categories[0]
+        let ctg = site.ValidCategories()[0]
         menu.value = ctg
-        document.getElementById("unit-label").innerText = site.CategoryLabel[ctg]
+        document.getElementById("unit-label").innerText = site.CategoryLabel(ctg)
         return
     }
     let data = fs.readFileSync(fname)
     let ctg = data.toString("utf8")
     menu.value = ctg
-    document.getElementById("unit-label").innerText = site.CategoryLabel[ctg]
+    document.getElementById("unit-label").innerText = site.CategoryLabel(ctg)
 }
 
 // saveCategory는 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
 export function saveCategory() {
     let menu = <HTMLSelectElement>document.getElementById("category-menu")
     let ctg = menu.value
-    document.getElementById("unit-label").innerText = site.CategoryLabel[ctg]
+    document.getElementById("unit-label").innerText = site.CategoryLabel(ctg)
     let fname = configDir() + "/category.json"
     fs.writeFileSync(fname, ctg)
     reloadMyPartMenuItems()
@@ -541,7 +541,7 @@ function addCategoryMenuItems() {
     if (!menu) {
         throw Error("category-menu가 없습니다.")
     }
-    for (let ctg of site.Categories) {
+    for (let ctg of site.ValidCategories()) {
         let opt = document.createElement("option")
         opt.text = ctg
         menu.add(opt)

@@ -12,6 +12,23 @@ export function New(): Root {
     return new Root("2L")
 }
 
+export function ValidCategories(): string[] {
+    let ctgs = []
+    for (let c in categories) {
+        ctgs.push(c)
+    }
+    ctgs.sort()
+    return ctgs
+}
+
+export function CategoryLabel(c: string): string {
+    let l = categories[c]
+    if (!l) {
+        throw Error("no category info: " + c)
+    }
+    return l
+}
+
 export function ValidParts(ctg: string): string[] {
     let partMap = partInfo[ctg]
     if (!partMap) {
@@ -143,25 +160,24 @@ class Show implements Branch {
         this.Env = {
             "SHOW": name,
             "SHOWD": this.Dir,
-            "SHOT_ROOT": this.Dir + "/shot",
-            "ASSET_ROOT": this.Dir + "/asset",
+        }
+        for (let c of ValidCategories()) {
+            this.Env[c.toUpperCase() + "_ROOT"] = this.Dir + "/" + c
         }
     }
     Category(name: string): Category {
         return new Category(this, name)
     }
     Categories(): Category[] {
-        let children = [
-            this.Category("asset"),
-            this.Category("shot"),
-        ]
+        let children = []
+        for (let c of ValidCategories()) {
+            children.push(this.Category(c))
+        }
         return children
     }
 }
 
-export let Categories = ["asset", "shot"]
-
-export let CategoryLabel = {
+let categories = {
     "asset": "애셋",
     "shot": "샷",
 }
@@ -177,8 +193,8 @@ class Category {
     Env: { [k: string]: string }
 
     constructor(parent: Show, name: string) {
-        if (name != "asset" && name != "shot") {
-            throw Error("only accept 'asset' or 'shot' as category name currently, got: " + name)
+        if (!categories[name]) {
+            throw Error("invalid category name: " + name)
         }
         this.Parent = parent
         this.Type = "category"
