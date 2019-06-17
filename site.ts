@@ -91,9 +91,6 @@ class Root implements Branch {
             dirEnt("show", "0755"),
         ]
         this.ChildRoot = this.Dir + "/show"
-        this.Env = {
-            "SHOW_ROOT": this.Dir + "/show"
-        }
     }
     CreateShow(name: string) {
         let show = new Show(this, name)
@@ -157,13 +154,6 @@ class Show implements Branch {
             dirEnt("shot", "2775"),
         ]
         this.ChildRoot = this.Dir
-        this.Env = {
-            "SHOW": name,
-            "SHOWD": this.Dir,
-        }
-        for (let c of ValidCategories()) {
-            this.Env[c.toUpperCase() + "_ROOT"] = this.Dir + "/" + c
-        }
     }
     Category(name: string): Category {
         return new Category(this, name)
@@ -205,7 +195,6 @@ class Category {
             dirEnt("", "2775"),
         ]
         this.ChildRoot = this.Dir
-        this.Env = {}
     }
     CreateGroup(name: string) {
         let unit = new Group(this, name)
@@ -249,7 +238,6 @@ class Group {
             dirEnt("", "2775"),
         ]
         this.ChildRoot = this.Dir
-        this.Env = {}
     }
     CreateUnit(name: string) {
         let unit = new Unit(this, name)
@@ -309,17 +297,6 @@ class Unit {
             ]
         }
         this.ChildRoot = this.Dir + "/wip"
-        if (ctg == "asset") {
-            this.Env = {
-                "ASSET": name,
-                "ASSETD": this.Dir,
-            }
-        } else if (ctg == "shot") {
-            this.Env = {
-                "SHOT": getParent(this, "group").Name + "_" + name,
-                "SHOTD": this.Dir,
-            }
-        }
     }
     CreatePart(name: string) {
         let part = new Part(this, name)
@@ -426,10 +403,6 @@ class Part {
         let ctg = getParent(this, "category").Name
         this.Subdirs = partInfo[ctg][this.Name].Subdirs
         this.ChildRoot = this.Dir
-        this.Env = {
-            "PART": name,
-            "PARTD": this.Dir,
-        }
         this.Programs = partInfo[ctg][this.Name].Programs
     }
     Program(name: string): [program.Program, string] {
@@ -520,7 +493,7 @@ class Part {
             dir += "/" + at
         }
         let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
-        let env = getEnviron(this)
+        let env = this.Environ()
         pg.CreateScene(scene, env)
     }
     OpenTask(prog: string, task: string, ver: string, handleError: (err: Error) => void) {
@@ -530,8 +503,33 @@ class Part {
             dir += "/" + at
         }
         let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
-        let env = getEnviron(this)
+        let env = this.Environ()
         pg.OpenScene(scene, env, handleError)
+    }
+    Environ(): { [k: string]: string } {
+        let env = cloneEnv()
+        let psite = getParent(this, "site")
+        env["SHOW_ROOT"] = site.ChildRoot
+        let pshow = getParent(this, "show")
+        env["SHOW"] = pshow.Name
+        env["SHOWD"] = pshow.Dir
+        env["ASSET_ROOT"] = pshow.Dir + "/asset"
+        env["SHOT_ROOT"] = pshow.Dir + "/shot"
+        let ctg = getParent(this, "category").Name
+        let pgrp = getParent(this, "group")
+        let punit = getParent(this, "unit")
+        if (ctg == "asset") {
+            env["ASSET_TYPE"] = pgrp.Name
+            env["ASSET"] = punit.Name
+            env["ASSETD"] = punit.Dir
+        } else if (ctg == "shot") {
+            env["SEQ"] = pgrp.Name
+            env["SHOT"] = pgrp.Name + "_" + punit.Name
+            env["SHOTD"] = punit.Dir
+        }
+        env["PART"] = this.Name
+        env["PARTD"] = this.Dir
+        return env
     }
     SceneName(task, ver): string {
         let show = getParent(this, "show").Name
@@ -639,19 +637,3 @@ function getParent(b: Branch, type: string): Branch {
     throw Error(name + " branch not found")
 }
 
-function getEnviron(b: Branch): { [k: string]: string } {
-    let env = cloneEnv()
-    // 계층 아래의 환경변수가 우선이다
-    while (true) {
-        for (let k in b.Env) {
-            if (!env[k]) {
-                env[k] = b.Env[k]
-            }
-        }
-        b = b.Parent
-        if (!b) {
-            break
-        }
-    }
-    return env
-}
