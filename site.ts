@@ -511,7 +511,7 @@ class Part {
     Environ(): { [k: string]: string } {
         let env = cloneEnv()
         let psite = getParent(this, "site")
-        env["SHOW_ROOT"] = site.ChildRoot
+        env["SHOW_ROOT"] = psite.ChildRoot
         let pshow = getParent(this, "show")
         env["SHOW"] = pshow.Name
         env["SHOWD"] = pshow.Dir
