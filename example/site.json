@@ -1,0 +1,133 @@
+{
+	"show": {
+		"Subdirs": [
+            { "name": "", "perm": "0755" },
+            { "name": "asset", "perm": "0755" },
+            { "name": "asset/char", "perm": "2775" },
+            { "name": "asset/env", "perm": "2775" },
+            { "name": "asset/prop", "perm": "2775" },
+            { "name": "doc", "perm": "0755" },
+            { "name": "doc/cglist", "perm": "0755" },
+            { "name": "doc/credit", "perm": "0755" },
+            { "name": "doc/droid", "perm": "0755" },
+            { "name": "data", "perm": "0755" },
+            { "name": "data/edit", "perm": "0755" },
+            { "name": "data/onset", "perm": "0755" },
+            { "name": "data/lut", "perm": "0755" },
+            { "name": "scan", "perm": "0755" },
+            { "name": "vendor", "perm": "0755" },
+            { "name": "vendor/in", "perm": "0755" },
+            { "name": "vendor/out", "perm": "0755" },
+            { "name": "review", "perm": "2775" },
+            { "name": "in", "perm": "0755" },
+            { "name": "out", "perm": "0755" },
+            { "name": "shot", "perm": "2775" }
+        ]
+    },
+    "categories": ["asset", "shot"],
+    "asset": {
+	    "category": {
+		    "Subdirs": [
+			    { "name": "", "perm": "2775" }
+		    ]
+	    },
+	    "group": {
+		    "Subdirs": [
+			    { "name": "", "perm": "2775" }
+		    ]
+	    },
+	    "unit": {
+		    "Subdirs": [
+			    { "name": "", "perm": "2775" }
+                { "name": "pub", "perm": "2775" },
+                { "name": "wip", "perm": "2775" }
+		    ]
+	    },
+	    "part": {
+	        "model": {
+	            "Subdirs": [
+	                dirEnt("", "2775")
+	            ],
+	            "ProgramDir": {
+	                "maya": ""
+	            }
+	        },
+	        "look": {
+	            "Subdirs": [
+	                dirEnt("", "2775")
+	            ],
+	            "ProgramDir": {
+	                "maya": ""
+	            }
+	        },
+	        "rig": {
+	            "Subdirs": [
+	                dirEnt("", "2775")
+	            ],
+	            "ProgramDir": {
+	                "maya": ""
+	            }
+	        }
+	    }
+	},
+    "shot": {
+	    "category": {
+		    "Subdirs": [
+			    { "name": "", "perm": "2775" }
+		    ]
+	    },
+	    "group": {
+		    "Subdirs": [
+			    { "name": "", "perm": "2775" }
+		    ]
+	    },
+	    "unit": {
+		    "Subdirs": [
+			    { "name": "", "perm": "2775" },
+                { "name": "scan", "perm": "0755" },
+                { "name": "scan/base", "perm": "0755" },
+                { "name": "scan/source", "perm": "0755" },
+                { "name": "ref", "perm": "0755" },
+                { "name": "pub", "perm": "2775" },
+                { "name": "pub/cam", "perm": "2775" },
+                { "name": "pub/geo", "perm": "2775" },
+                { "name": "pub/char", "perm": "2775" },
+                { "name": "wip", "perm": "2775" }
+		    ]
+	    },
+	    "part": {
+	        "lit": {
+	            "Subdirs": [
+	                dirEnt("", "2775")
+	            ],
+	            "ProgramDir": {
+	                "maya": ""
+	            }
+	        },
+	        "fx": {
+	            "Subdirs": [
+	                { "name": "", "perm": "2775" },
+	                { "name": "backup", "perm": "2775" },
+	                { "name": "geo", "perm": "2775" },
+	                { "name": "precomp", "perm": "2775" },
+	                { "name": "preview", "perm": "2775" },
+	                { "name": "render", "perm": "2775" },
+	                { "name": "temp", "perm": "2775" }
+	            ],
+	            "ProgramDir": {
+	                "houdini": "",
+	                "nuke": "precomp"
+	            }
+	        },
+	        "comp": {
+	            "Subdirs": [
+	                { "name": "", "perm": "2775" }
+	            ],
+	            "ProgramDir": {
+	                "nuke": ""
+	            }
+		    }
+	    }
+    }
+}
+
