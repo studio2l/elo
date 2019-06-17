@@ -66,7 +66,6 @@ interface Branch {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Env: { [k: string]: string }
 }
 
 class Root implements Branch {
@@ -77,7 +76,6 @@ class Root implements Branch {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Env: { [k: string]: string }
 
     constructor(name: string) {
         this.Parent = null
@@ -122,7 +120,6 @@ class Show implements Branch {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Env: { [k: string]: string }
 
     constructor(parent: Root, name: string) {
         this.Parent = parent
@@ -180,7 +177,6 @@ class Category {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Env: { [k: string]: string }
 
     constructor(parent: Show, name: string) {
         if (!categories[name]) {
@@ -226,7 +222,6 @@ class Group {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Env: { [k: string]: string }
 
     constructor(parent: Category, name) {
         this.Parent = parent
@@ -269,7 +264,6 @@ class Unit {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Env: { [k: string]: string }
 
     constructor(parent: Group, name) {
         this.Parent = parent
@@ -393,7 +387,6 @@ class Part {
     Dir: string
     Subdirs: Dir[]
     ChildRoot: string
-    Env: { [k: string]: string }
     Programs: { [k: string]: [program.Program, string] }
 
     constructor(parent: Unit, name) {
