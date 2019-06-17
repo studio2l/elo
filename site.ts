@@ -84,7 +84,7 @@ class Root implements Branch {
         ]
         this.ChildRoot = this.Dir + "/show"
         this.Env = {
-            "SHOW_ROOT": siteRoot + "/show"
+            "SHOW_ROOT": this.Dir + "/show"
         }
     }
     CreateShow(name: string) {
