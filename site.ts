@@ -13,21 +13,29 @@ export function New(): Root {
 }
 
 export function ValidParts(ctg: string): string[] {
-    let parts = siteParts[ctg]
-    if (!parts) {
+    let partMap = partInfo[ctg]
+    if (!partMap) {
         throw Error("unknown category")
     }
+    let parts = []
+    for (let p in partMap) {
+        parts.push(p)
+    }
+    parts.sort()
     return parts
 }
 
 export function ValidPrograms(ctg: string, part: string): string[] {
-    let parts = partInfo[ctg]
-    if (!parts) {
+    let partMap = partInfo[ctg]
+    if (!partMap) {
         throw Error("unknown category")
     }
-    let progs = parts[part].Programs
+    let p = partMap[part]
+    if (!p) {
+        throw Error("unknown part '" + part + "' for category '" + ctg + "'")
+    }
     let names: string[] = []
-    for (let name in progs) {
+    for (let name in p.Programs) {
         names.push(name)
     }
     return names
@@ -313,11 +321,6 @@ class Unit {
         }
         return children
     }
-}
-
-let siteParts = {
-    "asset": ["model", "look", "rig"],
-    "shot": ["fx", "lit", "comp"],
 }
 
 class PartInfo {
