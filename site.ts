@@ -8,23 +8,6 @@ if (!siteRoot) {
     throw Error("SITE_ROOT 환경변수가 설정되어 있지 않습니다.")
 }
 
-export let Categories = ["asset", "shot"]
-
-export let CategoryLabel = {
-    "asset": "애셋",
-    "shot": "샷",
-}
-
-class PartInfo {
-    Subdirs: Dir[]
-    Programs: { [k: string]: [program.Program, string] }
-
-    constructor(opt) {
-        this.Subdirs = opt.subdirs
-        this.Programs = opt.Programs
-    }
-}
-
 export function New(): Root {
     return new Root("2L")
 }
@@ -166,6 +149,13 @@ class Show implements Branch {
         ]
         return children
     }
+}
+
+export let Categories = ["asset", "shot"]
+
+export let CategoryLabel = {
+    "asset": "애셋",
+    "shot": "샷",
 }
 
 class Category {
@@ -328,6 +318,16 @@ class Unit {
 let siteParts = {
     "asset": ["model", "look", "rig"],
     "shot": ["fx", "lit", "comp"],
+}
+
+class PartInfo {
+    Subdirs: Dir[]
+    Programs: { [k: string]: [program.Program, string] }
+
+    constructor(opt) {
+        this.Subdirs = opt.subdirs
+        this.Programs = opt.Programs
+    }
 }
 
 let partInfo = {
