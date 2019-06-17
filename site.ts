@@ -383,7 +383,12 @@ let partInfo: { [k: string]: { [k: string]: PartInfo } } = {
         "fx": <PartInfo>{
             Subdirs: [
                 dirEnt("", "2775"),
+                dirEnt("backup", "2775"),
+                dirEnt("geo", "2775"),
                 dirEnt("precomp", "2775"),
+                dirEnt("preview", "2775"),
+                dirEnt("render", "2775"),
+                dirEnt("temp", "2775"),
             ],
             Programs: {
                 "houdini": [program.Houdini, ""],
