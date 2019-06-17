@@ -347,7 +347,7 @@ interface PartInfo {
 let partInfo: { [k: string]: { [k: string]: PartInfo } } = {
     "asset": {
         "model": <PartInfo>{
-            subdirs: [
+            Subdirs: [
                 dirEnt("", "2775"),
             ],
             Programs: {
