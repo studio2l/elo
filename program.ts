@@ -1,9 +1,8 @@
 import * as proc from "child_process"
 
+// 만일 $SITE_ROOT가 없다면 아래 프로그램은 제대로 동작하지 않겠지만
+// 그런 경우 elo가 열릴 때 경고를 하게 되어있다.
 let siteRoot = process.env["SITE_ROOT"]
-if (!siteRoot) {
-    throw Error("SITE_ROOT 환경변수가 설정되어 있지 않습니다.")
-}
 
 // Program은 씬을 생성하고 실행할 프로그램이다.
 export class Program {
