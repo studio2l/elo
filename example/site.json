@@ -24,7 +24,10 @@
             { "name": "shot", "perm": "2775" }
         ]
     },
-    "categories": ["asset", "shot"],
+    "categories": {
+	    "asset": "애셋",
+	    "shot": "샷"
+    },
     "asset": {
 	    "category": {
 		    "Subdirs": [
@@ -130,4 +133,3 @@
 	    }
     }
 }
-
