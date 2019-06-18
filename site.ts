@@ -13,7 +13,7 @@ export function Init() {
     }
     let siteFile = siteRoot + "/site.json"
     if (!fs.existsSync(siteFile)) {
-        throw Error("SITE_ROOT/site.json 파일이 없습니다.")
+        throw Error("$SITE_ROOT에site.json 파일이 없습니다. example/site.json 파일을 복사해서 사용하셔도 됩니다.")
     }
     let data = fs.readFileSync(siteFile)
     siteInfo = JSON.parse(data.toString("utf8"))
