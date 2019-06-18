@@ -38,7 +38,7 @@
 	    },
 	    "unit": {
 		    "Subdirs": [
-			    { "name": "", "perm": "2775" }
+			    { "name": "", "perm": "2775" },
                 { "name": "pub", "perm": "2775" },
                 { "name": "wip", "perm": "2775" }
 		    ]
@@ -46,7 +46,7 @@
 	    "part": {
 	        "model": {
 	            "Subdirs": [
-	                dirEnt("", "2775")
+	                { "name": "", "perm": "2775" }
 	            ],
 	            "ProgramDir": {
 	                "maya": ""
@@ -54,7 +54,7 @@
 	        },
 	        "look": {
 	            "Subdirs": [
-	                dirEnt("", "2775")
+	                { "name": "", "perm": "2775" }
 	            ],
 	            "ProgramDir": {
 	                "maya": ""
@@ -62,7 +62,7 @@
 	        },
 	        "rig": {
 	            "Subdirs": [
-	                dirEnt("", "2775")
+	                { "name": "", "perm": "2775" }
 	            ],
 	            "ProgramDir": {
 	                "maya": ""
@@ -98,7 +98,7 @@
 	    "part": {
 	        "lit": {
 	            "Subdirs": [
-	                dirEnt("", "2775")
+	                { "name": "", "perm": "2775" }
 	            ],
 	            "ProgramDir": {
 	                "maya": ""
