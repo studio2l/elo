@@ -10,13 +10,16 @@ let showRoot = ""
 let pinnedShow = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
-let root = site.New()
+let root: site.Root
 
 let selection = seltree.New()
 
 // init은 elo를 초기화 한다.
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
 function init() {
+    site.Init()
+    root = site.New()
+
     ensureDirExist(configDir())
     loadPinnedShow()
     loadPinnedGroup()
