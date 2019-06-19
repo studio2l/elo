@@ -17,10 +17,33 @@ export function Init() {
     }
     let data = fs.readFileSync(siteFile)
     siteInfo = JSON.parse(data.toString("utf8"))
+    validateSiteInfo()
 }
 
 export function New(): Root {
     return new Root("2L")
+}
+
+function validateSiteInfo() {
+    if (!siteInfo["show"]) {
+        throw Error("")
+    }
+    let ctgs = siteInfo["categories"]
+    if (!ctgs || ctgs.length == 0) {
+        throw Error("should define at least one category")
+    }
+    for (let c in ctgs) {
+        let ctgInfo = siteInfo[c]
+        if (!ctgInfo) {
+            throw Error("")
+        }
+        let needs = ["category", "group", "unit", "part"]
+        for (let n of needs) {
+            if (!ctgInfo[n]) {
+                throw Error("category should define " + n)
+            }
+        }
+    }
 }
 
 export function ValidCategories(): string[] {
@@ -46,9 +69,6 @@ export function PartInformation(ctg: string, part: string): PartInfo {
         throw Error("unknown category")
     }
     let partInfo = ctgInfo["part"]
-    if (!partInfo) {
-        throw Error("no part information for category '" + ctg + "'")
-    }
     let p = partInfo[part]
     if (!p) {
         throw Error("no part '" + part + "' in category '" + ctg + "'")
@@ -62,9 +82,6 @@ export function ValidParts(ctg: string): string[] {
         throw Error("unknown category")
     }
     let partInfo = ctgInfo["part"]
-    if (!partInfo) {
-        throw Error("no part information for category '" + ctg + "'")
-    }
     let parts = []
     for (let p in partInfo) {
         parts.push(p)
