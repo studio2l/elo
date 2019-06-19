@@ -1,6 +1,5 @@
 {
     "show": {
-        "Label": "쇼",
         "Subdirs": [
             { "name": "", "perm": "0755" },
             { "name": "asset", "perm": "0755" },
@@ -27,7 +26,6 @@
         "ChildRoot": ""
     },
     "category": {
-        "Label": "카테고리",
         "Subdirs": [
             { "name": "", "perm": "2775" }
         ],
