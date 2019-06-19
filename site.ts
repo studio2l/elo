@@ -141,7 +141,7 @@ export class Root implements Branch {
     CreateShow(name: string) {
         let show = new Show(this, name)
         for (let d of show.Subdirs) {
-            makeDirAt(show.Dir, d)
+            makeDir(show.Dir + "/" + d.name, d.perm)
         }
     }
     Show(name: string): Show {
@@ -225,9 +225,9 @@ class Category {
         }
     }
     CreateGroup(name: string) {
-        let unit = new Group(this, name)
-        for (let d of unit.Subdirs) {
-            makeDirAt(unit.Dir, d)
+        let group = new Group(this, name)
+        for (let d of group.Subdirs) {
+            makeDir(group.Dir + "/" + d.name, d.perm)
         }
     }
     Group(name: string): Group {
@@ -276,7 +276,7 @@ class Group {
     CreateUnit(name: string) {
         let unit = new Unit(this, name)
         for (let d of unit.Subdirs) {
-            makeDirAt(unit.Dir, d)
+            makeDir(unit.Dir + "/" + d.name, d.perm)
         }
     }
     Unit(name: string): Unit {
@@ -325,7 +325,7 @@ class Unit {
     CreatePart(name: string) {
         let part = new Part(this, name)
         for (let d of part.Subdirs) {
-            makeDirAt(part.Dir, d)
+            makeDir(part.Dir + "/" + d.name, d.perm)
         }
     }
     Part(name: string): Part {
@@ -542,11 +542,9 @@ function dirEnt(name, perm): Dir {
 
 // createDirs는 부모 디렉토리에 하위 디렉토리들을 생성한다.
 // 만일 생성하지 못한다면 에러가 난다.
-function makeDirAt(parentd: string, di: Dir) {
-    let path = parentd + "/" + di.name
-    let perm = di.perm
-    fs.mkdirSync(path)
-    fs.chmodSync(path, perm)
+function makeDir(d: string, perm: string) {
+    fs.mkdirSync(d)
+    fs.chmodSync(d, perm)
     if (process.platform == "win32") {
         // 윈도우즈에서는 위의 mode 설정이 먹히지 않기 때문에 모두에게 권한을 푼다.
         // 리눅스의 775와 윈도우즈의 everyone은 범위가 다르지만
@@ -558,7 +556,7 @@ function makeDirAt(parentd: string, di: Dir) {
             if (specialBit == "2") {
                 user = "everyone:(CI)(OI)(F)"
             }
-            proc.execFileSync("icacls", [path.replace(/\//g, "\\"), "/grant", user])
+            proc.execFileSync("icacls", [d.replace(/\//g, "\\"), "/grant", user])
         }
     }
 }
