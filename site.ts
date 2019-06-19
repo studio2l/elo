@@ -26,10 +26,10 @@ export function New(): Root {
 
 function validateSiteInfo() {
     if (!siteInfo["show"]) {
-        throw Error("")
+        throw Error("show branch information not found")
     }
     if (!siteInfo["category"]) {
-        throw Error("")
+        throw Error("category branch information not found")
     }
     let ctgInfo = siteInfo["categories"]
     if (!ctgInfo || Object.keys(ctgInfo).length == 0) {
@@ -39,7 +39,7 @@ function validateSiteInfo() {
         let needs = ["group", "unit", "part"]
         for (let n of needs) {
             if (!ci[n]) {
-                throw Error("category should define " + n)
+                throw Error("category should define " + n + " branch")
             }
         }
     }
