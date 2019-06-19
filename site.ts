@@ -28,18 +28,17 @@ function validateSiteInfo() {
     if (!siteInfo["show"]) {
         throw Error("")
     }
-    let ctgs = siteInfo["categories"]
-    if (!ctgs || ctgs.length == 0) {
+    if (!siteInfo["category"]) {
+        throw Error("")
+    }
+    let ctgInfo = siteInfo["categories"]
+    if (!ctgInfo || Object.keys(ctgInfo).length == 0) {
         throw Error("should define at least one category")
     }
-    for (let c in ctgs) {
-        let ctgInfo = siteInfo[c]
-        if (!ctgInfo) {
-            throw Error("")
-        }
-        let needs = ["category", "group", "unit", "part"]
+    for (let ci of ctgInfo) {
+        let needs = ["group", "unit", "part"]
         for (let n of needs) {
-            if (!ctgInfo[n]) {
+            if (!ci[n]) {
                 throw Error("category should define " + n)
             }
         }
@@ -47,39 +46,23 @@ function validateSiteInfo() {
 }
 
 export function ValidCategories(): string[] {
-    let ctgs = []
-    for (let c in siteInfo["categories"]) {
-        ctgs.push(c)
-    }
+    let ctgs = Object.keys(siteInfo["categories"])
     ctgs.sort()
     return ctgs
 }
 
-export function CategoryLabel(c: string): string {
-    let l = siteInfo["categories"][c]
-    if (!l) {
-        throw Error("no category info: " + c)
-    }
-    return l
-}
-
-export function PartInformation(ctg: string, part: string): PartInfo {
-    let ctgInfo = siteInfo[ctg]
+export function CategoryLabel(ctg: string): string {
+    let ctgInfo = siteInfo["categories"][ctg]
     if (!ctgInfo) {
-        throw Error("unknown category")
+        throw Error("unknown category: " + ctg)
     }
-    let partInfo = ctgInfo["part"]
-    let p = partInfo[part]
-    if (!p) {
-        throw Error("no part '" + part + "' in category '" + ctg + "'")
-    }
-    return p
+    return ctgInfo["unit"].Label
 }
 
 export function ValidParts(ctg: string): string[] {
-    let ctgInfo = siteInfo[ctg]
+    let ctgInfo = siteInfo["categories"][ctg]
     if (!ctgInfo) {
-        throw Error("unknown category")
+        throw Error("unknown category: " + ctg)
     }
     let partInfo = ctgInfo["part"]
     let parts = []
@@ -104,9 +87,9 @@ export function Program(name: string): program.Program {
 }
 
 export function ValidPrograms(ctg: string, part: string): string[] {
-    let ctgInfo = siteInfo[ctg]
+    let ctgInfo = siteInfo["categories"][ctg]
     if (!ctgInfo) {
-        throw Error("unknown category")
+        throw Error("unknown category: " + ctg)
     }
     let partInfo = ctgInfo["part"]
     if (!partInfo) {
@@ -230,7 +213,7 @@ class Category {
         this.Label = "카테고리"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = siteInfo[name]["category"].Subdirs
+        this.Subdirs = siteInfo["category"].Subdirs
         this.ChildRoot = this.Dir
     }
     CreateGroup(name: string) {
@@ -271,7 +254,11 @@ class Group {
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctg = getParent(this, "category").Name
-        this.Subdirs = siteInfo[ctg]["group"].Subdirs
+        let ctgInfo = siteInfo["categories"][ctg]
+        if (!ctgInfo) {
+            throw Error("unknown category: " + ctg)
+        }
+        this.Subdirs = ctgInfo["group"].Subdirs
         this.ChildRoot = this.Dir
     }
     CreateUnit(name: string) {
@@ -312,7 +299,12 @@ class Unit {
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctg = getParent(this, "category").Name
-        this.Subdirs = siteInfo[ctg]["unit"].Subdirs
+        let ctgInfo = siteInfo["categories"][ctg]
+        if (!ctgInfo) {
+            throw Error("unknown category: " + ctg)
+        }
+        let unitInfo = ctgInfo["unit"]
+        this.Subdirs = unitInfo.Subdirs
         this.ChildRoot = this.Dir + "/wip"
     }
     CreatePart(name: string) {
@@ -355,7 +347,14 @@ class Part {
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctg = getParent(this, "category").Name
-        let partInfo = PartInformation(ctg, this.Name)
+        let ctgInfo = siteInfo["categories"][ctg]
+        if (!ctgInfo) {
+            throw Error("unknown category: " + ctg)
+        }
+        let partInfo = ctgInfo["part"][this.Name]
+        if (!partInfo) {
+            throw Error("unknown part for " + ctg + " category: " + this.Name)
+        }
         this.Subdirs = partInfo.Subdirs
         this.ChildRoot = this.Dir
         this.ProgramDir = partInfo.ProgramDir
