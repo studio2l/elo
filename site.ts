@@ -4,7 +4,7 @@ import * as proc from "child_process"
 import * as program from "./program"
 
 let siteRoot: string
-let siteInfo: any
+let siteInfo: SiteInfo
 
 export function Init() {
     siteRoot = process.env.SITE_ROOT
@@ -17,32 +17,96 @@ export function Init() {
     }
     let data = fs.readFileSync(siteFile)
     siteInfo = JSON.parse(data.toString("utf8"))
-    validateSiteInfo()
+    validateSiteInfo(siteInfo)
+}
+
+function mustHaveAttrs(label, obj, attrs) {
+    for (let a of attrs) {
+        if (!(a in obj)) {
+            throw Error(label + ": does not have attribute: " + a)
+        }
+    }
+}
+
+interface SiteInfo {
+    show: ShowInfo
+    category: CategoryInfo
+    categories: { [k: string]: CategoriesInfo }
+}
+
+function validateSiteInfo(info: SiteInfo) {
+    mustHaveAttrs("site", info, ["show", "category", "categories"])
+    validateShowInfo(info["show"])
+    validateCategoryInfo(info["category"])
+    for (let ctg in info["categories"]) {
+        validateCategoriesInfo(info["categories"][ctg])
+    }
+}
+
+interface ShowInfo {
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+function validateShowInfo(info: ShowInfo) {
+    mustHaveAttrs("show", info, ["Subdirs", "ChildRoot"])
+}
+
+interface CategoryInfo {
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+function validateCategoryInfo(info: CategoryInfo) {
+    mustHaveAttrs("category", info, ["Subdirs", "ChildRoot"])
+}
+
+interface CategoriesInfo {
+    group: GroupInfo
+    unit: UnitInfo
+    part: { [k: string]: PartInfo }
+}
+
+function validateCategoriesInfo(info: CategoriesInfo) {
+    mustHaveAttrs("categories", info, ["group", "unit", "part"])
+    validateGroupInfo(info["group"])
+    validateUnitInfo(info["unit"])
+    for (let part in info["part"]) {
+        validatePartInfo(info["part"][part])
+    }
+}
+
+interface GroupInfo {
+    Label: string
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+function validateGroupInfo(info: GroupInfo) {
+    mustHaveAttrs("group", info, ["Label", "Subdirs", "ChildRoot"])
+}
+
+interface UnitInfo {
+    Label: string
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+function validateUnitInfo(info: UnitInfo) {
+    mustHaveAttrs("unit", info, ["Label", "Subdirs", "ChildRoot"])
+}
+
+interface PartInfo {
+    Subdirs: Dir[]
+    ProgramDir: { [k: string]: string }
+}
+
+function validatePartInfo(info: PartInfo) {
+    mustHaveAttrs("part", info, ["Subdirs", "ProgramDir"])
 }
 
 export function New(): Root {
     return new Root("2L")
-}
-
-function validateSiteInfo() {
-    if (!siteInfo["show"]) {
-        throw Error("show branch information not found")
-    }
-    if (!siteInfo["category"]) {
-        throw Error("category branch information not found")
-    }
-    let ctgInfo = siteInfo["categories"]
-    if (!ctgInfo || Object.keys(ctgInfo).length == 0) {
-        throw Error("should define at least one category")
-    }
-    for (let ci of ctgInfo) {
-        let needs = ["group", "unit", "part"]
-        for (let n of needs) {
-            if (!ci[n]) {
-                throw Error("category should define " + n + " branch")
-            }
-        }
-    }
 }
 
 export function ValidCategories(): string[] {
@@ -338,11 +402,6 @@ class Unit {
         }
         return children
     }
-}
-
-interface PartInfo {
-    Subdirs: Dir[]
-    ProgramDir: { [k: string]: string }
 }
 
 class Part {
