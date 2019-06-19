@@ -175,8 +175,12 @@ class Show implements Branch {
         this.Label = "쇼"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = siteInfo["show"].Subdirs
+        let showInfo = siteInfo["show"]
+        this.Subdirs = showInfo.Subdirs
         this.ChildRoot = this.Dir
+        if (showInfo.ChildRoot) {
+            this.ChildRoot += "/" + showInfo.ChildRoot
+        }
     }
     Category(name: string): Category {
         return new Category(this, name)
@@ -213,8 +217,12 @@ class Category {
         this.Label = "카테고리"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
-        this.Subdirs = siteInfo["category"].Subdirs
+        let ctgInfo = siteInfo["category"]
+        this.Subdirs = ctgInfo.Subdirs
         this.ChildRoot = this.Dir
+        if (ctgInfo.ChildRoot) {
+            this.ChildRoot += "/" + ctgInfo.ChildRoot
+        }
     }
     CreateGroup(name: string) {
         let unit = new Group(this, name)
@@ -258,8 +266,12 @@ class Group {
         if (!ctgInfo) {
             throw Error("unknown category: " + ctg)
         }
-        this.Subdirs = ctgInfo["group"].Subdirs
+        let grpInfo = ctgInfo["group"]
+        this.Subdirs = grpInfo.Subdirs
         this.ChildRoot = this.Dir
+        if (grpInfo.ChildRoot) {
+            this.ChildRoot += "/" + grpInfo.ChildRoot
+        }
     }
     CreateUnit(name: string) {
         let unit = new Unit(this, name)
@@ -305,7 +317,10 @@ class Unit {
         }
         let unitInfo = ctgInfo["unit"]
         this.Subdirs = unitInfo.Subdirs
-        this.ChildRoot = this.Dir + "/wip"
+        this.ChildRoot = this.Dir
+        if (unitInfo.ChildRoot) {
+            this.ChildRoot += "/" + unitInfo.ChildRoot
+        }
     }
     CreatePart(name: string) {
         let part = new Part(this, name)
