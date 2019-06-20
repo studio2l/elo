@@ -173,11 +173,6 @@ class Show implements Branch {
     }
 }
 
-let categories = {
-    "asset": "애셋",
-    "shot": "샷",
-}
-
 class Category {
     Parent: Branch
     Type: string
@@ -188,7 +183,7 @@ class Category {
     ChildRoot: string
 
     constructor(parent: Show, name: string) {
-        if (!categories[name]) {
+        if (!ValidCategories().includes(name)) {
             throw Error("invalid category name: " + name)
         }
         this.Parent = parent
