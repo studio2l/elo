@@ -20,91 +20,6 @@ export function Init() {
     validateSiteInfo(siteInfo)
 }
 
-function mustHaveAttrs(label, obj, attrs) {
-    for (let a of attrs) {
-        if (!(a in obj)) {
-            throw Error(label + ": does not have attribute: " + a)
-        }
-    }
-}
-
-interface SiteInfo {
-    show: ShowInfo
-    category: CategoryInfo
-    categories: { [k: string]: CategoriesInfo }
-}
-
-function validateSiteInfo(info: SiteInfo) {
-    mustHaveAttrs("site", info, ["show", "category", "categories"])
-    validateShowInfo(info["show"])
-    validateCategoryInfo(info["category"])
-    for (let ctg in info["categories"]) {
-        validateCategoriesInfo(info["categories"][ctg])
-    }
-}
-
-interface ShowInfo {
-    Subdirs: Dir[]
-    ChildRoot: string
-}
-
-function validateShowInfo(info: ShowInfo) {
-    mustHaveAttrs("show", info, ["Subdirs", "ChildRoot"])
-}
-
-interface CategoryInfo {
-    Subdirs: Dir[]
-    ChildRoot: string
-}
-
-function validateCategoryInfo(info: CategoryInfo) {
-    mustHaveAttrs("category", info, ["Subdirs", "ChildRoot"])
-}
-
-interface CategoriesInfo {
-    group: GroupInfo
-    unit: UnitInfo
-    part: { [k: string]: PartInfo }
-}
-
-function validateCategoriesInfo(info: CategoriesInfo) {
-    mustHaveAttrs("categories", info, ["group", "unit", "part"])
-    validateGroupInfo(info["group"])
-    validateUnitInfo(info["unit"])
-    for (let part in info["part"]) {
-        validatePartInfo(info["part"][part])
-    }
-}
-
-interface GroupInfo {
-    Label: string
-    Subdirs: Dir[]
-    ChildRoot: string
-}
-
-function validateGroupInfo(info: GroupInfo) {
-    mustHaveAttrs("group", info, ["Label", "Subdirs", "ChildRoot"])
-}
-
-interface UnitInfo {
-    Label: string
-    Subdirs: Dir[]
-    ChildRoot: string
-}
-
-function validateUnitInfo(info: UnitInfo) {
-    mustHaveAttrs("unit", info, ["Label", "Subdirs", "ChildRoot"])
-}
-
-interface PartInfo {
-    Subdirs: Dir[]
-    ProgramDir: { [k: string]: string }
-}
-
-function validatePartInfo(info: PartInfo) {
-    mustHaveAttrs("part", info, ["Subdirs", "ProgramDir"])
-}
-
 export function New(): Root {
     return new Root("2L")
 }
@@ -666,3 +581,109 @@ function getParent(b: Branch, type: string): Branch {
     throw Error(name + " branch not found")
 }
 
+// mustHaveAttrs는 오브제트에 해당 어트리뷰트가 존재하는지 체크하고 없으면 에러를 낸다.
+function mustHaveAttrs(label, obj, attrs) {
+    for (let a of attrs) {
+        if (!(a in obj)) {
+            throw Error(label + ": does not have attribute: " + a)
+        }
+    }
+}
+
+// SiteInfo는 설정 파일에 정의되는 사이트 정보이다.
+interface SiteInfo {
+    show: ShowInfo
+    category: CategoryInfo
+    categories: { [k: string]: CategorySubInfo }
+}
+
+// validateSiteInfo는 설정 파일에서 불러온 사이트 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateSiteInfo(info: SiteInfo) {
+    mustHaveAttrs("site", info, ["show", "category", "categories"])
+    validateShowInfo(info["show"])
+    validateCategoryInfo(info["category"])
+    for (let ctg in info["categories"]) {
+        validateCategorySubInfo(info["categories"][ctg])
+    }
+}
+
+// ShowInfo는 설정 파일에 정의되는 쇼 정보이다.
+interface ShowInfo {
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+// validateShowInfo는 설정 파일에서 불러온 쇼 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateShowInfo(info: ShowInfo) {
+    mustHaveAttrs("show", info, ["Subdirs", "ChildRoot"])
+}
+
+// CategoryInfo는 설정 파일에 정의되는 카테고리 정보이다.
+interface CategoryInfo {
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+// validateCategoryInfo는 설정 파일에서 불러온 카테고리 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateCategoryInfo(info: CategoryInfo) {
+    mustHaveAttrs("category", info, ["Subdirs", "ChildRoot"])
+}
+
+// CategorySubInfo는 설정 파일에 정의되는 카테고리 하위 정보이다.
+interface CategorySubInfo {
+    group: GroupInfo
+    unit: UnitInfo
+    part: { [k: string]: PartInfo }
+}
+
+// validateCategorySubInfo는 설정 파일에서 불러온 카테고리 하위 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateCategorySubInfo(info: CategorySubInfo) {
+    mustHaveAttrs("categories", info, ["group", "unit", "part"])
+    validateGroupInfo(info["group"])
+    validateUnitInfo(info["unit"])
+    for (let part in info["part"]) {
+        validatePartInfo(info["part"][part])
+    }
+}
+
+// GroupInfo는 설정 파일에 정의되는 그룹 정보이다.
+interface GroupInfo {
+    Label: string
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+// validateGroupInfo는 설정 파일에서 불러온 그룹 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateGroupInfo(info: GroupInfo) {
+    mustHaveAttrs("group", info, ["Label", "Subdirs", "ChildRoot"])
+}
+
+// GroupInfo는 설정 파일에 정의되는 유닛 정보이다.
+interface UnitInfo {
+    Label: string
+    Subdirs: Dir[]
+    ChildRoot: string
+}
+
+// validateUnitInfo는 설정 파일에서 불러온 유닛 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateUnitInfo(info: UnitInfo) {
+    mustHaveAttrs("unit", info, ["Label", "Subdirs", "ChildRoot"])
+}
+
+// GroupInfo는 설정 파일에 정의되는 파트 정보이다.
+interface PartInfo {
+    Subdirs: Dir[]
+    ProgramDir: { [k: string]: string }
+}
+
+// validateUnitInfo는 설정 파일에서 불러온 파트 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validatePartInfo(info: PartInfo) {
+    mustHaveAttrs("part", info, ["Subdirs", "ProgramDir"])
+}
