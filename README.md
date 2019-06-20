@@ -43,11 +43,13 @@ elo를 사용하기 위해서는 `SITE_ROOT` 환경변수를 정의해야 합니
 
 $SITE_ROOT/show가 생성되는 쇼의 루트가 됩니다.
 
-elo는 해당 사이트의 구조를 $SITE_ROOT/site.json 에서 불러옵니다.
-테스트를 위해서는 example/site.json을 복사해서 $SITE_ROOT에 넣어주세요.
+elo는 해당 사이트의 구조를 $SITE_ROOT/site.json 에서 불러오고
+$SITE_ROOT/runner안의 셸 파일을 이용해 프로그램을 엽니다.
 
-elo는 특정 프로그램 씬을 생성하거나 열기 위해
-$SITE_ROOT/runner안의 셸(배치) 파일을 사용합니다.
+해당 파일들은 example 디렉토리 안에 존재하니 $SITE_ROOT에 복사해서 넣어주세요.
+리눅스에서는 다음처럼 하시면 됩니다.
 
-해당 셸의 예제 파일은 레포지터리 안의 example/runner 폴더에 있으니 복사하시어
-사이트에 맞게 수정하면 됩니다.
+```
+cp -r example/* $SITE_ROOT
+```
+
