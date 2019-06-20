@@ -413,7 +413,7 @@ export function saveCategory() {
     fs.writeFileSync(fname, ctg)
     reloadMyPartMenuItems()
     loadMyPart()
-    selectShow(currentShow())
+    selectShowEv(currentShow())
 }
 
 // myPart는 현재 내 파트로 설정된 값을 반환한다.
