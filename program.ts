@@ -4,6 +4,19 @@ import * as proc from "child_process"
 // 그런 경우 elo가 열릴 때 경고를 하게 되어있다.
 let siteRoot = process.env["SITE_ROOT"]
 
+export function Get(name: string): Program {
+    if (name == "maya") {
+        return Maya
+    }
+    if (name == "houdini") {
+        return Houdini
+    }
+    if (name == "nuke") {
+        return Nuke
+    }
+    throw Error("undefined program: " + name)
+}
+
 // Program은 씬을 생성하고 실행할 프로그램이다.
 export class Program {
     Name: string

@@ -52,19 +52,6 @@ export function ValidParts(ctg: string): string[] {
     return parts
 }
 
-export function Program(name: string): program.Program {
-    if (name == "maya") {
-        return program.Maya
-    }
-    if (name == "houdini") {
-        return program.Houdini
-    }
-    if (name == "nuke") {
-        return program.Nuke
-    }
-    throw Error("undefined program: " + name)
-}
-
 export function ValidPrograms(ctg: string, part: string): string[] {
     let ctgInfo = siteInfo["categories"][ctg]
     if (!ctgInfo) {
@@ -356,7 +343,7 @@ class Part {
             if (at) {
                 dir += "/" + at
             }
-            let pg = Program(prog)
+            let pg = program.Get(prog)
             let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
                 if (t.Name == name) {
@@ -374,7 +361,7 @@ class Part {
             if (at) {
                 dir += "/" + at
             }
-            let pg = Program(prog)
+            let pg = program.Get(prog)
             let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
                 tasks.push(t)
@@ -431,7 +418,7 @@ class Part {
         if (at) {
             dir += "/" + at
         }
-        let pg = Program(prog)
+        let pg = program.Get(prog)
         let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
         let env = this.Environ()
         pg.CreateScene(scene, env)
@@ -442,7 +429,7 @@ class Part {
         if (at) {
             dir += "/" + at
         }
-        let pg = Program(prog)
+        let pg = program.Get(prog)
         let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
         let env = this.Environ()
         pg.OpenScene(scene, env, handleError)
