@@ -69,6 +69,7 @@ export function ValidPrograms(ctg: string, part: string): string[] {
     for (let name in p.ProgramDir) {
         names.push(name)
     }
+    names.sort()
     return names
 }
 
@@ -122,6 +123,9 @@ export class Root implements Branch {
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Show(d))
         }
+        children.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
         return children
     }
 }
@@ -156,6 +160,9 @@ class Show implements Branch {
         for (let c of ValidCategories()) {
             children.push(this.Category(c))
         }
+        children.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
         return children
     }
 }
@@ -203,6 +210,9 @@ class Category {
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Group(d))
         }
+        children.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
         return children
     }
 }
@@ -252,6 +262,9 @@ class Group {
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Unit(d))
         }
+        children.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
         return children
     }
 }
@@ -297,6 +310,9 @@ class Unit {
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Part(d))
         }
+        children.sort(function(a, b) {
+            return compare(a.Name, b.Name)
+        })
         return children
     }
 }
