@@ -14,7 +14,13 @@ elo는 node.js 10.15.3 버전을 사용하여 만들어지고 있습니다. `htt
 $ git clone https://github.com/studio2l/elo
 $ cd elo
 $ npm install
-$ npm install --global typescript
+```
+
+추가적으로 개발을 위해 필요한 프로그램을 설치합니다. 일반적으로 루트 권한이 필요합니다.
+
+```bash
+# npm install --global typescript
+# npm install --global yarn
 ```
 
 ## 실행
@@ -26,9 +32,6 @@ $ npm start
 ## 배포
 
 ```bash
-# electron은 yarn을 이용한 배포를 추천하고 있습니다.
-# 아래 명령을 통해 yarn을 설치할 수 있습니다.
-# npm install --global yarn
 $ yarn build
 ```
 
