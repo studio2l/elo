@@ -28,13 +28,9 @@ function init() {
     ensureElementExist("part-box")
     ensureElementExist("task-box")
     ensureElementExist("category-menu")
-    ensureElementExist("my-part-menu")
 
     addCategoryMenuItems()
     loadCategory()
-
-    reloadMyPartMenuItems()
-    loadMyPart()
 
     reloadShows()
     loadSelection()
@@ -409,42 +405,7 @@ export function saveCategory() {
     document.getElementById("unit-label").innerText = site.CategoryLabel(ctg)
     let fname = configDir() + "/category.json"
     fs.writeFileSync(fname, ctg)
-    reloadMyPartMenuItems()
-    loadMyPart()
     selectShowEv(currentShow())
-}
-
-// myPart는 현재 내 파트로 설정된 값을 반환한다.
-function myPart() {
-    let menu = <HTMLSelectElement>document.getElementById("my-part-menu")
-    return menu.value
-}
-
-// loadMyPart는 설정 디렉토리에 저장된 현재 카테고리에 대한 내 파트 값을 불러온다.
-function loadMyPart() {
-    let ctg = currentCategory()
-    if (!ctg) {
-        return
-    }
-    let menu = <HTMLSelectElement>document.getElementById("my-part-menu")
-    let fname = configDir() + "/my-" + ctg + "-part.json"
-    if (!fs.existsSync(fname)) {
-        menu.value = ""
-        return
-    }
-    let data = fs.readFileSync(fname)
-    menu.value = data.toString("utf8")
-}
-
-// saveMyPart는 현재 카테고리에서 내 파트로 설정된 값을 설정 디렉토리에 저장한다.
-export function saveMyPart() {
-    let ctg = currentCategory()
-    if (!ctg) {
-        return
-    }
-    let menu = <HTMLSelectElement>document.getElementById("my-part-menu")
-    let fname = configDir() + "/my-" + ctg + "-part.json"
-    fs.writeFileSync(fname, menu.value)
 }
 
 // loadSelection는 파일에서 마지막으로 선택했던 항목들을 다시 불러온다.
@@ -549,28 +510,6 @@ function addCategoryMenuItems() {
     }
 }
 
-// reloadMyPartMenuItems는 현재 카테고리의 사용 가능한 태스크들을 내 태스크 메뉴에 추가한다.
-function reloadMyPartMenuItems() {
-    let ctg = currentCategory()
-    if (!ctg) {
-        return
-    }
-    let menu = <HTMLSelectElement>document.getElementById("my-part-menu")
-    if (!menu) {
-        throw Error("my-part-menu가 없습니다.")
-    }
-    menu.innerText = ""
-    let opt = document.createElement("option")
-    opt.text = "없음"
-    opt.value = ""
-    menu.add(opt)
-    for (let part of site.ValidParts(ctg)) {
-        let opt = document.createElement("option")
-        opt.text = part
-        menu.add(opt)
-    }
-}
-
 // selectShowEv는 사용자가 쇼를 선택했을 때 그에 맞는 샷 리스트를 보인다.
 function selectShowEv(show) {
     uiEvent(function() {
@@ -638,9 +577,6 @@ function restoreUnitSelection(show, ctg, grp) {
 function restorePartSelection(show, ctg, grp, unit) {
     let unitSel = selection.Select(show).Select(ctg).Select(grp).Select(unit)
     let part = unitSel.Selected()
-    if (!part) {
-        part = myPart()
-    }
     if (!part) {
         return
     }
