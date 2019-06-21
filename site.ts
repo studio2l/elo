@@ -167,7 +167,7 @@ class Show implements Branch {
     }
 }
 
-class Category {
+class Category implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -217,7 +217,7 @@ class Category {
     }
 }
 
-class Group {
+class Group implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -269,7 +269,7 @@ class Group {
     }
 }
 
-class Unit {
+class Unit implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -317,7 +317,7 @@ class Unit {
     }
 }
 
-class Part {
+class Part implements Branch {
     Parent: Branch
     Type: string
     Label: string
