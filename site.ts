@@ -616,6 +616,9 @@ interface ShowInfo {
 // 체크하고, 문제가 있을 때는 에러를 낸다.
 function validateShowInfo(info: ShowInfo) {
     mustHaveAttrs("show", info, ["Subdirs", "ChildRoot"])
+    for (let d of info.Subdirs) {
+        validateDir(d)
+    }
 }
 
 // CategoryInfo는 설정 파일에 정의되는 카테고리 정보이다.
@@ -628,6 +631,9 @@ interface CategoryInfo {
 // 체크하고, 문제가 있을 때는 에러를 낸다.
 function validateCategoryInfo(info: CategoryInfo) {
     mustHaveAttrs("category", info, ["Subdirs", "ChildRoot"])
+    for (let d of info.Subdirs) {
+        validateDir(d)
+    }
 }
 
 // CategorySubInfo는 설정 파일에 정의되는 카테고리 하위 정보이다.
@@ -659,6 +665,9 @@ interface GroupInfo {
 // 체크하고, 문제가 있을 때는 에러를 낸다.
 function validateGroupInfo(info: GroupInfo) {
     mustHaveAttrs("group", info, ["Label", "Subdirs", "ChildRoot"])
+    for (let d of info.Subdirs) {
+        validateDir(d)
+    }
 }
 
 // GroupInfo는 설정 파일에 정의되는 유닛 정보이다.
@@ -672,6 +681,9 @@ interface UnitInfo {
 // 체크하고, 문제가 있을 때는 에러를 낸다.
 function validateUnitInfo(info: UnitInfo) {
     mustHaveAttrs("unit", info, ["Label", "Subdirs", "ChildRoot"])
+    for (let d of info.Subdirs) {
+        validateDir(d)
+    }
 }
 
 // GroupInfo는 설정 파일에 정의되는 파트 정보이다.
@@ -684,4 +696,16 @@ interface PartInfo {
 // 체크하고, 문제가 있을 때는 에러를 낸다.
 function validatePartInfo(info: PartInfo) {
     mustHaveAttrs("part", info, ["Subdirs", "ProgramDir"])
+    for (let d of info.Subdirs) {
+        validateDir(d)
+    }
+}
+
+// validateDir은 설정 파일에서 불러온 디렉토리 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateDir(d: Dir) {
+    mustHaveAttrs("dir", d, ["Name", "Perm"])
+    if (typeof d.Perm != "string" || d.Perm.length != 4) {
+        throw("elo에서는 파일 디렉토리 권한에 4자리 문자열 만을 사용합니다")
+    }
 }
