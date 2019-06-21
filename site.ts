@@ -176,11 +176,11 @@ class CategoryBranch implements Branch {
         }
     }
     Group(name: string): GroupBranch {
-        let unit = new GroupBranch(this, name)
-        if (!fs.existsSync(unit.Dir)) {
+        let group = new GroupBranch(this, name)
+        if (!fs.existsSync(group.Dir)) {
             throw Error("no group: " + name)
         }
-        return unit
+        return group
     }
     Groups(): GroupBranch[] {
         let children = []
