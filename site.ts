@@ -226,7 +226,7 @@ class Group implements Branch {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: Category, name) {
+    constructor(parent: Category, name: string) {
         this.Parent = parent
         this.Type = "group"
         this.Label = "그룹"
@@ -278,7 +278,7 @@ class Unit implements Branch {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: Group, name) {
+    constructor(parent: Group, name: string) {
         this.Parent = parent
         this.Type = "unit"
         this.Label = "유닛"
@@ -327,7 +327,7 @@ class Part implements Branch {
     ChildRoot: string
     ProgramDir: { [k: string]: string }
 
-    constructor(parent: Unit, name) {
+    constructor(parent: Unit, name: string) {
         this.Parent = parent
         this.Type = "part"
         this.Label = "파트"
