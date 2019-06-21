@@ -101,6 +101,14 @@
 	            "ChildRoot": "wip"
 	        },
 	        "part": {
+	            "ani": {
+	                "Subdirs": [
+	                    { "Name": "", "Perm": "2775" }
+	                ],
+	                "ProgramDir": {
+	                    "maya": ""
+	                }
+	            },
 	            "lit": {
 	                "Subdirs": [
 	                    { "Name": "", "Perm": "2775" }
