@@ -108,7 +108,7 @@ export class Root implements Branch {
     CreateShow(name: string) {
         let show = new Show(this, name)
         for (let d of show.Subdirs) {
-            makeDir(show.Dir + "/" + d.name, d.perm)
+            makeDir(show.Dir + "/" + d.Name, d.Perm)
         }
     }
     Show(name: string): Show {
@@ -195,7 +195,7 @@ class Category implements Branch {
     CreateGroup(name: string) {
         let group = new Group(this, name)
         for (let d of group.Subdirs) {
-            makeDir(group.Dir + "/" + d.name, d.perm)
+            makeDir(group.Dir + "/" + d.Name, d.Perm)
         }
     }
     Group(name: string): Group {
@@ -247,7 +247,7 @@ class Group implements Branch {
     CreateUnit(name: string) {
         let unit = new Unit(this, name)
         for (let d of unit.Subdirs) {
-            makeDir(unit.Dir + "/" + d.name, d.perm)
+            makeDir(unit.Dir + "/" + d.Name, d.Perm)
         }
     }
     Unit(name: string): Unit {
@@ -299,7 +299,7 @@ class Unit implements Branch {
     CreatePart(name: string) {
         let part = new Part(this, name)
         for (let d of part.Subdirs) {
-            makeDir(part.Dir + "/" + d.name, d.perm)
+            makeDir(part.Dir + "/" + d.Name, d.Perm)
         }
     }
     Part(name: string): Part {
@@ -500,8 +500,8 @@ class Task {
 }
 
 interface Dir {
-    name: string
-    perm: string
+    Name: string
+    Perm: string
 }
 
 // dirEnt는 디렉토리의 이름과 권한을 하나의 오브젝트로 묶어 반환한다.
@@ -509,7 +509,7 @@ function dirEnt(name, perm): Dir {
     if (typeof perm != "string" || perm.length != 4) {
         throw("elo에서는 파일 디렉토리 권한에 4자리 문자열 만을 사용합니다")
     }
-    return { name: name, perm: perm }
+    return { Name: name, Perm: perm }
 }
 
 // createDirs는 부모 디렉토리에 하위 디렉토리들을 생성한다.

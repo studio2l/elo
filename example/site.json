@@ -1,33 +1,33 @@
 {
     "show": {
         "Subdirs": [
-            { "name": "", "perm": "0755" },
-            { "name": "asset", "perm": "0755" },
-            { "name": "asset/char", "perm": "2775" },
-            { "name": "asset/env", "perm": "2775" },
-            { "name": "asset/prop", "perm": "2775" },
-            { "name": "doc", "perm": "0755" },
-            { "name": "doc/cglist", "perm": "0755" },
-            { "name": "doc/credit", "perm": "0755" },
-            { "name": "doc/droid", "perm": "0755" },
-            { "name": "data", "perm": "0755" },
-            { "name": "data/edit", "perm": "0755" },
-            { "name": "data/onset", "perm": "0755" },
-            { "name": "data/lut", "perm": "0755" },
-            { "name": "scan", "perm": "0755" },
-            { "name": "vendor", "perm": "0755" },
-            { "name": "vendor/in", "perm": "0755" },
-            { "name": "vendor/out", "perm": "0755" },
-            { "name": "review", "perm": "2775" },
-            { "name": "in", "perm": "0755" },
-            { "name": "out", "perm": "0755" },
-            { "name": "shot", "perm": "2775" }
+            { "Name": "", "Perm": "0755" },
+            { "Name": "asset", "Perm": "0755" },
+            { "Name": "asset/char", "Perm": "2775" },
+            { "Name": "asset/env", "Perm": "2775" },
+            { "Name": "asset/prop", "Perm": "2775" },
+            { "Name": "doc", "Perm": "0755" },
+            { "Name": "doc/cglist", "Perm": "0755" },
+            { "Name": "doc/credit", "Perm": "0755" },
+            { "Name": "doc/droid", "Perm": "0755" },
+            { "Name": "data", "Perm": "0755" },
+            { "Name": "data/edit", "Perm": "0755" },
+            { "Name": "data/onset", "Perm": "0755" },
+            { "Name": "data/lut", "Perm": "0755" },
+            { "Name": "scan", "Perm": "0755" },
+            { "Name": "vendor", "Perm": "0755" },
+            { "Name": "vendor/in", "Perm": "0755" },
+            { "Name": "vendor/out", "Perm": "0755" },
+            { "Name": "review", "Perm": "2775" },
+            { "Name": "in", "Perm": "0755" },
+            { "Name": "out", "Perm": "0755" },
+            { "Name": "shot", "Perm": "2775" }
         ],
         "ChildRoot": ""
     },
     "category": {
         "Subdirs": [
-            { "name": "", "perm": "2775" }
+            { "Name": "", "Perm": "2775" }
         ],
         "ChildRoot": ""
     },
@@ -36,23 +36,23 @@
 	        "group": {
 	            "Label": "애셋타입",
 	            "Subdirs": [
-	                { "name": "", "perm": "2775" }
+	                { "Name": "", "Perm": "2775" }
 	            ],
 	            "ChildRoot": ""
 	        },
 	        "unit": {
 	            "Label": "애셋",
 	            "Subdirs": [
-	                { "name": "", "perm": "2775" },
-	                { "name": "pub", "perm": "2775" },
-	                { "name": "wip", "perm": "2775" }
+	                { "Name": "", "Perm": "2775" },
+	                { "Name": "pub", "Perm": "2775" },
+	                { "Name": "wip", "Perm": "2775" }
 	            ],
 	            "ChildRoot": "wip"
 	        },
 	        "part": {
 	            "model": {
 	                "Subdirs": [
-	                    { "name": "", "perm": "2775" }
+	                    { "Name": "", "Perm": "2775" }
 	                ],
 	                "ProgramDir": {
 	                    "maya": ""
@@ -60,7 +60,7 @@
 	            },
 	            "look": {
 	                "Subdirs": [
-	                    { "name": "", "perm": "2775" }
+	                    { "Name": "", "Perm": "2775" }
 	                ],
 	                "ProgramDir": {
 	                    "maya": ""
@@ -68,7 +68,7 @@
 	            },
 	            "rig": {
 	                "Subdirs": [
-	                    { "name": "", "perm": "2775" }
+	                    { "Name": "", "Perm": "2775" }
 	                ],
 	                "ProgramDir": {
 	                    "maya": ""
@@ -80,30 +80,30 @@
 	        "group": {
 	            "Label": "시퀀스",
 	            "Subdirs": [
-	                { "name": "", "perm": "2775" }
+	                { "Name": "", "Perm": "2775" }
 	            ],
 	            "ChildRoot": ""
 	        },
 	        "unit": {
 	            "Label": "샷",
 	            "Subdirs": [
-	                { "name": "", "perm": "2775" },
-	                { "name": "scan", "perm": "0755" },
-	                { "name": "scan/base", "perm": "0755" },
-	                { "name": "scan/source", "perm": "0755" },
-	                { "name": "ref", "perm": "0755" },
-	                { "name": "pub", "perm": "2775" },
-	                { "name": "pub/cam", "perm": "2775" },
-	                { "name": "pub/geo", "perm": "2775" },
-	                { "name": "pub/char", "perm": "2775" },
-	                { "name": "wip", "perm": "2775" }
+	                { "Name": "", "Perm": "2775" },
+	                { "Name": "scan", "Perm": "0755" },
+	                { "Name": "scan/base", "Perm": "0755" },
+	                { "Name": "scan/source", "Perm": "0755" },
+	                { "Name": "ref", "Perm": "0755" },
+	                { "Name": "pub", "Perm": "2775" },
+	                { "Name": "pub/cam", "Perm": "2775" },
+	                { "Name": "pub/geo", "Perm": "2775" },
+	                { "Name": "pub/char", "Perm": "2775" },
+	                { "Name": "wip", "Perm": "2775" }
 	            ],
 	            "ChildRoot": "wip"
 	        },
 	        "part": {
 	            "lit": {
 	                "Subdirs": [
-	                    { "name": "", "perm": "2775" }
+	                    { "Name": "", "Perm": "2775" }
 	                ],
 	                "ProgramDir": {
 	                    "maya": ""
@@ -111,13 +111,13 @@
 	            },
 	            "fx": {
 	                "Subdirs": [
-	                    { "name": "", "perm": "2775" },
-	                    { "name": "backup", "perm": "2775" },
-	                    { "name": "geo", "perm": "2775" },
-	                    { "name": "precomp", "perm": "2775" },
-	                    { "name": "preview", "perm": "2775" },
-	                    { "name": "render", "perm": "2775" },
-	                    { "name": "temp", "perm": "2775" }
+	                    { "Name": "", "Perm": "2775" },
+	                    { "Name": "backup", "Perm": "2775" },
+	                    { "Name": "geo", "Perm": "2775" },
+	                    { "Name": "precomp", "Perm": "2775" },
+	                    { "Name": "preview", "Perm": "2775" },
+	                    { "Name": "render", "Perm": "2775" },
+	                    { "Name": "temp", "Perm": "2775" }
 	                ],
 	                "ProgramDir": {
 	                    "houdini": "",
@@ -126,7 +126,7 @@
 	            },
 	            "comp": {
 	                "Subdirs": [
-	                    { "name": "", "perm": "2775" }
+	                    { "Name": "", "Perm": "2775" }
 	                ],
 	                "ProgramDir": {
 	                    "nuke": ""
