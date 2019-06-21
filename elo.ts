@@ -10,7 +10,6 @@ let showRoot = ""
 let pinnedShow = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
-let root: site.Root
 
 let selection = seltree.New()
 
@@ -18,7 +17,6 @@ let selection = seltree.New()
 // 실행은 모든 함수가 정의되고 난 마지막에 하게 된다.
 function init() {
     site.Init()
-    root = site.New()
 
     ensureDirExist(configDir())
     loadPinnedShow()
@@ -97,7 +95,7 @@ window.addEventListener("contextmenu", function(ev) {
         let openShowDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(root.Show(show).Dir)
+                openDir(site.Show(show).Dir)
             }),
         })
         showMenu.append(openShowDir)
@@ -133,7 +131,7 @@ window.addEventListener("contextmenu", function(ev) {
         let openGroupDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(root.Show(show).Category(ctg).Group(grp).Dir)
+                openDir(site.Show(show).Category(ctg).Group(grp).Dir)
             }),
         })
         groupMenu.append(openGroupDir)
@@ -170,7 +168,7 @@ window.addEventListener("contextmenu", function(ev) {
         let openUnitDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(root.Show(show).Category(ctg).Group(grp).Unit(unit).Dir)
+                openDir(site.Show(show).Category(ctg).Group(grp).Unit(unit).Dir)
             }),
         })
         unitMenu.append(openUnitDir)
@@ -187,7 +185,7 @@ window.addEventListener("contextmenu", function(ev) {
         let openPartDir = new MenuItem({
             label: "디렉토리 열기",
             click: uiEvent(function() {
-                openDir(root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).Dir)
+                openDir(site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).Dir)
             }),
         })
         partMenu.append(openPartDir)
@@ -505,35 +503,35 @@ function selectionChanged() {
 
 // createShow는 하나의 쇼를 생성한다.
 function createShow(show) {
-    root.CreateShow(show)
+    site.CreateShow(show)
     reloadShows()
     selectShow(show)
 }
 
 // createGroup은 하나의 그룹을 생성한다.
 function createGroup(show, ctg, grp) {
-    root.Show(show).Category(ctg).CreateGroup(grp)
+    site.Show(show).Category(ctg).CreateGroup(grp)
     reloadGroups()
     selectGroup(grp)
 }
 
 // createUnit은 하나의 샷을 생성한다.
 function createUnit(show, ctg, grp, unit) {
-    root.Show(show).Category(ctg).Group(grp).CreateUnit(unit)
+    site.Show(show).Category(ctg).Group(grp).CreateUnit(unit)
     reloadUnits()
     selectUnit(unit)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
 function createPart(show, ctg, grp, unit, part) {
-    root.Show(show).Category(ctg).Group(grp).Unit(unit).CreatePart(part)
+    site.Show(show).Category(ctg).Group(grp).Unit(unit).CreatePart(part)
     reloadParts()
     selectPart(part)
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
 function createTask(show, ctg, grp, unit, part, prog, task, ver) {
-    root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).CreateTask(prog, task, ver)
+    site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).CreateTask(prog, task, ver)
     reloadTasks()
     selectTask(task, "")
 }
@@ -847,7 +845,7 @@ function newBoxItem(val, sub): HTMLElement {
 function reloadShows() {
     let box = document.getElementById("show-box")
     box.innerText = ""
-    let shows = names(root.Shows())
+    let shows = names(site.Shows())
     let byPin = function(a, b) {
         if (isPinnedShow(a)) { return -1 }
         if (isPinnedShow(b)) { return 1 }
@@ -876,7 +874,7 @@ function reloadGroups() {
     let ctg = currentCategory()
     let box = document.getElementById("group-box")
     box.innerText = ""
-    let groups = names(root.Show(show).Category(ctg).Groups())
+    let groups = names(site.Show(show).Category(ctg).Groups())
     let byPin = function(a, b) {
         if (isPinnedGroup(show, ctg, a)) { return -1 }
         if (isPinnedGroup(show, ctg, b)) { return 1 }
@@ -909,7 +907,7 @@ function reloadUnits() {
     }
     let box = document.getElementById("unit-box")
     box.innerText = ""
-    let units = names(root.Show(show).Category(ctg).Group(grp).Units())
+    let units = names(site.Show(show).Category(ctg).Group(grp).Units())
     let byPin = function(a, b) {
         if (isPinnedUnit(show, ctg, grp, a)) { return -1 }
         if (isPinnedUnit(show, ctg, grp, b)) { return 1 }
@@ -946,7 +944,7 @@ function reloadParts() {
     }
     let box = document.getElementById("part-box")
     box.innerText = ""
-    for (let p of root.Show(show).Category(ctg).Group(grp).Unit(unit).Parts()) {
+    for (let p of site.Show(show).Category(ctg).Group(grp).Unit(unit).Parts()) {
         let part = p.Name
         let div = newBoxItem(part, "")
         div.id = "part-" + part
@@ -977,7 +975,7 @@ function reloadTasks() {
     }
     let box = document.getElementById("task-box")
     box.innerText = ""
-    let tasks = root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).Tasks()
+    let tasks = site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).Tasks()
     for (let t of tasks) {
         let task = t.Name
         let lastver = t.Versions[t.Versions.length - 1]
@@ -1052,7 +1050,7 @@ function openTaskEv(show, ctg, grp, unit, part, prog, task, ver) {
             notify(err.message)
         }
     }
-    root.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).OpenTask(prog, task, ver, handleError)
+    site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).OpenTask(prog, task, ver, handleError)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.

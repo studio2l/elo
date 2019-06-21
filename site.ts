@@ -4,6 +4,7 @@ import * as proc from "child_process"
 import * as program from "./program"
 
 let siteRoot: string
+let showRoot: string
 let siteInfo: SiteInfo
 
 export function Init() {
@@ -11,6 +12,7 @@ export function Init() {
     if (!siteRoot) {
         throw Error("SITE_ROOT 환경변수가 설정되어 있지 않습니다.")
     }
+    showRoot = siteRoot + "/show"
     let siteFile = siteRoot + "/site.json"
     if (!fs.existsSync(siteFile)) {
         throw Error("$SITE_ROOT에site.json 파일이 없습니다. example/site.json 파일을 복사해서 사용하셔도 됩니다.")
@@ -18,10 +20,6 @@ export function Init() {
     let data = fs.readFileSync(siteFile)
     siteInfo = JSON.parse(data.toString("utf8"))
     validateSiteInfo(siteInfo)
-}
-
-export function New(): Root {
-    return new Root("2L")
 }
 
 export function ValidCategories(): string[] {
@@ -83,8 +81,34 @@ interface Branch {
     ChildRoot: string
 }
 
-export class Root implements Branch {
-    Parent: Branch
+export function CreateShow(name: string) {
+    let show = new ShowBranch(name)
+    for (let d of show.Subdirs) {
+        makeDir(show.Dir + "/" + d.Name, d.Perm)
+    }
+}
+
+export function Show(name: string): ShowBranch {
+    let show = new ShowBranch(name)
+    if (!fs.existsSync(show.Dir)) {
+        throw Error("show not exists: " + name)
+    }
+    return show
+}
+
+export function Shows(): ShowBranch[] {
+    let children = []
+    for (let d of listDirs(showRoot)) {
+        children.push(this.Show(d))
+    }
+    children.sort(function(a, b) {
+        return compare(a.Name, b.Name)
+    })
+    return children
+}
+
+class ShowBranch implements Branch {
+    Parent: null
     Type: string
     Label: string
     Name: string
@@ -94,57 +118,10 @@ export class Root implements Branch {
 
     constructor(name: string) {
         this.Parent = null
-        this.Type = "site"
-        this.Label = "사이트"
-        this.Name = name
-        this.Dir = siteRoot
-        this.Subdirs = [
-            dirEnt("", "0755"),
-            dirEnt("runner", "0755"),
-            dirEnt("show", "0755"),
-        ]
-        this.ChildRoot = this.Dir + "/show"
-    }
-    CreateShow(name: string) {
-        let show = new Show(this, name)
-        for (let d of show.Subdirs) {
-            makeDir(show.Dir + "/" + d.Name, d.Perm)
-        }
-    }
-    Show(name: string): Show {
-        let show = new Show(this, name)
-        if (!fs.existsSync(show.Dir)) {
-            throw Error("show not exists: " + name)
-        }
-        return show
-    }
-    Shows(): Show[] {
-        let children = []
-        for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Show(d))
-        }
-        children.sort(function(a, b) {
-            return compare(a.Name, b.Name)
-        })
-        return children
-    }
-}
-
-class Show implements Branch {
-    Parent: Branch
-    Type: string
-    Label: string
-    Name: string
-    Dir: string
-    Subdirs: Dir[]
-    ChildRoot: string
-
-    constructor(parent: Root, name: string) {
-        this.Parent = parent
         this.Type = "show"
         this.Label = "쇼"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
+        this.Dir = showRoot + "/" + name
         let showInfo = siteInfo["show"]
         this.Subdirs = showInfo.Subdirs
         this.ChildRoot = this.Dir
@@ -152,10 +129,10 @@ class Show implements Branch {
             this.ChildRoot += "/" + showInfo.ChildRoot
         }
     }
-    Category(name: string): Category {
-        return new Category(this, name)
+    Category(name: string): CategoryBranch {
+        return new CategoryBranch(this, name)
     }
-    Categories(): Category[] {
+    Categories(): CategoryBranch[] {
         let children = []
         for (let c of ValidCategories()) {
             children.push(this.Category(c))
@@ -167,7 +144,7 @@ class Show implements Branch {
     }
 }
 
-class Category implements Branch {
+class CategoryBranch implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -176,7 +153,7 @@ class Category implements Branch {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: Show, name: string) {
+    constructor(parent: ShowBranch, name: string) {
         if (!ValidCategories().includes(name)) {
             throw Error("invalid category name: " + name)
         }
@@ -193,19 +170,19 @@ class Category implements Branch {
         }
     }
     CreateGroup(name: string) {
-        let group = new Group(this, name)
+        let group = new GroupBranch(this, name)
         for (let d of group.Subdirs) {
             makeDir(group.Dir + "/" + d.Name, d.Perm)
         }
     }
-    Group(name: string): Group {
-        let unit = new Group(this, name)
+    Group(name: string): GroupBranch {
+        let unit = new GroupBranch(this, name)
         if (!fs.existsSync(unit.Dir)) {
             throw Error("no group: " + name)
         }
         return unit
     }
-    Groups(): Group[] {
+    Groups(): GroupBranch[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Group(d))
@@ -217,7 +194,7 @@ class Category implements Branch {
     }
 }
 
-class Group implements Branch {
+class GroupBranch implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -226,7 +203,7 @@ class Group implements Branch {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: Category, name: string) {
+    constructor(parent: CategoryBranch, name: string) {
         this.Parent = parent
         this.Type = "group"
         this.Label = "그룹"
@@ -245,19 +222,19 @@ class Group implements Branch {
         }
     }
     CreateUnit(name: string) {
-        let unit = new Unit(this, name)
+        let unit = new UnitBranch(this, name)
         for (let d of unit.Subdirs) {
             makeDir(unit.Dir + "/" + d.Name, d.Perm)
         }
     }
-    Unit(name: string): Unit {
-        let unit = new Unit(this, name)
+    Unit(name: string): UnitBranch {
+        let unit = new UnitBranch(this, name)
         if (!fs.existsSync(unit.Dir)) {
             throw Error("no unit: " + name)
         }
         return unit
     }
-    Units(): Unit[] {
+    Units(): UnitBranch[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Unit(d))
@@ -269,7 +246,7 @@ class Group implements Branch {
     }
 }
 
-class Unit implements Branch {
+class UnitBranch implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -278,7 +255,7 @@ class Unit implements Branch {
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: Group, name: string) {
+    constructor(parent: GroupBranch, name: string) {
         this.Parent = parent
         this.Type = "unit"
         this.Label = "유닛"
@@ -297,15 +274,15 @@ class Unit implements Branch {
         }
     }
     CreatePart(name: string) {
-        let part = new Part(this, name)
+        let part = new PartBranch(this, name)
         for (let d of part.Subdirs) {
             makeDir(part.Dir + "/" + d.Name, d.Perm)
         }
     }
-    Part(name: string): Part {
-        return new Part(this, name)
+    Part(name: string): PartBranch {
+        return new PartBranch(this, name)
     }
-    Parts(): Part[] {
+    Parts(): PartBranch[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Part(d))
@@ -317,7 +294,7 @@ class Unit implements Branch {
     }
 }
 
-class Part implements Branch {
+class PartBranch implements Branch {
     Parent: Branch
     Type: string
     Label: string
@@ -327,7 +304,7 @@ class Part implements Branch {
     ChildRoot: string
     ProgramDir: { [k: string]: string }
 
-    constructor(parent: Unit, name: string) {
+    constructor(parent: UnitBranch, name: string) {
         this.Parent = parent
         this.Type = "part"
         this.Label = "파트"
@@ -452,8 +429,7 @@ class Part implements Branch {
     }
     Environ(): { [k: string]: string } {
         let env = cloneEnv()
-        let psite = getParent(this, "site")
-        env["SHOW_ROOT"] = psite.ChildRoot
+        env["SHOW_ROOT"] = showRoot
         let pshow = getParent(this, "show")
         env["SHOW"] = pshow.Name
         env["SHOWD"] = pshow.Dir
