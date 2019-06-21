@@ -281,13 +281,25 @@ function openModal(kind) {
     let m = document.getElementById("modal")
     m.style.display = "block"
     let input = <HTMLInputElement>document.getElementById("modal-input")
+    input.hidden = false
     input.value = ""
-    let progInput = <HTMLSelectElement>document.getElementById("modal-prog-input")
-    progInput.hidden = true
+    let menuInput = <HTMLSelectElement>document.getElementById("modal-menu-input")
+    menuInput.hidden = true
     let ctg = currentCategory()
-    if (kind == "task") {
-        progInput.hidden = false
-        progInput.innerText = ""
+    if (kind == "part") {
+        input.hidden = true
+        menuInput.hidden = false
+        menuInput.innerText = ""
+        menuInput.style.minWidth = "10rem"
+        let parts = site.ValidParts(currentCategory())
+        for (let p of parts) {
+            let opt = document.createElement("option")
+            opt.text = p
+            menuInput.add(opt)
+        }
+    } else if (kind == "task") {
+        menuInput.hidden = false
+        menuInput.innerText = ""
         let progs = Array()
         try {
             progs = site.ValidPrograms(currentCategory(), currentPart())
@@ -298,7 +310,7 @@ function openModal(kind) {
         for (let p of progs) {
             let opt = document.createElement("option")
             opt.text = p
-            progInput.add(opt)
+            menuInput.add(opt)
         }
     }
     let ctgLabel = site.CategoryLabel(ctg)
@@ -315,8 +327,11 @@ function openModal(kind) {
         let input = <HTMLInputElement>document.getElementById("modal-input")
         let name = input.value
         if (!name) {
-            notify("생성할 항목의 이름을 설정하지 않았습니다.")
-            return
+            // 파트의 경우는 menuInput의 값을 사용하기 때문에 괜찮음
+            if (kind != "part") {
+                notify("생성할 항목의 이름을 설정하지 않았습니다.")
+                return
+            }
         }
         if (kind == "show") {
             createShow(name)
@@ -325,10 +340,12 @@ function openModal(kind) {
         } else if (kind == "unit") {
             createUnit(currentShow(), ctg, currentGroup(), name)
         } else if (kind == "part") {
+            let menuInput = <HTMLInputElement>document.getElementById("modal-menu-input")
+            name = menuInput.value
             createPart(currentShow(), ctg, currentGroup(), currentUnit(), name)
         } else if (kind == "task") {
-            let progInput = <HTMLInputElement>document.getElementById("modal-prog-input")
-            let prog = progInput.value
+            let menuInput = <HTMLInputElement>document.getElementById("modal-menu-input")
+            let prog = menuInput.value
             createTask(currentShow(), ctg, currentGroup(), currentUnit(), currentPart(), prog, name, "v001")
         }
     }
@@ -340,7 +357,11 @@ function openModal(kind) {
             })()
         }
     }
-    input.focus()
+    if (kind == "part") {
+        menuInput.focus()
+    } else {
+        input.focus()
+    }
     let apply = document.getElementById("modal-apply")
     apply.onclick = uiEvent(function() {
         createItem()
