@@ -14,6 +14,7 @@ let showRoot: string
 // 카테고리, 각 항목별 디렉토리 구조 등이 정의되어 있다.
 let siteInfo: SiteInfo
 
+// Init은 이 패키지를 사용하기 위한 글로벌 변수 초기화 및 유효성 검사를 수행한다.
 export function Init() {
     siteRoot = process.env.SITE_ROOT
     if (!siteRoot) {
@@ -32,12 +33,15 @@ export function Init() {
     validateSiteInfo(siteInfo)
 }
 
+// ValidCategories는 siteInfo에서 이 사이트에서 사용하는 카테고리명 리스트를 검사해 반환한다.
+// 결과는 이름 순으로 정렬된다.
 export function ValidCategories(): string[] {
     let ctgs = Object.keys(siteInfo["categories"])
     ctgs.sort()
     return ctgs
 }
 
+// CategoryLabel은 siteInfo에서 이 사이트에서 사용하는 카테고리의 영문명에 대응하는 한글명을 반환한다.
 export function CategoryLabel(ctg: string): string {
     let ctgInfo = siteInfo["categories"][ctg]
     if (!ctgInfo) {
@@ -46,6 +50,7 @@ export function CategoryLabel(ctg: string): string {
     return ctgInfo["unit"].Label
 }
 
+// ValidParts는 siteInfo에서 이 사이트의 특정 카테고리에서 사용하는 파트명 리스트를 반환한다.
 export function ValidParts(ctg: string): string[] {
     let ctgInfo = siteInfo["categories"][ctg]
     if (!ctgInfo) {
@@ -60,6 +65,7 @@ export function ValidParts(ctg: string): string[] {
     return parts
 }
 
+// ValidPrograms는 siteInfo에서 이 사이트의 특정 카테고리, 파트에서 사용하는 프로그램명 리스트를 반환한다.
 export function ValidPrograms(ctg: string, part: string): string[] {
     let ctgInfo = siteInfo["categories"][ctg]
     if (!ctgInfo) {
@@ -91,6 +97,7 @@ interface Branch {
     ChildRoot: string
 }
 
+// CreateShow는 쇼를 하나 생성한다.
 export function CreateShow(name: string) {
     let show = new ShowBranch(name)
     for (let d of show.Subdirs) {
@@ -98,6 +105,8 @@ export function CreateShow(name: string) {
     }
 }
 
+// Show는 하나의 쇼 정보를 받아온다.
+// 해당 이름의 쇼가 없다면 에러를 낸다.
 export function Show(name: string): ShowBranch {
     let show = new ShowBranch(name)
     if (!fs.existsSync(show.Dir)) {
@@ -106,6 +115,7 @@ export function Show(name: string): ShowBranch {
     return show
 }
 
+// Shows는 사이트의 모든 쇼 정보를 받아온다.
 export function Shows(): ShowBranch[] {
     let children = []
     for (let d of listDirs(showRoot)) {
