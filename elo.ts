@@ -350,24 +350,19 @@ function openModal(kind) {
             createTask(currentShow(), ctg, currentGroup(), currentUnit(), currentPart(), prog, name, "v001")
         }
     }
-    input.onkeydown = function(ev) {
-        if (ev.key == "Enter") {
-            uiEvent(function() {
-                createItem()
-                saveSelection()
-            })()
-        }
-    }
+    let applyEv = uiEvent(function() {
+        createItem()
+        saveSelection()
+    })
+    input.onkeydown = function(ev) { if (ev.key == "Enter") { applyEv() } }
+    menuInput.onkeydown = function(ev) { if (ev.key == "Enter") { applyEv() } }
     if (kind == "part") {
         menuInput.focus()
     } else {
         input.focus()
     }
     let apply = document.getElementById("modal-apply")
-    apply.onclick = uiEvent(function() {
-        createItem()
-        saveSelection()
-    })
+    apply.onclick = applyEv
 }
 
 // closeModalEv는 모달 사용중 사용자가 닫음 버튼을 눌렀을 때 모달을 닫는다.
