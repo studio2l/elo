@@ -285,6 +285,7 @@ function openModal(kind) {
     input.value = ""
     let menuInput = <HTMLSelectElement>document.getElementById("modal-menu-input")
     menuInput.hidden = true
+    menuInput.style.minWidth = "5rem"
     let ctg = currentCategory()
     if (kind == "part") {
         input.hidden = true
