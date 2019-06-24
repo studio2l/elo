@@ -90,7 +90,6 @@ export function ValidPrograms(ctg: string, part: string): string[] {
 interface Branch {
     Parent: Branch | null
     Type: string
-    Label: string
     Name: string
     Dir: string
     Subdirs: Dir[]
@@ -127,7 +126,6 @@ export function Shows(): ShowBranch[] {
 class ShowBranch implements Branch {
     Parent: null
     Type: string
-    Label: string
     Name: string
     Dir: string
     Subdirs: Dir[]
@@ -136,7 +134,6 @@ class ShowBranch implements Branch {
     constructor(name: string) {
         this.Parent = null
         this.Type = "show"
-        this.Label = "쇼"
         this.Name = name
         this.Dir = showRoot + "/" + name
         let showInfo = siteInfo["show"]
@@ -161,7 +158,6 @@ class ShowBranch implements Branch {
 class CategoryBranch implements Branch {
     Parent: Branch
     Type: string
-    Label: string
     Name: string
     Dir: string
     Subdirs: Dir[]
@@ -173,7 +169,6 @@ class CategoryBranch implements Branch {
         }
         this.Parent = parent
         this.Type = "category"
-        this.Label = "카테고리"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctgInfo = siteInfo["category"]
@@ -208,7 +203,6 @@ class CategoryBranch implements Branch {
 class GroupBranch implements Branch {
     Parent: Branch
     Type: string
-    Label: string
     Name: string
     Dir: string
     Subdirs: Dir[]
@@ -217,7 +211,6 @@ class GroupBranch implements Branch {
     constructor(parent: CategoryBranch, name: string) {
         this.Parent = parent
         this.Type = "group"
-        this.Label = "그룹"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctg = getParent(this, "category").Name
@@ -257,7 +250,6 @@ class GroupBranch implements Branch {
 class UnitBranch implements Branch {
     Parent: Branch
     Type: string
-    Label: string
     Name: string
     Dir: string
     Subdirs: Dir[]
@@ -266,7 +258,6 @@ class UnitBranch implements Branch {
     constructor(parent: GroupBranch, name: string) {
         this.Parent = parent
         this.Type = "unit"
-        this.Label = "유닛"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctg = getParent(this, "category").Name
@@ -302,7 +293,6 @@ class UnitBranch implements Branch {
 class PartBranch implements Branch {
     Parent: Branch
     Type: string
-    Label: string
     Name: string
     Dir: string
     Subdirs: Dir[]
@@ -312,7 +302,6 @@ class PartBranch implements Branch {
     constructor(parent: UnitBranch, name: string) {
         this.Parent = parent
         this.Type = "part"
-        this.Label = "파트"
         this.Name = name
         this.Dir = parent.ChildRoot + "/" + name
         let ctg = getParent(this, "category").Name
