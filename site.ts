@@ -13,6 +13,9 @@ export function Init() {
         throw Error("SITE_ROOT 환경변수가 설정되어 있지 않습니다.")
     }
     showRoot = siteRoot + "/show"
+    if (process.env.SHOW_ROOT) {
+        showRoot = process.env.SHOW_ROOT
+    }
     let siteFile = siteRoot + "/site.json"
     if (!fs.existsSync(siteFile)) {
         throw Error("$SITE_ROOT에site.json 파일이 없습니다. example/site.json 파일을 복사해서 사용하셔도 됩니다.")
