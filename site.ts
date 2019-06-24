@@ -137,9 +137,6 @@ class ShowBranch implements Branch {
         for (let c of ValidCategories()) {
             children.push(this.Category(c))
         }
-        children.sort(function(a, b) {
-            return compare(a.Name, b.Name)
-        })
         return children
     }
 }
