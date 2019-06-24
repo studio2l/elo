@@ -104,9 +104,6 @@ export function Shows(): ShowBranch[] {
     for (let d of listDirs(showRoot)) {
         children.push(this.Show(d))
     }
-    children.sort(function(a, b) {
-        return compare(a.Name, b.Name)
-    })
     return children
 }
 
@@ -190,9 +187,6 @@ class CategoryBranch implements Branch {
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Group(d))
         }
-        children.sort(function(a, b) {
-            return compare(a.Name, b.Name)
-        })
         return children
     }
 }
@@ -242,9 +236,6 @@ class GroupBranch implements Branch {
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Unit(d))
         }
-        children.sort(function(a, b) {
-            return compare(a.Name, b.Name)
-        })
         return children
     }
 }
@@ -290,9 +281,6 @@ class UnitBranch implements Branch {
         for (let d of listDirs(this.ChildRoot)) {
             children.push(this.Part(d))
         }
-        children.sort(function(a, b) {
-            return compare(a.Name, b.Name)
-        })
         return children
     }
 }
@@ -525,6 +513,7 @@ function listDirs(d): string[] {
             dirs.push(ent)
         }
     }
+    dirs.sort()
     return dirs
 }
 
