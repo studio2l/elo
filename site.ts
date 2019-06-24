@@ -471,14 +471,6 @@ interface Dir {
     Perm: string
 }
 
-// dirEnt는 디렉토리의 이름과 권한을 하나의 오브젝트로 묶어 반환한다.
-function dirEnt(name, perm): Dir {
-    if (typeof perm != "string" || perm.length != 4) {
-        throw("elo에서는 파일 디렉토리 권한에 4자리 문자열 만을 사용합니다")
-    }
-    return { Name: name, Perm: perm }
-}
-
 // createDirs는 부모 디렉토리에 하위 디렉토리들을 생성한다.
 // 만일 생성하지 못한다면 에러가 난다.
 function makeDir(d: string, perm: string) {
