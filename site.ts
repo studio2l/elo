@@ -3,8 +3,15 @@ import * as proc from "child_process"
 
 import * as program from "./program"
 
+// siteRoot는 해당 사이트(스튜디오)의 루트 디렉토리를 의미한다.
 let siteRoot: string
+
+// showRoot는 해당 사이트(스튜디오)의 쇼(작업) 루트 디렉토리를 의미한다.
+// 기본적으로 siteRoot안에 있으나, 따로 정의할 수 있다.
 let showRoot: string
+
+// siteInfo는 사이트 루트 디렉토리 안의 site.json에서 불러온 사이트 정보이다.
+// 카테고리, 각 항목별 디렉토리 구조 등이 정의되어 있다.
 let siteInfo: SiteInfo
 
 export function Init() {
