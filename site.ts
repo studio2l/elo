@@ -1,5 +1,6 @@
 import * as fs from "fs"
 import * as proc from "child_process"
+import * as path from "path"
 
 import * as program from "./program"
 
@@ -20,11 +21,13 @@ export function Init() {
     if (!siteRoot) {
         throw Error("SITE_ROOT 환경변수가 설정되어 있지 않습니다.")
     }
-    showRoot = siteRoot + "/show"
+    siteRoot = path.normalize(siteRoot)
+    showRoot = path.join(siteRoot, "show")
     if (process.env.SHOW_ROOT) {
         showRoot = process.env.SHOW_ROOT
     }
-    let siteFile = siteRoot + "/site.json"
+    showRoot = path.normalize(showRoot)
+    let siteFile = path.join(siteRoot, "site.json")
     if (!fs.existsSync(siteFile)) {
         throw Error("$SITE_ROOT에site.json 파일이 없습니다. example/site.json 파일을 복사해서 사용하셔도 됩니다.")
     }
@@ -100,7 +103,7 @@ interface Branch {
 export function CreateShow(name: string) {
     let show = new ShowBranch(name)
     for (let d of show.Subdirs) {
-        makeDir(show.Dir + "/" + d.Name, d.Perm)
+        makeDir(path.join(show.Dir, d.Name), d.Perm)
     }
 }
 
@@ -135,13 +138,10 @@ class ShowBranch implements Branch {
         this.Parent = null
         this.Type = "show"
         this.Name = name
-        this.Dir = showRoot + "/" + name
+        this.Dir = path.join(showRoot, name)
         let showInfo = siteInfo["show"]
         this.Subdirs = showInfo.Subdirs
-        this.ChildRoot = this.Dir
-        if (showInfo.ChildRoot) {
-            this.ChildRoot += "/" + showInfo.ChildRoot
-        }
+        this.ChildRoot = path.join(this.Dir, showInfo.ChildRoot)
     }
     Category(name: string): CategoryBranch {
         return new CategoryBranch(this, name)
@@ -170,18 +170,15 @@ class CategoryBranch implements Branch {
         this.Parent = parent
         this.Type = "category"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
+        this.Dir = path.join(parent.ChildRoot, name)
         let ctgInfo = siteInfo["category"]
         this.Subdirs = ctgInfo.Subdirs
-        this.ChildRoot = this.Dir
-        if (ctgInfo.ChildRoot) {
-            this.ChildRoot += "/" + ctgInfo.ChildRoot
-        }
+        this.ChildRoot = path.join(this.Dir, ctgInfo.ChildRoot)
     }
     CreateGroup(name: string) {
         let group = new GroupBranch(this, name)
         for (let d of group.Subdirs) {
-            makeDir(group.Dir + "/" + d.Name, d.Perm)
+            makeDir(path.join(group.Dir, d.Name), d.Perm)
         }
     }
     Group(name: string): GroupBranch {
@@ -212,7 +209,7 @@ class GroupBranch implements Branch {
         this.Parent = parent
         this.Type = "group"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
+        this.Dir = path.join(parent.ChildRoot, name)
         let ctg = getParent(this, "category").Name
         let ctgInfo = siteInfo["categories"][ctg]
         if (!ctgInfo) {
@@ -220,15 +217,12 @@ class GroupBranch implements Branch {
         }
         let grpInfo = ctgInfo["group"]
         this.Subdirs = grpInfo.Subdirs
-        this.ChildRoot = this.Dir
-        if (grpInfo.ChildRoot) {
-            this.ChildRoot += "/" + grpInfo.ChildRoot
-        }
+        this.ChildRoot = path.join(this.Dir, grpInfo.ChildRoot)
     }
     CreateUnit(name: string) {
         let unit = new UnitBranch(this, name)
         for (let d of unit.Subdirs) {
-            makeDir(unit.Dir + "/" + d.Name, d.Perm)
+            makeDir(path.join(unit.Dir, d.Name), d.Perm)
         }
     }
     Unit(name: string): UnitBranch {
@@ -259,7 +253,7 @@ class UnitBranch implements Branch {
         this.Parent = parent
         this.Type = "unit"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
+        this.Dir = path.join(parent.ChildRoot, name)
         let ctg = getParent(this, "category").Name
         let ctgInfo = siteInfo["categories"][ctg]
         if (!ctgInfo) {
@@ -267,15 +261,12 @@ class UnitBranch implements Branch {
         }
         let unitInfo = ctgInfo["unit"]
         this.Subdirs = unitInfo.Subdirs
-        this.ChildRoot = this.Dir
-        if (unitInfo.ChildRoot) {
-            this.ChildRoot += "/" + unitInfo.ChildRoot
-        }
+        this.ChildRoot = path.join(this.Dir, unitInfo.ChildRoot)
     }
     CreatePart(name: string) {
         let part = new PartBranch(this, name)
         for (let d of part.Subdirs) {
-            makeDir(part.Dir + "/" + d.Name, d.Perm)
+            makeDir(path.join(part.Dir, d.Name), d.Perm)
         }
     }
     Part(name: string): PartBranch {
@@ -303,7 +294,7 @@ class PartBranch implements Branch {
         this.Parent = parent
         this.Type = "part"
         this.Name = name
-        this.Dir = parent.ChildRoot + "/" + name
+        this.Dir = path.join(parent.ChildRoot, name)
         let ctg = getParent(this, "category").Name
         let ctgInfo = siteInfo["categories"][ctg]
         if (!ctgInfo) {
@@ -325,11 +316,7 @@ class PartBranch implements Branch {
     }
     Task(name: string): Task {
         for (let prog in this.ProgramDir) {
-            let at = this.ProgramDir[prog]
-            let dir = this.Dir
-            if (at) {
-                dir += "/" + at
-            }
+            let dir = path.join(this.Dir, this.ProgramAt(prog))
             let pg = program.Get(prog)
             let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
@@ -343,11 +330,7 @@ class PartBranch implements Branch {
     Tasks(): Task[] {
         let tasks = []
         for (let prog in this.ProgramDir) {
-            let at = this.ProgramDir[prog]
-            let dir = this.Dir
-            if (at) {
-                dir += "/" + at
-            }
+            let dir = path.join(this.Dir, this.ProgramAt(prog))
             let pg = program.Get(prog)
             let progTasks = this.ListTasks(dir, pg)
             for (let t of progTasks) {
@@ -364,7 +347,7 @@ class PartBranch implements Branch {
         let taskMap = {}
         let files = fs.readdirSync(dir)
         for (let f of files) {
-            if (!fs.lstatSync(dir + "/" + f).isFile()) {
+            if (!fs.lstatSync(path.join(dir, f)).isFile()) {
                 continue
             }
             if (!f.endsWith(pg.Ext)) {
@@ -400,24 +383,18 @@ class PartBranch implements Branch {
         return tasks
     }
     CreateTask(prog: string, task: string, ver: string) {
-        let at = this.ProgramAt(prog)
-        let dir = this.Dir
-        if (at) {
-            dir += "/" + at
-        }
+        let dir = path.join(this.Dir, this.ProgramAt(prog))
         let pg = program.Get(prog)
-        let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
+        let name = this.SceneName(task, ver) + pg.Ext
+        let scene = path.join(dir, name)
         let env = this.Environ()
         pg.CreateScene(scene, env)
     }
     OpenTask(prog: string, task: string, ver: string, handleError: (err: Error) => void) {
-        let at = this.ProgramAt(prog)
-        let dir = this.Dir
-        if (at) {
-            dir += "/" + at
-        }
+        let dir = path.join(this.Dir, this.ProgramAt(prog))
         let pg = program.Get(prog)
-        let scene = dir + "/" + this.SceneName(task, ver) + pg.Ext
+        let name = this.SceneName(task, ver) + pg.Ext
+        let scene = path.join(dir, name)
         let env = this.Environ()
         pg.OpenScene(scene, env, handleError)
     }
@@ -427,8 +404,8 @@ class PartBranch implements Branch {
         let pshow = getParent(this, "show")
         env["SHOW"] = pshow.Name
         env["SHOWD"] = pshow.Dir
-        env["ASSET_ROOT"] = pshow.Dir + "/asset"
-        env["SHOT_ROOT"] = pshow.Dir + "/shot"
+        env["ASSET_ROOT"] = path.join(pshow.Dir, "asset")
+        env["SHOT_ROOT"] = path.join(pshow.Dir, "shot")
         let ctg = getParent(this, "category").Name
         let pgrp = getParent(this, "group")
         let punit = getParent(this, "unit")
@@ -503,7 +480,7 @@ function listDirs(d): string[] {
     }
     let dirs: string[] = []
     for (let ent of fs.readdirSync(d)) {
-        let isDir = fs.lstatSync(d + "/" + ent).isDirectory()
+        let isDir = fs.lstatSync(path.join(d, ent)).isDirectory()
         if (isDir) {
             dirs.push(ent)
         }
