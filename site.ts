@@ -385,7 +385,7 @@ class PartBranch implements Branch {
     CreateTask(prog: string, task: string, ver: string) {
         let dir = path.join(this.Dir, this.ProgramAt(prog))
         let pg = program.Get(prog)
-        let name = this.SceneName(task, ver) + pg.Ext
+        let name = this.SceneName(task, ver, pg.Ext)
         let scene = path.join(dir, name)
         let env = this.Environ()
         pg.CreateScene(scene, env)
@@ -393,7 +393,7 @@ class PartBranch implements Branch {
     OpenTask(prog: string, task: string, ver: string, handleError: (err: Error) => void) {
         let dir = path.join(this.Dir, this.ProgramAt(prog))
         let pg = program.Get(prog)
-        let name = this.SceneName(task, ver) + pg.Ext
+        let name = this.SceneName(task, ver, pg.Ext)
         let scene = path.join(dir, name)
         let env = this.Environ()
         pg.OpenScene(scene, env, handleError)
@@ -422,12 +422,12 @@ class PartBranch implements Branch {
         env["PARTD"] = this.Dir
         return env
     }
-    SceneName(task, ver): string {
+    SceneName(task, ver, ext): string {
         let show = getParent(this, "show").Name
         let grp = getParent(this, "group").Name
         let unit = getParent(this, "unit").Name
         let part = this.Name
-        let scene = show + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver
+        let scene = show + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver + ext
         return scene
     }
 }
