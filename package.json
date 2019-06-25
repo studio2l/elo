@@ -4,7 +4,8 @@
   "description": "2L's Scene Opener",
   "main": "main.js",
   "scripts": {
-    "start": "tsc; electron ."
+    "prestart": "tsc",
+    "start": "electron ."
   },
   "build": {
     "appId": "com.2lfilm.elo",
@@ -31,6 +32,5 @@
     "electron": "^4.1.1",
     "electron-builder": "^20.39.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
