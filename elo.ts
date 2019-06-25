@@ -771,11 +771,12 @@ function selectedItemValue(boxId): string {
     if (!box) {
         throw Error(boxId + "가 없습니다.")
     }
-    let items = box.getElementsByClassName("item")
+    let items = Array.from(box.getElementsByClassName("item"))
     if (!items) {
         return null
     }
-    for (let item of items) {
+    for (let i in items) {
+        let item = <HTMLElement>items[i]
         if (item.classList.contains("selected")) {
             return item.dataset.val
         }
@@ -985,8 +986,9 @@ function toggleVersionVisibility(task) {
     } else {
         toggle.textContent = "▽"
     }
-    let vers = document.getElementsByClassName("task-" + task + "-versions")
-    for (let v of vers) {
+    let vers = Array.from(document.getElementsByClassName("task-" + task + "-versions"))
+    for (let i in vers) {
+        let v = <HTMLElement>vers[i]
         if (toggle.dataset.hideVersions == "t") {
             v.style.display = "none"
         } else {
