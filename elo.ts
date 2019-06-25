@@ -929,29 +929,32 @@ function reloadTasks() {
     }
     let box = document.getElementById("task-box")
     box.innerText = ""
-    let tasks = site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).Tasks()
-    for (let t of tasks) {
-        let task = t.Name
-        let lastver = t.Versions[t.Versions.length - 1]
-        let div = newBoxItem(task, lastver + ", " + t.Program)
-        div.id = "task-" + task
-        div.dataset.val = task
-        div.dataset.dir = t.Dir
-        div.onclick = function() { selectTaskEv(task, "") }
-        div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, lastver) }
-        let toggle = newVersionToggle(task)
-        div.insertBefore(toggle, div.firstChild)
-        box.append(div)
-        for (let ver of t.Versions.reverse()) {
-            let div = newBoxItem(ver, "")
-            div.classList.add("task-" + task + "-versions")
-            div.id = "task-" + task + "-" + ver
-            div.dataset.val = task + "-" + ver
+    let p = site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part)
+    for (let prog of p.Programs()) {
+        let tasks = p.Tasks(prog)
+        for (let t of tasks) {
+            let task = t.Name
+            let lastver = t.Versions[t.Versions.length - 1]
+            let div = newBoxItem(task, lastver + ", " + t.Program)
+            div.id = "task-" + task
+            div.dataset.val = task
             div.dataset.dir = t.Dir
-            div.onclick = function() { selectTaskEv(task, ver) }
-            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, ver) }
-            div.style.display = "none"
+            div.onclick = function() { selectTaskEv(task, "") }
+            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, lastver) }
+            let toggle = newVersionToggle(task)
+            div.insertBefore(toggle, div.firstChild)
             box.append(div)
+            for (let ver of t.Versions.reverse()) {
+                let div = newBoxItem(ver, "")
+                div.classList.add("task-" + task + "-versions")
+                div.id = "task-" + task + "-" + ver
+                div.dataset.val = task + "-" + ver
+                div.dataset.dir = t.Dir
+                div.onclick = function() { selectTaskEv(task, ver) }
+                div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, ver) }
+                div.style.display = "none"
+                box.append(div)
+            }
         }
     }
 }

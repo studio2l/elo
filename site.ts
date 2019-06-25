@@ -308,38 +308,34 @@ class PartBranch implements Branch {
         this.ChildRoot = this.Dir
         this.ProgramDir = partInfo.ProgramDir
     }
+    Programs(): string[] {
+        let progs = []
+        for (let prog in this.ProgramDir) {
+            progs.push(prog)
+        }
+        progs.sort()
+        return progs
+    }
     ProgramAt(prog: string): string {
         if (!(prog in this.ProgramDir)) {
             throw Error("program '" + prog + "' not defined in " + this.Name)
         }
         return this.ProgramDir[prog]
     }
-    Task(name: string): Task {
-        for (let prog in this.ProgramDir) {
-            let dir = path.join(this.Dir, this.ProgramAt(prog))
-            let pg = program.Get(prog)
-            let progTasks = this.ListTasks(dir, pg)
-            for (let t of progTasks) {
-                if (t.Name == name) {
-                    return t
-                }
+    Task(prog: string, task: string): Task {
+        let dir = path.join(this.Dir, this.ProgramAt(prog))
+        let pg = program.Get(prog)
+        let progTasks = this.Tasks(prog)
+        for (let t of progTasks) {
+            if (t.Name == name) {
+                return t
             }
         }
-        throw Error("no task: " + name)
+        throw Error("no task for " + prog + " program: " + name)
     }
-    Tasks(): Task[] {
-        let tasks = []
-        for (let prog in this.ProgramDir) {
-            let dir = path.join(this.Dir, this.ProgramAt(prog))
-            let pg = program.Get(prog)
-            let progTasks = this.ListTasks(dir, pg)
-            for (let t of progTasks) {
-                tasks.push(t)
-            }
-        }
-        return tasks
-    }
-    ListTasks(dir, pg): Task[] {
+    Tasks(prog: string): Task[] {
+        let dir = path.join(this.Dir, this.ProgramAt(prog))
+        let pg = program.Get(prog)
         let show = getParent(this, "show").Name
         let grp = getParent(this, "group").Name
         let unit = getParent(this, "unit").Name
