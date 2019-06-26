@@ -427,8 +427,6 @@ class TaskBranch implements Branch {
         env["SHOW_ROOT"] = showRoot
         env["SHOW"] = s.Name
         env["SHOWD"] = s.Dir
-        env["ASSET_ROOT"] = path.join(s.Dir, "asset")
-        env["SHOT_ROOT"] = path.join(s.Dir, "shot")
         if (c.Name == "asset") {
             env["ASSET_TYPE"] = g.Name
             env["ASSET"] = u.Name
