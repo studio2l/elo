@@ -322,9 +322,17 @@ class PartBranch implements Branch {
         }
         return this.ProgramDir[prog]
     }
-    Task(prog: string, task: string): Task {
-        let dir = path.join(this.Dir, this.ProgramAt(prog))
+    CreateTask(prog: string, task: string, ver: string) {
         let pg = program.Get(prog)
+        let dir = path.join(this.Dir, this.ProgramAt(prog))
+        let t = new TaskBranch(this, task, pg, dir)
+        t.Create(ver)
+    }
+    OpenTask(prog: string, task: string, ver: string, handleError: (err: Error) => void) {
+        let t = this.Task(prog, task)
+        t.Open(ver, handleError)
+    }
+    Task(prog: string, task: string): TaskBranch {
         let progTasks = this.Tasks(prog)
         for (let t of progTasks) {
             if (t.Name == name) {
@@ -333,7 +341,7 @@ class PartBranch implements Branch {
         }
         throw Error("no task for " + prog + " program: " + name)
     }
-    Tasks(prog: string): Task[] {
+    Tasks(prog: string): TaskBranch[] {
         let dir = path.join(this.Dir, this.ProgramAt(prog))
         let pg = program.Get(prog)
         let show = getParent(this, "show").Name
@@ -364,7 +372,7 @@ class PartBranch implements Branch {
                 continue
             }
             if (!taskMap[task]) {
-                taskMap[task] = new Task(task, pg.Name, dir)
+                taskMap[task] = new TaskBranch(this, task, pg, dir)
             }
             taskMap[task].Versions.push(version)
         }
@@ -378,67 +386,72 @@ class PartBranch implements Branch {
         })
         return tasks
     }
-    CreateTask(prog: string, task: string, ver: string) {
-        let dir = path.join(this.Dir, this.ProgramAt(prog))
-        let pg = program.Get(prog)
-        let name = this.SceneName(task, ver, pg.Ext)
-        let scene = path.join(dir, name)
-        let env = this.Environ()
-        pg.CreateScene(scene, env)
+}
+
+class TaskBranch implements Branch {
+    Parent: Branch
+    Type: string
+    Name: string
+    Program: program.Program
+    Dir: string
+    Versions: string[]
+    // 아래는 브랜치를 구현하기 위해 필요하지만, 쓰이지는 않음.
+    Subdirs: Dir[]
+    ChildRoot: string
+
+    constructor(parent: PartBranch, name: string, pg: program.Program, dir: string) {
+        this.Parent = parent
+        this.Type = "task"
+        this.Name = name
+        this.Program = pg
+        this.Dir = dir
+        this.Versions = []
     }
-    OpenTask(prog: string, task: string, ver: string, handleError: (err: Error) => void) {
-        let dir = path.join(this.Dir, this.ProgramAt(prog))
-        let pg = program.Get(prog)
-        let name = this.SceneName(task, ver, pg.Ext)
-        let scene = path.join(dir, name)
+    Create(ver: string) {
+        let scene = this.Scene(ver)
         let env = this.Environ()
-        pg.OpenScene(scene, env, handleError)
+        this.Program.CreateScene(scene, env)
+    }
+    Open(ver: string, handleError: (err: Error) => void) {
+        let scene = this.Scene(ver)
+        let env = this.Environ()
+        this.Program.OpenScene(scene, env, handleError)
     }
     Environ(): { [k: string]: string } {
         let env = cloneEnv()
+        let s = getParent(this, "show")
+        let c = getParent(this, "category")
+        let g = getParent(this, "group")
+        let u = getParent(this, "unit")
+        let p = getParent(this, "part")
         env["SHOW_ROOT"] = showRoot
-        let pshow = getParent(this, "show")
-        env["SHOW"] = pshow.Name
-        env["SHOWD"] = pshow.Dir
-        env["ASSET_ROOT"] = path.join(pshow.Dir, "asset")
-        env["SHOT_ROOT"] = path.join(pshow.Dir, "shot")
-        let ctg = getParent(this, "category").Name
-        let pgrp = getParent(this, "group")
-        let punit = getParent(this, "unit")
-        if (ctg == "asset") {
-            env["ASSET_TYPE"] = pgrp.Name
-            env["ASSET"] = punit.Name
-            env["ASSETD"] = punit.Dir
-        } else if (ctg == "shot") {
-            env["SEQ"] = pgrp.Name
-            env["SHOT"] = pgrp.Name + "_" + punit.Name
-            env["SHOTD"] = punit.Dir
+        env["SHOW"] = s.Name
+        env["SHOWD"] = s.Dir
+        env["ASSET_ROOT"] = path.join(s.Dir, "asset")
+        env["SHOT_ROOT"] = path.join(s.Dir, "shot")
+        if (c.Name == "asset") {
+            env["ASSET_TYPE"] = g.Name
+            env["ASSET"] = u.Name
+            env["ASSETD"] = u.Dir
+        } else if (c.Name == "shot") {
+            env["SEQ"] = g.Name
+            env["SHOT"] = g.Name + "_" + u.Name
+            env["SHOTD"] = u.Dir
         }
-        env["PART"] = this.Name
-        env["PARTD"] = this.Dir
+        env["PART"] = p.Name
+        env["PARTD"] = p.Dir
+        env["TASK"] = this.Name
+        env["TASKD"] = this.Dir
         return env
     }
-    SceneName(task, ver, ext): string {
+    Scene(ver): string {
         let show = getParent(this, "show").Name
         let grp = getParent(this, "group").Name
         let unit = getParent(this, "unit").Name
         let part = this.Name
-        let scene = show + "_" + grp + "_" + unit + "_" + part + "_" + task + "_" + ver + ext
+        let name = show + "_" + grp + "_" + unit + "_" + part + "_" + this.Name + "_" + ver + this.Program.Ext
+        let scene = path.join(this.Dir, name)
         return scene
-    }
-}
-
-class Task {
-    Name: string
-    Program: string
-    Dir: string
-    Versions: string[]
-
-    constructor(name, prog, dir) {
-        this.Name = name
-        this.Program = prog
-        this.Dir = dir
-        this.Versions = []
     }
 }
 
