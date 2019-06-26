@@ -935,12 +935,12 @@ function reloadTasks() {
         for (let t of tasks) {
             let task = t.Name
             let lastver = t.Versions[t.Versions.length - 1]
-            let div = newBoxItem(task, lastver + ", " + t.Program)
+            let div = newBoxItem(task, lastver + ", " + prog)
             div.id = "task-" + task
             div.dataset.val = task
             div.dataset.dir = t.Dir
             div.onclick = function() { selectTaskEv(task, "") }
-            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, lastver) }
+            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, prog, task, lastver) }
             let toggle = newVersionToggle(task)
             div.insertBefore(toggle, div.firstChild)
             box.append(div)
@@ -951,7 +951,7 @@ function reloadTasks() {
                 div.dataset.val = task + "-" + ver
                 div.dataset.dir = t.Dir
                 div.onclick = function() { selectTaskEv(task, ver) }
-                div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, t.Program, task, ver) }
+                div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, prog, task, ver) }
                 div.style.display = "none"
                 box.append(div)
             }
