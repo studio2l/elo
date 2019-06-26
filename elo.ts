@@ -930,7 +930,7 @@ function reloadTasks() {
             div.dataset.val = task
             div.dataset.dir = t.Dir
             div.onclick = function() { selectTaskEv(task, "") }
-            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, prog, task, lastver) }
+            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, prog, task, "") }
             let toggle = newVersionToggle(task)
             div.insertBefore(toggle, div.firstChild)
             box.append(div)
