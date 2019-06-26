@@ -335,11 +335,11 @@ class PartBranch implements Branch {
     Task(prog: string, task: string): TaskBranch {
         let progTasks = this.Tasks(prog)
         for (let t of progTasks) {
-            if (t.Name == name) {
+            if (t.Name == task) {
                 return t
             }
         }
-        throw Error("no task for " + prog + " program: " + name)
+        throw Error("no task for " + prog + " program: " + task)
     }
     Tasks(prog: string): TaskBranch[] {
         let dir = path.join(this.Dir, this.ProgramAt(prog))
@@ -443,10 +443,13 @@ class TaskBranch implements Branch {
         return env
     }
     Scene(ver): string {
+        if (!ver) {
+            ver = this.Versions[this.Versions.length-1]
+        }
         let show = getParent(this, "show").Name
         let grp = getParent(this, "group").Name
         let unit = getParent(this, "unit").Name
-        let part = this.Name
+        let part = getParent(this, "part").Name
         let name = show + "_" + grp + "_" + unit + "_" + part + "_" + this.Name + "_" + ver + this.Program.Ext
         let scene = path.join(this.Dir, name)
         return scene
