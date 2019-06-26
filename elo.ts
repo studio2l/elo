@@ -806,10 +806,11 @@ function reloadShows() {
     }
     shows.sort(byPin)
     for (let show of shows) {
-        let div = newBoxItem(show)
+        let label = show
         if (isPinnedShow(show)) {
-            div.classList.add("pin")
+            label = "- " + label
         }
+        let div = newBoxItem(label)
         div.id = "show-" + show
         div.dataset.val = show
         div.onclick = function() { selectShowEv(show) }
@@ -834,7 +835,11 @@ function reloadGroups() {
     }
     groups.sort(byPin)
     for (let grp of groups) {
-        let div = newBoxItem(grp)
+        let label = grp
+        if (isPinnedGroup(show, ctg, grp)) {
+            label = "- " + label
+        }
+        let div = newBoxItem(label)
         div.id = "group-" + grp
         div.dataset.val = grp
         div.onclick = function() { selectGroupEv(grp) }
@@ -863,7 +868,11 @@ function reloadUnits() {
     }
     units.sort(byPin)
     for (let unit of units) {
-        let div = newBoxItem(unit)
+        let label = unit
+        if (isPinnedUnit(show, ctg, grp, unit)) {
+            label = "- " + label
+        }
+        let div = newBoxItem(label)
         div.id = "unit-" + unit
         div.dataset.val = unit
         div.onclick = function() { selectUnitEv(unit) }
