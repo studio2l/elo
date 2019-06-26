@@ -1008,7 +1008,9 @@ function openTaskEv(show, ctg, grp, unit, part, prog, task, ver) {
             notify(err.message)
         }
     }
-    site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).OpenTask(prog, task, ver, handleError)
+    uiEvent(function() {
+        site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).OpenTask(prog, task, ver, handleError)
+    })()
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
