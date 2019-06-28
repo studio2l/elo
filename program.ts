@@ -1,8 +1,10 @@
 import * as proc from "child_process"
+import * as path from "path"
 
 // 만일 $SITE_ROOT가 없다면 아래 프로그램은 제대로 동작하지 않겠지만
 // 그런 경우 elo가 열릴 때 경고를 하게 되어있다.
 let siteRoot = process.env["SITE_ROOT"]
+siteRoot = path.normalize(siteRoot)
 
 export function Get(name: string): Program {
     if (name == "maya") {
@@ -35,16 +37,16 @@ export let Maya = new Program({
     Name: "maya",
     Ext: ".mb",
     CreateScene: function(scene, env) {
-        let cmd = siteRoot + "/runner/maya_create.sh"
+        let cmd = path.join(siteRoot, "runner", "maya_create.sh")
         if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/maya_create.bat"
+            cmd = path.join(siteRoot, "runner", "maya_create.bat")
         }
         proc.execFileSync(cmd, [scene], { "env": env })
     },
     OpenScene: function(scene, env, handleError) {
-        let cmd = siteRoot + "/runner/maya_open.sh"
+        let cmd = path.join(siteRoot, "runner", "maya_open.sh")
         if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/maya_open.bat"
+            cmd = path.join(siteRoot, "runner", "maya_open.bat")
         }
         mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
     },
@@ -54,16 +56,16 @@ export let Houdini = new Program({
     Name: "houdini",
     Ext: ".hip",
     CreateScene: function(scene, env) {
-        let cmd = siteRoot + "/runner/houdini_create.sh"
+        let cmd = path.join(siteRoot, "runner", "houdini_create.sh")
         if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/houdini_create.bat"
+            cmd = path.join(siteRoot, "runner", "houdini_create.bat")
         }
         proc.execFileSync(cmd, [scene], { "env": env })
     },
     OpenScene: function(scene, env, handleError) {
-        let cmd = siteRoot + "/runner/houdini_open.sh"
+        let cmd = path.join(siteRoot, "runner", "houdini_open.sh")
         if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/houdini_open.bat"
+            cmd = path.join(siteRoot, "runner", "houdini_open.bat")
         }
         mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
     },
@@ -73,16 +75,16 @@ export let Nuke = new Program({
     Name: "nuke",
     Ext: ".nk",
     CreateScene: function(scene, env) {
-        let cmd = siteRoot + "/runner/nuke_create.sh"
+        let cmd = path.join(siteRoot, "runner", "nuke_create.sh")
         if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/nuke_create.bat"
+            cmd = path.join(siteRoot, "runner", "nuke_create.bat")
         }
         proc.execFileSync(cmd, [scene], { "env": env })
     },
     OpenScene: function(scene, env, handleError) {
-        let cmd = siteRoot + "/runner/nuke_open.sh"
+        let cmd = path.join(siteRoot, "runner", "nuke_open.sh")
         if (process.platform == "win32") {
-            cmd = siteRoot + "/runner/nuke_open.bat"
+            cmd = path.join(siteRoot, "runner", "nuke_open.bat")
         }
         mySpawn(cmd, [scene], { "env": env, "detached": true }, handleError)
     },
