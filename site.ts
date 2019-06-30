@@ -2,8 +2,6 @@ import * as fs from "fs"
 import * as proc from "child_process"
 import * as path from "path"
 
-import * as program from "./program"
-
 // siteRoot는 해당 사이트(스튜디오)의 루트 디렉토리를 의미한다.
 let siteRoot: string
 
@@ -323,7 +321,10 @@ class PartBranch implements Branch {
         return this.ProgramDir[prog]
     }
     CreateTask(prog: string, task: string, ver: string) {
-        let pg = program.Get(prog)
+        let pg = siteInfo.programs[prog]
+        if (!pg) {
+            throw Error("program not defined: " + prog)
+        }
         let dir = path.join(this.Dir, this.ProgramAt(prog))
         let t = new TaskBranch(this, task, pg, dir)
         t.Create(ver)
@@ -343,7 +344,10 @@ class PartBranch implements Branch {
     }
     Tasks(prog: string): TaskBranch[] {
         let dir = path.join(this.Dir, this.ProgramAt(prog))
-        let pg = program.Get(prog)
+        let pg = siteInfo.programs[prog]
+        if (!pg) {
+            throw Error("program not defined: " + prog)
+        }
         let show = getParent(this, "show").Name
         let grp = getParent(this, "group").Name
         let unit = getParent(this, "unit").Name
@@ -392,14 +396,14 @@ class TaskBranch implements Branch {
     Parent: Branch
     Type: string
     Name: string
-    Program: program.Program
+    Program: Program
     Dir: string
     Versions: string[]
     // 아래는 브랜치를 구현하기 위해 필요하지만, 쓰이지는 않음.
     Subdirs: Dir[]
     ChildRoot: string
 
-    constructor(parent: PartBranch, name: string, pg: program.Program, dir: string) {
+    constructor(parent: PartBranch, name: string, pg: Program, dir: string) {
         this.Parent = parent
         this.Type = "task"
         this.Name = name
@@ -410,12 +414,22 @@ class TaskBranch implements Branch {
     Create(ver: string) {
         let scene = this.Scene(ver)
         let env = this.Environ()
-        this.Program.CreateScene(scene, env)
+        let createCmd = this.Program.CreateCmd[process.platform]
+        if (!createCmd) {
+            throw Error("not supported os: " + process.platform)
+        }
+        let create = path.join(siteRoot, createCmd)
+        proc.execFileSync(create, [scene], { env: env })
     }
     Open(ver: string, handleError: (err: Error) => void) {
         let scene = this.Scene(ver)
         let env = this.Environ()
-        this.Program.OpenScene(scene, env, handleError)
+        let openCmd = this.Program.OpenCmd[process.platform]
+        if (!openCmd) {
+            throw Error("not supported os: " + process.platform)
+        }
+        let open = path.join(siteRoot, openCmd)
+        spawn(open, [scene], { env: env, detach: true }, handleError)
     }
     Environ(): { [k: string]: string } {
         let env = cloneEnv()
@@ -543,16 +557,20 @@ interface SiteInfo {
     show: ShowInfo
     category: CategoryInfo
     categories: { [k: string]: CategorySubInfo }
+    programs: { [k: string]: Program }
 }
 
 // validateSiteInfo는 설정 파일에서 불러온 사이트 정보에 문제가 없는지를
 // 체크하고, 문제가 있을 때는 에러를 낸다.
 function validateSiteInfo(info: SiteInfo) {
-    mustHaveAttrs("site", info, ["show", "category", "categories"])
+    mustHaveAttrs("site", info, ["show", "category", "categories", "programs"])
     validateShowInfo(info["show"])
     validateCategoryInfo(info["category"])
     for (let ctg in info["categories"]) {
         validateCategorySubInfo(info["categories"][ctg])
+    }
+    for (let prg in info["programs"]) {
+        validateProgram(info["programs"][prg])
     }
 }
 
@@ -658,4 +676,36 @@ function validateDir(d: Dir) {
     if (typeof d.Perm != "string" || d.Perm.length != 4) {
         throw("elo에서는 파일 디렉토리 권한에 4자리 문자열 만을 사용합니다")
     }
+}
+
+interface Program {
+    Name: string
+    Ext: string
+    CreateCmd: string
+    OpenCmd: string
+}
+
+// validateProgram는 설정 파일에서 불러온 파트 정보에 문제가 없는지를
+// 체크하고, 문제가 있을 때는 에러를 낸다.
+function validateProgram(p: Program) {
+    mustHaveAttrs("program", p, ["Name", "Ext", "CreateCmd", "OpenCmd"])
+}
+
+// spawn은 특정 명령을 elo에서 떼어내어 실행하되, 에러가 발생할 경우
+// 그 에러메시지를 처리할 수 있도록 handleError 핸들러를 받는다.
+function spawn(cmd: string, args: string[], opts: object, handleError: (err) => void) {
+    let p = proc.spawn(cmd, args, opts)
+    let stderr = ""
+    p.stderr.on("data", (data) => {
+        stderr += data
+    })
+    p.on("exit", (code) => {
+        if (code != 0) {
+            let err = new Error("exit with error " + code + ": " + stderr)
+            handleError(err)
+        }
+    })
+    p.on("error", (err) => {
+        handleError(err)
+    })
 }
