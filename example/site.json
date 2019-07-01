@@ -146,7 +146,7 @@
     "programs": {
         "maya": {
             "Name": "maya",
-            "Ext": "mb",
+            "Ext": ".mb",
             "CreateCmd": {
                 "win32": "runner/maya_create.bat",
                 "linux": "runner/maya_create.sh"
@@ -158,7 +158,7 @@
         },
         "houdini": {
             "Name": "houdini",
-            "Ext": "hip",
+            "Ext": ".hip",
             "CreateCmd": {
                 "win32": "runner/houdini_create.bat",
                 "linux": "runner/houdini_create.sh"
@@ -170,7 +170,7 @@
         },
         "nuke": {
             "Name": "nuke",
-            "Ext": "nk",
+            "Ext": ".nk",
             "CreateCmd": {
                 "win32": "runner/nuke_create.bat",
                 "linux": "runner/nuke_create.sh"
