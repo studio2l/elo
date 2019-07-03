@@ -356,7 +356,7 @@ function openModal(kind) {
     })
     input.onkeydown = function(ev) { if (ev.key == "Enter") { applyEv() } }
     menuInput.onkeydown = function(ev) { if (ev.key == "Enter") { applyEv() } }
-    if (kind == "part") {
+    if (!menuInput.hidden) {
         menuInput.focus()
     } else {
         input.focus()
