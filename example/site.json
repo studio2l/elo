@@ -1,5 +1,6 @@
 {
     "show": {
+        "Label": "쇼",
         "Subdirs": [
             { "Name": "", "Perm": "0755" },
             { "Name": "asset", "Perm": "0755" },
@@ -26,6 +27,7 @@
         "ChildRoot": ""
     },
     "category": {
+        "Label": "카테고리",
         "Subdirs": [
             { "Name": "", "Perm": "2775" }
         ],
@@ -51,6 +53,7 @@
             },
             "part": {
                 "model": {
+                    "Label": "모델링",
                     "Subdirs": [
                         { "Name": "", "Perm": "2775" }
                     ],
@@ -59,6 +62,7 @@
                     }
                 },
                 "look": {
+                    "Label": "룩 디벨롭먼트",
                     "Subdirs": [
                         { "Name": "", "Perm": "2775" }
                     ],
@@ -67,6 +71,7 @@
                     }
                 },
                 "rig": {
+                    "Label": "리깅",
                     "Subdirs": [
                         { "Name": "", "Perm": "2775" }
                     ],
@@ -102,6 +107,7 @@
             },
             "part": {
                 "ani": {
+                    "Label": "애니메이션",
                     "Subdirs": [
                         { "Name": "", "Perm": "2775" }
                     ],
@@ -110,6 +116,7 @@
                     }
                 },
                 "lit": {
+                    "Label": "라이팅",
                     "Subdirs": [
                         { "Name": "", "Perm": "2775" }
                     ],
@@ -118,6 +125,7 @@
                     }
                 },
                 "fx": {
+                    "Label": "FX",
                     "Subdirs": [
                         { "Name": "", "Perm": "2775" },
                         { "Name": "backup", "Perm": "2775" },
@@ -133,6 +141,7 @@
                     }
                 },
                 "comp": {
+                    "Label": "합성",
                     "Subdirs": [
                         { "Name": "", "Perm": "2775" }
                     ],

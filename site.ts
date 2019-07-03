@@ -562,6 +562,7 @@ interface BranchInfo {
 }
 
 interface PartInfo {
+    Label: string
     Subdirs: Dir[]
     ProgramDir: { [k: string]: string }
 }
@@ -598,11 +599,11 @@ function validateSiteInfo(info: SiteInfo) {
 }
 
 function validatePartInfo(label: string, info: PartInfo) {
-    mustHaveAttrs(label, info, ["Subdirs", "ProgramDir"])
+    mustHaveAttrs(label, info, ["Label", "Subdirs", "ProgramDir"])
 }
 
 function validateBranchInfo(label: string, info: BranchInfo) {
-    mustHaveAttrs(label, info, ["Subdirs", "ChildRoot"])
+    mustHaveAttrs(label, info, ["Label", "Subdirs", "ChildRoot"])
     for (let d of info.Subdirs) {
         validateDir(label, d)
     }
