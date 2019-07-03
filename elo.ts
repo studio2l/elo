@@ -286,6 +286,8 @@ function openModal(kind) {
     let menuInput = <HTMLSelectElement>document.getElementById("modal-menu-input")
     menuInput.hidden = true
     menuInput.style.minWidth = "5rem"
+    let guide = <HTMLInputElement>document.getElementById("modal-guide")
+    guide.innerText = ""
     let ctg = currentCategory()
     if (kind == "part") {
         input.hidden = true
@@ -313,6 +315,7 @@ function openModal(kind) {
             opt.text = p
             menuInput.add(opt)
         }
+        guide.innerText = "기본 태스크 이름으로는 main을 사용해주세요."
     }
     let ctgLabel = site.CategoryLabel(ctg)
     let kor = {
