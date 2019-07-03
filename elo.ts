@@ -977,7 +977,7 @@ function reloadTasks() {
 function newVersionToggle(task): HTMLElement {
     let toggle = document.createElement("div")
     toggle.classList.add("toggle")
-    toggle.textContent = "▷"
+    toggle.textContent = "▼"
     toggle.dataset.hideVersions = "t"
     toggle.onclick = function(ev) {
         ev.stopPropagation()
@@ -999,9 +999,9 @@ function toggleVersionVisibility(task) {
         toggle.dataset.hideVersions = "t"
     }
     if (toggle.dataset.hideVersions == "t") {
-        toggle.textContent = "▷"
+        toggle.textContent = "▼"
     } else {
-        toggle.textContent = "▽"
+        toggle.textContent = "▲"
     }
     let vers = Array.from(document.getElementsByClassName("task-" + task + "-versions"))
     for (let i in vers) {
