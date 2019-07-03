@@ -413,6 +413,9 @@ class TaskBranch implements Branch {
     }
     Create(ver: string) {
         let scene = this.Scene(ver)
+        if (fs.existsSync(scene)) {
+            throw Error("scene already exists: " + scene)
+        }
         let env = this.Environ()
         let createCmd = this.Program.CreateCmd[process.platform]
         if (!createCmd) {
