@@ -86,10 +86,11 @@ body {
 	cursor: pointer;
 	background-color: #BDBDBD;
 	border-bottom: solid 1px #606268;
+	padding: 0.3rem;
 }
 
 .item div {
-	padding: 0.3rem 0.5rem;
+	padding: 0 0.4rem;
 }
 
 .selected {

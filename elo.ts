@@ -804,11 +804,12 @@ function selectedItemValue(boxId): string {
 
 // newBoxItem은 box 클래스 안에서 사용될 item HTML 요소를 생성한다.
 // 받아들이는 두 인수는 각각 왼쪽(메인)과 오른쪽(서브)에 적힐 내용이다.
-function newBoxItem(val): HTMLElement {
+function newBoxItem(val, mark): HTMLElement {
     let tmpl = <HTMLTemplateElement>document.getElementById("item-tmpl")
     let frag = document.importNode(tmpl.content, true)
     let item = frag.querySelector("div")
     item.getElementsByClassName("item-val")[0].textContent = val
+    item.getElementsByClassName("item-mark")[0].textContent = mark
     return item
 }
 
@@ -824,11 +825,11 @@ function reloadShows() {
     }
     shows.sort(byPin)
     for (let show of shows) {
-        let label = show
+        let mark = ""
         if (isPinnedShow(show)) {
-            label = "- " + label
+            mark = "-"
         }
-        let div = newBoxItem(label)
+        let div = newBoxItem(show, mark)
         div.id = "show-" + show
         div.dataset.val = show
         div.onclick = function() { selectShowEv(show) }
@@ -853,11 +854,11 @@ function reloadGroups() {
     }
     groups.sort(byPin)
     for (let grp of groups) {
-        let label = grp
+        let mark = ""
         if (isPinnedGroup(show, ctg, grp)) {
-            label = "- " + label
+            mark = "-"
         }
-        let div = newBoxItem(label)
+        let div = newBoxItem(grp, mark)
         div.id = "group-" + grp
         div.dataset.val = grp
         div.onclick = function() { selectGroupEv(grp) }
@@ -886,11 +887,11 @@ function reloadUnits() {
     }
     units.sort(byPin)
     for (let unit of units) {
-        let label = unit
+        let mark = ""
         if (isPinnedUnit(show, ctg, grp, unit)) {
-            label = "- " + label
+            mark = "-"
         }
-        let div = newBoxItem(label)
+        let div = newBoxItem(unit, mark)
         div.id = "unit-" + unit
         div.dataset.val = unit
         div.onclick = function() { selectUnitEv(unit) }
@@ -917,7 +918,7 @@ function reloadParts() {
     box.innerText = ""
     for (let p of site.Show(show).Category(ctg).Group(grp).Unit(unit).Parts()) {
         let part = p.Name
-        let div = newBoxItem(part)
+        let div = newBoxItem(part, "")
         div.id = "part-" + part
         div.dataset.val = part
         div.onclick = function() { selectPartEv(part) }
@@ -952,7 +953,7 @@ function reloadTasks() {
         for (let t of tasks) {
             let task = t.Name
             let lastver = t.Versions[t.Versions.length - 1]
-            let div = newBoxItem(prog + " - " + task)
+            let div = newBoxItem(prog + " - " + task, "")
             div.id = "task-" + task
             div.dataset.val = task
             div.dataset.dir = t.Dir
@@ -962,7 +963,7 @@ function reloadTasks() {
             div.insertBefore(toggle, div.firstChild)
             box.append(div)
             for (let ver of t.Versions.reverse()) {
-                let div = newBoxItem(ver)
+                let div = newBoxItem("", ver)
                 div.classList.add("task-" + task + "-versions")
                 div.id = "task-" + task + "-" + ver
                 div.dataset.val = task + "-" + ver
