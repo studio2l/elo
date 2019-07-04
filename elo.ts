@@ -441,7 +441,7 @@ function loadSelection() {
 // saveSelection는 현재 선택된 항목들을 파일로 저장한다.
 function saveSelection() {
     selectionChanged()
-    let data = JSON.stringify(selection, null, 2)
+    let data = JSON.stringify(selection, null, 1)
     let fname = configDir() + "/selection.json"
     fs.writeFileSync(fname, data)
 }
