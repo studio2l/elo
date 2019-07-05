@@ -368,10 +368,11 @@ class PartBranch implements Branch {
             }
             f = f.substring(prefix.length, f.length)
             let ws = f.split("_")
-            if (ws.length != 2) {
+            if (ws.length == 1) {
                 continue
             }
-            let [task, version] = ws
+            let version = ws.pop()
+            let task = ws.join("_")
             if (!version.startsWith("v") || !parseInt(version.substring(1), 10)) {
                 continue
             }
