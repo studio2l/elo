@@ -350,7 +350,7 @@ function openModal(kind) {
         } else if (kind == "task") {
             let menuInput = <HTMLInputElement>document.getElementById("modal-menu-input")
             let prog = menuInput.value
-            createTask(currentShow(), ctg, currentGroup(), currentUnit(), currentPart(), prog, name, "v001")
+            createTask(currentShow(), ctg, currentGroup(), currentUnit(), currentPart(), prog + "-" + name + "-v001")
         }
     }
     let applyEv = uiEvent(function() {
@@ -472,14 +472,11 @@ function selectionChanged() {
         return
     }
     let partSel = unitSel.Select(part)
-    let task = currentTask()
-    if (!task) {
+    let vid = currentTask()
+    if (!vid) {
         return
     }
-    let taskSel = partSel.Select(task)
-    let ver = currentVersion()
-    // 버전은 빈 문자열일 수도 있다.
-    taskSel.Select(ver)
+    partSel.Select(vid)
 }
 
 // createShow는 하나의 쇼를 생성한다.
@@ -511,10 +508,11 @@ function createPart(show, ctg, grp, unit, part) {
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
-function createTask(show, ctg, grp, unit, part, prog, task, ver) {
+function createTask(show, ctg, grp, unit, part, vid) {
+    let [prog, task, ver] = vid.split("-")
     site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).CreateTask(prog, task, ver)
     reloadTasks()
-    selectTask(task, "")
+    selectTask(vid)
 }
 
 // addCategoryMenuItems는 사용가능한 카테고리들을 내 태스크 메뉴에 추가한다.
@@ -610,17 +608,16 @@ function restorePartSelection(show, ctg, grp, unit) {
 // restoreTaskSelection은 해당 파트에서 마지막으로 선택되었던 (버전 포함) 태스크로 선택을 되돌린다.
 function restoreTaskSelection(show, ctg, grp, unit, part) {
     let partSel = selection.Select(show).Select(ctg).Select(grp).Select(unit).Select(part)
-    let task = partSel.Selected()
-    if (!task) {
+    let vid = partSel.Selected()
+    if (!vid) {
         return
     }
-    let taskSel = partSel.Select(task)
-    let ver = taskSel.Selected()
-    // 버전은 빈 문자열일 수도 있다.
+    let [prog, task, ver] = vid.split("-")
     if (ver) {
-        toggleVersionVisibility(task)
+        let tid = prog + "-" + task
+        toggleVersionVisibility(tid)
     }
-    selectTask(task, ver)
+    selectTask(vid)
 }
 
 // selectGroupEv는 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
@@ -707,28 +704,24 @@ function selectPart(part) {
 }
 
 // selectTaskEv는 요소를 선택했을 때 그 선택을 표시한다.
-function selectTaskEv(task, ver) {
+function selectTaskEv(vid) {
     uiEvent(function() {
-        selectTask(task, ver)
+        selectTask(vid)
         saveSelection()
     })()
 }
 
 // selectTask는 요소를 선택했을 때 그 선택을 표시한다.
-function selectTask(task, ver) {
+function selectTask(vid) {
     clearNotify()
     let box = document.getElementById("task-box")
     let item = box.getElementsByClassName("selected")
     if (item.length != 0) {
         item[0].classList.remove("selected")
     }
-    let id = "task-" + task
-    if (ver) {
-        id += "-" + ver
-    }
-    let selected = document.getElementById(id)
+    let selected = document.getElementById("task-" + vid)
     if (!selected) {
-        throw Error("태스크 선택 실패: " + task + " 가 존재하지 않습니다: ")
+        throw Error("태스크 선택 실패: " + vid + " 가 존재하지 않습니다: ")
     }
     selected.classList.add("selected")
 }
@@ -754,33 +747,19 @@ function currentUnit(): string {
     return selectedItemValue("unit-box")
 }
 
-// currentPart는 현재 선택된 샷 태스크 이름을 반환한다.
+// currentPart는 현재 선택된 샷 파트 이름을 반환한다.
 function currentPart(): string {
     return selectedItemValue("part-box")
 }
 
-// currentTask는 현재 선택된 샷 엘리먼트 이름을 반환한다.
+// currentTask는 현재 선택된 샷 태스크의 버전 아이디를 반환한다.
 function currentTask(): string {
-    let val = selectedItemValue("task-box")
-    if (!val) {
+    let vid = selectedItemValue("task-box")
+    if (!vid) {
         return null
     }
-    // val은 "{task}" 또는 "{task}-{version}"이다.
-    return val.split("-")[0]
-}
-
-// currentVersion은 현재 선택된 샷 버전을 반환한다.
-function currentVersion(): string {
-    let val = selectedItemValue("task-box")
-    if (!val) {
-        return null
-    }
-    // val은 "{task}" 또는 "{task}-{version}"이다.
-    let vals = val.split("-")
-    if (vals.length == 1) {
-        return ""
-    }
-    return vals[1]
+    // vid는 "{prog}-{task}-{version}" 형식이다.
+    return vid
 }
 
 // selectedItemValue는 특정 'item-box' HTML 요소에서 선틱된 값을 반환한다.
@@ -954,22 +933,25 @@ function reloadTasks() {
             let task = t.Name
             let lastver = t.Versions[t.Versions.length - 1]
             let div = newBoxItem(prog + " - " + task, "")
-            div.id = "task-" + task
-            div.dataset.val = task
+            let tid = prog + "-" + task
+            let vid = tid + "-" // 빈 버전은 마지막 버전을 가리킨다
+            div.id = "task-" + vid
+            div.dataset.val = vid
             div.dataset.dir = t.Dir
-            div.onclick = function() { selectTaskEv(task, "") }
-            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, prog, task, "") }
-            let toggle = newVersionToggle(task)
+            div.onclick = function() { selectTaskEv(vid) }
+            div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, vid) }
+            let toggle = newVersionToggle(tid)
             div.insertBefore(toggle, div.firstChild)
             box.append(div)
             for (let ver of t.Versions.reverse()) {
                 let div = newBoxItem("", ver)
-                div.classList.add("task-" + task + "-versions")
-                div.id = "task-" + task + "-" + ver
-                div.dataset.val = task + "-" + ver
+                div.classList.add("task-" + tid + "-versions")
+                let vid = tid + "-" + ver // vid도 tid이다
+                div.id = "task-" + vid
+                div.dataset.val = vid
                 div.dataset.dir = t.Dir
-                div.onclick = function() { selectTaskEv(task, ver) }
-                div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, prog, task, ver) }
+                div.onclick = function() { selectTaskEv(vid) }
+                div.ondblclick = function() { openTaskEv(show, ctg, grp, unit, part, vid) }
                 div.style.display = "none"
                 box.append(div)
             }
@@ -978,14 +960,14 @@ function reloadTasks() {
 }
 
 // newVersionToggle은 해당 태스크의 버전을 열고 닫을 수 있는 토글을 생성한다.
-function newVersionToggle(task): HTMLElement {
+function newVersionToggle(tid): HTMLElement {
     let toggle = document.createElement("div")
     toggle.classList.add("toggle")
     toggle.textContent = "▼"
     toggle.dataset.hideVersions = "t"
     toggle.onclick = function(ev) {
         ev.stopPropagation()
-        toggleVersionVisibility(task)
+        toggleVersionVisibility(tid)
     }
     toggle.ondblclick = function(ev) {
         ev.stopPropagation()
@@ -994,8 +976,8 @@ function newVersionToggle(task): HTMLElement {
 }
 
 // toggleVersionVisibility는 특정 요소의 버전을 보이거나 숨긴다.
-function toggleVersionVisibility(task) {
-    let div = document.getElementById("task-" + task)
+function toggleVersionVisibility(tid) {
+    let div = document.getElementById("task-" + tid + "-")
     let toggle = <HTMLElement>div.getElementsByClassName("toggle")[0]
     if (toggle.dataset.hideVersions == "t") {
         toggle.dataset.hideVersions = "f"
@@ -1007,7 +989,7 @@ function toggleVersionVisibility(task) {
     } else {
         toggle.textContent = "▲"
     }
-    let vers = Array.from(document.getElementsByClassName("task-" + task + "-versions"))
+    let vers = Array.from(document.getElementsByClassName("task-" + tid + "-versions"))
     for (let i in vers) {
         let v = <HTMLElement>vers[i]
         if (toggle.dataset.hideVersions == "t") {
@@ -1019,13 +1001,14 @@ function toggleVersionVisibility(task) {
 }
 
 // openTaskEv는 해당 요소의 한 버전을 연다.
-function openTaskEv(show, ctg, grp, unit, part, prog, task, ver) {
+function openTaskEv(show, ctg, grp, unit, part, vid) {
     let handleError = function(err) {
         if (err) {
             console.log(err)
             notify(err.message)
         }
     }
+    let [prog, task, ver] = vid.split("-")
     uiEvent(function() {
         site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).OpenTask(prog, task, ver, handleError)
     })()
