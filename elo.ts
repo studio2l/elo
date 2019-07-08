@@ -42,6 +42,12 @@ function init() {
     })()
 }
 
+window.onkeydown = function(ev) {
+    if (ev.key == "F5") {
+        remote.getCurrentWindow().reload()
+    }
+}
+
 window.addEventListener("contextmenu", function(ev) {
     ev.preventDefault()
     function parentById(ev, id) {
