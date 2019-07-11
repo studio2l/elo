@@ -55,28 +55,31 @@
                 "model": {
                     "Label": "모델링",
                     "Subdirs": [
-                        { "Name": "", "Perm": "2775" }
+                        { "Name": "", "Perm": "2775" },
+                        { "Name": "scenes", "Perm": "2775" }
                     ],
                     "ProgramDir": {
-                        "maya": ""
+                        "maya": "scenes"
                     }
                 },
                 "look": {
                     "Label": "룩 디벨롭먼트",
                     "Subdirs": [
-                        { "Name": "", "Perm": "2775" }
+                        { "Name": "", "Perm": "2775" },
+                        { "Name": "scenes", "Perm": "2775" }
                     ],
                     "ProgramDir": {
-                        "maya": ""
+                        "maya": "scenes"
                     }
                 },
                 "rig": {
                     "Label": "리깅",
                     "Subdirs": [
-                        { "Name": "", "Perm": "2775" }
+                        { "Name": "", "Perm": "2775" },
+                        { "Name": "scenes", "Perm": "2775" }
                     ],
                     "ProgramDir": {
-                        "maya": ""
+                        "maya": "scenes"
                     }
                 }
             }
@@ -109,19 +112,21 @@
                 "ani": {
                     "Label": "애니메이션",
                     "Subdirs": [
-                        { "Name": "", "Perm": "2775" }
+                        { "Name": "", "Perm": "2775" },
+                        { "Name": "scenes", "Perm": "2775" }
                     ],
                     "ProgramDir": {
-                        "maya": ""
+                        "maya": "scenes"
                     }
                 },
                 "lit": {
                     "Label": "라이팅",
                     "Subdirs": [
-                        { "Name": "", "Perm": "2775" }
+                        { "Name": "", "Perm": "2775" },
+                        { "Name": "scenes", "Perm": "2775" }
                     ],
                     "ProgramDir": {
-                        "maya": ""
+                        "maya": "scenes"
                     }
                 },
                 "fx": {
