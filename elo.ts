@@ -1257,10 +1257,12 @@ function openDir(dir) {
     throw Error("파일 탐색기를 찾지 못했습니다.")
 }
 
+// Namer는 Name 멤버를 가진 클래스이다.
 interface Namer {
     Name: string
 }
 
+// names는 Namer 리스트를 받아 그 이름들을 문자열 리스트로 반환한다.
 function names(vals: Namer[]): string[] {
     let ns: string[] = []
     for (let v of vals) {
