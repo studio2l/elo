@@ -59,17 +59,20 @@ function removeAll(pth: string) {
 	}
 
 	function rm(pth: string) {
-		if (verbose) {
-			console.log("remove: " + pth)
-		}
 		let isDir = fs.lstatSync(pth).isDirectory()
 		if (isDir) {
 			let ents = fs.readdirSync(pth)
 			for (let e of ents) {
 				rm(path.join(pth, e))
 			}
+			if (verbose) {
+				console.log("remove: " + pth)
+			}
 			fs.rmdirSync(pth)
 		} else {
+			if (verbose) {
+				console.log("remove: " + pth)
+			}
 			fs.unlinkSync(pth)
 		}
 	}
