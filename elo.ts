@@ -43,7 +43,7 @@ function init() {
 }
 
 window.onkeydown = function(ev) {
-    if (ev.key == "F5") {
+    if (ev.key == "F5" || (ev.ctrlKey && ev.key == "r")) {
         remote.getCurrentWindow().reload()
     }
 }
