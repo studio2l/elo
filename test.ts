@@ -79,45 +79,14 @@ function removeAll(pth: string) {
 	rm(pth)
 }
 
-let testSite = {
-	"test": {
-		"shot": {
-			"cg": {
-				"0010": {
-					"fx": [
-						["houdini", "main", "v001"],
-					]
-				}
-			}
-		}
-	}
-}
-
 function Test() {
 	site.Init()
-	for (let show in testSite) {
-		site.CreateShow(show)
-		let categories = testSite[show]
-		for (let ctg in categories) {
-			let groups = categories[ctg]
-			for (let grp in groups) {
-				site.Show(show).Category(ctg).CreateGroup(grp)
-				let units = groups[grp]
-				for (let unit in units) {
-					site.Show(show).Category(ctg).Group(grp).CreateUnit(unit)
-					let parts = units[unit]
-					for (let part in parts) {
-						site.Show(show).Category(ctg).Group(grp).Unit(unit).CreatePart(part)
-						let tasks = units[unit]
-						for (let task of tasks) {
-							let { prog, name, ver } = task
-							site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).CreateTask(prog, name, ver)
-						}
-					}
-				}
-			}
-		}
-	}
+	let show = site.CreateShow("test")
+	let ctg = site.Show("test").Category("shot")
+	let grp  = site.Show("test").Category("shot").CreateGroup("cg")
+	let shot  = site.Show("test").Category("shot").Group("cg").CreateUnit("0010")
+	let part  = site.Show("test").Category("shot").Group("cg").Unit("0010").CreatePart("fx")
+	let task  = site.Show("test").Category("shot").Group("cg").Unit("0010").Part("fx").CreateTask("houdini", "main", "v001")
 }
 
 RunTest()
