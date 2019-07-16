@@ -42,26 +42,28 @@ function init() {
     })()
 }
 
-window.onkeydown = function(ev) {
+window.onkeydown = function(ev: KeyboardEvent) {
     if (ev.key == "F5" || (ev.ctrlKey && ev.key == "r")) {
         remote.getCurrentWindow().reload()
     }
 }
 
-window.addEventListener("contextmenu", function(ev) {
+window.addEventListener("contextmenu", function(ev: MouseEvent) {
     ev.preventDefault()
-    function parentById(ev, id) {
-        for (let p of ev.path) {
-            if (p.id == id) {
-                return p
+    function parentById(ev: MouseEvent, id: string): HTMLElement {
+        for (let p of ev.composedPath()) {
+            let el = <HTMLElement>p
+            if (el.id == id) {
+                return el
             }
         }
         return null
     }
-    function parentByClassName(ev, cls) {
-        for (let p of ev.path) {
-            if (p.classList.contains(cls)) {
-                return p
+    function parentByClassName(ev: MouseEvent, cls: string): HTMLElement {
+        for (let p of ev.composedPath()) {
+            let el = <HTMLElement>p
+            if (el.classList.contains(cls)) {
+                return el
             }
         }
         return null
@@ -229,7 +231,7 @@ function uiEvent(f: () => void): () => void {
 
 // ensureElementExist는 해당 HTML 엘리먼트가 존재하는지 검사한다.
 // 존재하지 않는다면 에러를 낸다.
-function ensureElementExist(id) {
+function ensureElementExist(id: string) {
     let el = document.getElementById(id)
     if (!el) {
         throw Error(id + "가 존재하지 않습니다.")
@@ -283,7 +285,7 @@ export function openModalEv(kind: string) {
 }
 
 // openModal은 생성할 항목의 종류에 맞는 모달 창을 연다.
-function openModal(kind) {
+function openModal(kind: string) {
     let m = document.getElementById("modal")
     m.style.display = "block"
     let input = <HTMLInputElement>document.getElementById("modal-input")
@@ -363,8 +365,8 @@ function openModal(kind) {
         createItem()
         saveSelection()
     })
-    input.onkeydown = function(ev) { if (ev.key == "Enter") { applyEv() } }
-    menuInput.onkeydown = function(ev) { if (ev.key == "Enter") { applyEv() } }
+    input.onkeydown = function(ev: KeyboardEvent) { if (ev.key == "Enter") { applyEv() } }
+    menuInput.onkeydown = function(ev: KeyboardEvent) { if (ev.key == "Enter") { applyEv() } }
     if (!menuInput.hidden) {
         menuInput.focus()
     } else {
@@ -486,35 +488,35 @@ function selectionChanged() {
 }
 
 // createShow는 하나의 쇼를 생성한다.
-function createShow(show) {
+function createShow(show: string) {
     site.CreateShow(show)
     reloadShows()
     selectShow(show)
 }
 
 // createGroup은 하나의 그룹을 생성한다.
-function createGroup(show, ctg, grp) {
+function createGroup(show: string, ctg: string, grp: string) {
     site.Show(show).Category(ctg).CreateGroup(grp)
     reloadGroups()
     selectGroup(grp)
 }
 
 // createUnit은 하나의 샷을 생성한다.
-function createUnit(show, ctg, grp, unit) {
+function createUnit(show: string, ctg: string, grp: string, unit: string) {
     site.Show(show).Category(ctg).Group(grp).CreateUnit(unit)
     reloadUnits()
     selectUnit(unit)
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
-function createPart(show, ctg, grp, unit, part) {
+function createPart(show: string, ctg: string, grp: string, unit: string, part: string) {
     site.Show(show).Category(ctg).Group(grp).Unit(unit).CreatePart(part)
     reloadParts()
     selectPart(part)
 }
 
 // createTask는 하나의 샷 요소를 생성한다.
-function createTask(show, ctg, grp, unit, part, vid) {
+function createTask(show: string, ctg: string, grp: string, unit: string, part: string, vid: string) {
     let [prog, task, ver] = vid.split("-")
     site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).CreateTask(prog, task, ver)
     reloadTasks()
@@ -535,7 +537,7 @@ function addCategoryMenuItems() {
 }
 
 // selectShowEv는 사용자가 쇼를 선택했을 때 그에 맞는 샷 리스트를 보인다.
-function selectShowEv(show) {
+function selectShowEv(show: string) {
     uiEvent(function() {
         selectShow(show)
         restoreGroupSelection(show)
@@ -544,7 +546,7 @@ function selectShowEv(show) {
 }
 
 // selectShow는 사용자가 쇼를 선택했을 때 그에 맞는 샷 리스트를 보인다.
-function selectShow(show) {
+function selectShow(show: string) {
     clearNotify()
     clearGroups()
     clearUnits()
@@ -576,7 +578,7 @@ function restoreShowSelection() {
 
 // restoreGroupSelection은 해당 쇼에서 마지막으로 선택되었던 그룹으로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
-function restoreGroupSelection(show) {
+function restoreGroupSelection(show: string) {
     let ctg = currentCategory()
     let ctgSel = selection.Select(show).Select(ctg)
     let grp = ctgSel.Selected()
@@ -589,7 +591,7 @@ function restoreGroupSelection(show) {
 
 // restoreUnitSelection은 해당 그룹에서 마지막으로 선택되었던 유닛으로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
-function restoreUnitSelection(show, ctg, grp) {
+function restoreUnitSelection(show: string, ctg: string, grp: string) {
     let grpSel = selection.Select(show).Select(ctg).Select(grp)
     let unit = grpSel.Selected()
     if (!unit) {
@@ -601,7 +603,7 @@ function restoreUnitSelection(show, ctg, grp) {
 
 // restorePartSelection은 해당 유닛에서 마지막으로 선택되었던 파트로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
-function restorePartSelection(show, ctg, grp, unit) {
+function restorePartSelection(show: string, ctg: string, grp: string, unit: string) {
     let unitSel = selection.Select(show).Select(ctg).Select(grp).Select(unit)
     let part = unitSel.Selected()
     if (!part) {
@@ -612,7 +614,7 @@ function restorePartSelection(show, ctg, grp, unit) {
 }
 
 // restoreTaskSelection은 해당 파트에서 마지막으로 선택되었던 (버전 포함) 태스크로 선택을 되돌린다.
-function restoreTaskSelection(show, ctg, grp, unit, part) {
+function restoreTaskSelection(show: string, ctg: string, grp: string, unit: string, part: string) {
     let partSel = selection.Select(show).Select(ctg).Select(grp).Select(unit).Select(part)
     let vid = partSel.Selected()
     if (!vid) {
@@ -627,7 +629,7 @@ function restoreTaskSelection(show, ctg, grp, unit, part) {
 }
 
 // selectGroupEv는 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
-function selectGroupEv(grp) {
+function selectGroupEv(grp: string) {
     uiEvent(function() {
         selectGroup(grp)
         saveSelection()
@@ -636,7 +638,7 @@ function selectGroupEv(grp) {
 }
 
 // selectGroup은 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
-function selectGroup(grp) {
+function selectGroup(grp: string) {
     clearNotify()
     clearUnits()
     clearParts()
@@ -656,7 +658,7 @@ function selectGroup(grp) {
 
 // selectUnitEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
 // 추가로 내 태스크가 설정되어 있다면 그 태스크를 자동으로 선택해 준다.
-function selectUnitEv(unit) {
+function selectUnitEv(unit: string) {
     uiEvent(function() {
         selectUnit(unit)
         saveSelection()
@@ -666,7 +668,7 @@ function selectUnitEv(unit) {
 
 // selectUnit은 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
 // 추가로 내 태스크로 설정된 값이 있다면 그 태스크를 자동으로 선택해 준다.
-function selectUnit(unit) {
+function selectUnit(unit: string) {
     clearNotify()
     clearParts()
     clearTasks()
@@ -684,7 +686,7 @@ function selectUnit(unit) {
 }
 
 // selectPartEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
-function selectPartEv(part) {
+function selectPartEv(part: string) {
     uiEvent(function() {
         selectPart(part)
         saveSelection()
@@ -693,7 +695,7 @@ function selectPartEv(part) {
 }
 
 // selectPart는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
-function selectPart(part) {
+function selectPart(part: string) {
     clearNotify()
     clearTasks()
     let box = document.getElementById("part-box")
@@ -710,7 +712,7 @@ function selectPart(part) {
 }
 
 // selectTaskEv는 요소를 선택했을 때 그 선택을 표시한다.
-function selectTaskEv(vid) {
+function selectTaskEv(vid: string) {
     uiEvent(function() {
         selectTask(vid)
         saveSelection()
@@ -718,7 +720,7 @@ function selectTaskEv(vid) {
 }
 
 // selectTask는 요소를 선택했을 때 그 선택을 표시한다.
-function selectTask(vid) {
+function selectTask(vid: string) {
     clearNotify()
     let box = document.getElementById("task-box")
     let item = box.getElementsByClassName("selected")
@@ -966,23 +968,23 @@ function reloadTasks() {
 }
 
 // newVersionToggle은 해당 태스크의 버전을 열고 닫을 수 있는 토글을 생성한다.
-function newVersionToggle(tid): HTMLElement {
+function newVersionToggle(tid: string): HTMLElement {
     let toggle = document.createElement("div")
     toggle.classList.add("toggle")
     toggle.textContent = "▼"
     toggle.dataset.hideVersions = "t"
-    toggle.onclick = function(ev) {
+    toggle.onclick = function(ev: MouseEvent) {
         ev.stopPropagation()
         toggleVersionVisibility(tid)
     }
-    toggle.ondblclick = function(ev) {
+    toggle.ondblclick = function(ev: MouseEvent) {
         ev.stopPropagation()
     }
     return toggle
 }
 
 // toggleVersionVisibility는 특정 요소의 버전을 보이거나 숨긴다.
-function toggleVersionVisibility(tid) {
+function toggleVersionVisibility(tid: string) {
     let div = document.getElementById("task-" + tid + "-")
     let toggle = <HTMLElement>div.getElementsByClassName("toggle")[0]
     if (toggle.dataset.hideVersions == "t") {
@@ -1007,8 +1009,8 @@ function toggleVersionVisibility(tid) {
 }
 
 // openTaskEv는 해당 요소의 한 버전을 연다.
-function openTaskEv(show, ctg, grp, unit, part, vid) {
-    let handleError = function(err) {
+function openTaskEv(show: string, ctg: string, grp: string, unit: string, part: string, vid: string) {
+    let handleError = function(err: Error) {
         if (err) {
             console.log(err)
             notify(err.message)
@@ -1021,7 +1023,7 @@ function openTaskEv(show, ctg, grp, unit, part, vid) {
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
-function clearBox(id) {
+function clearBox(id: string) {
     let box = document.getElementById(id)
     if (!box) {
         throw Error(id + "가 없습니다.")
@@ -1089,7 +1091,7 @@ function loadPinnedShow() {
 
 // pinShow는 특정 쇼를 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function pinShow(show) {
+function pinShow(show: string) {
     pinnedShow[show] = true
     let fname = configDir() + "/pinned_show.json"
     let data = JSON.stringify(pinnedShow)
@@ -1098,14 +1100,14 @@ function pinShow(show) {
 
 // unpinShow는 특정 쇼의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function unpinShow(show) {
+function unpinShow(show: string) {
     delete pinnedShow[show]
     let fname = configDir() + "/pinned_show.json"
     let data = JSON.stringify(pinnedShow)
     fs.writeFileSync(fname, data)
 }
 
-function isPinnedShow(show) {
+function isPinnedShow(show: string) {
     if (pinnedShow[show] == true) {
         return true
     }
@@ -1125,7 +1127,7 @@ function loadPinnedGroup() {
 
 // pinGroup은 특정 샷을 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function pinGroup(show, ctg, grp) {
+function pinGroup(show: string, ctg: string, grp: string) {
     if (!pinnedGroup[show]) {
         pinnedGroup[show] = {}
     }
@@ -1140,7 +1142,7 @@ function pinGroup(show, ctg, grp) {
 
 // unpinGroup은 특정 샷의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function unpinGroup(show, ctg, grp) {
+function unpinGroup(show: string, ctg: string, grp: string) {
     delete pinnedGroup[show][ctg][grp]
     if (Object.keys(pinnedGroup[show][ctg]).length == 0) {
         delete pinnedGroup[show][ctg]
@@ -1153,7 +1155,7 @@ function unpinGroup(show, ctg, grp) {
     fs.writeFileSync(fname, data)
 }
 
-function isPinnedGroup(show, ctg, grp) {
+function isPinnedGroup(show: string, ctg: string, grp: string) {
     try {
         if (pinnedGroup[show][ctg][grp]) {
             return true
@@ -1177,7 +1179,7 @@ function loadPinnedUnit() {
 
 // pinUnit은 특정 샷을 상단에 고정한다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function pinUnit(show, ctg, grp, unit) {
+function pinUnit(show: string, ctg: string, grp: string, unit: string) {
     if (!pinnedUnit[show]) {
         pinnedUnit[show] = {}
     }
@@ -1195,7 +1197,7 @@ function pinUnit(show, ctg, grp, unit) {
 
 // unpinUnit은 특정 샷의 상단 고정을 푼다.
 // 변경된 내용은 설정 디렉토리에 저장되어 다시 프로그램을 열 때 반영된다.
-function unpinUnit(show, ctg, grp, unit) {
+function unpinUnit(show: string, ctg: string, grp: string, unit: string) {
     delete pinnedUnit[show][ctg][grp][unit]
     if (Object.keys(pinnedUnit[show][ctg][grp]).length == 0) {
         delete pinnedUnit[show][ctg][grp]
@@ -1211,7 +1213,7 @@ function unpinUnit(show, ctg, grp, unit) {
     fs.writeFileSync(fname, data)
 }
 
-function isPinnedUnit(show, ctg, grp, unit) {
+function isPinnedUnit(show: string, ctg: string, grp: string, unit: string) {
     try {
         if (pinnedUnit[show][ctg][grp][unit]) {
             return true
@@ -1224,7 +1226,7 @@ function isPinnedUnit(show, ctg, grp, unit) {
 
 // openDir은 받은 디렉토리 경로를 연다.
 // 만일 해당 디렉토리가 존재하지 않는다면 에러를 낸다.
-function openDir(dir) {
+function openDir(dir: string) {
     if (!fs.existsSync(dir)) {
         throw Error(dir + "디렉토리가 존재하지 않습니다.")
     }
@@ -1244,7 +1246,7 @@ function openDir(dir) {
                 // 해당 명령어 없음
                 continue
             }
-            let handleError = function(err) {
+            let handleError = function(err: Error) {
                 if (err) {
                     console.log(err)
                     notify(err.message)
