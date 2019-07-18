@@ -49,7 +49,6 @@ $ yarn build
 
 elo는 해당 사이트의 구조를 $SITE_ROOT/site.json 에서 불러오고
 $SITE_ROOT/runner안의 셸 파일을 이용해 프로그램을 엽니다.
-
 샘플 파일들이 레포지터리의 example 디렉토리 안에 존재하니
 $SITE_ROOT에 복사하고, 각 스튜디오에 맞는 설정으로 수정해주세요.
 
