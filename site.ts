@@ -15,19 +15,19 @@ let siteInfo: SiteInfo
 
 // Init은 이 패키지를 사용하기 위한 글로벌 변수 초기화 및 유효성 검사를 수행한다.
 export function Init() {
-    siteRoot = process.env.SITE_ROOT
-    if (!siteRoot) {
+    if (!process.env.SITE_ROOT) {
         throw Error("SITE_ROOT 환경변수가 설정되어 있지 않습니다.")
     }
-    siteRoot = path.normalize(siteRoot)
-    showRoot = path.join(siteRoot, "show")
-    if (process.env.SHOW_ROOT) {
-        showRoot = process.env.SHOW_ROOT
+    siteRoot = path.normalize(process.env.SITE_ROOT)
+
+    if (!process.env.SHOW_ROOT) {
+        throw Error("SHOW_ROOT 환경변수가 설정되어 있지 않습니다.")
     }
-    showRoot = path.normalize(showRoot)
+    showRoot = path.normalize(process.env.SHOW_ROOT)
+
     let siteFile = path.join(siteRoot, "site.json")
     if (!fs.existsSync(siteFile)) {
-        throw Error("$SITE_ROOT/site.json 파일이 없습니다. example/site.json 파일을 복사해서 사용하셔도 됩니다.")
+        throw Error("$SITE_ROOT에 site.json 파일이 없습니다.")
     }
     let data = fs.readFileSync(siteFile)
     siteInfo = JSON.parse(data.toString("utf8"))

@@ -25,8 +25,12 @@ $ npm install
 
 ## 실행
 
+실행을 위해서는 SITE_ROOT 와 SHOW_ROOT 환경변수가 필요합니다.
+자세한 정보는 아래 설정 부분에 있습니다.
+
 ```bash
-$ npm start
+$ mkdir $HOME/show
+$ SITE_ROOT=example SHOW_ROOT=$HOME/show npm start
 ```
 
 ## 배포
@@ -39,25 +43,16 @@ $ yarn build
 
 ## 설정
 
-### $SITE_ROOT
+### 환경변수
 
-elo를 사용하기 위해서는 `SITE_ROOT` 환경변수를 정의해야 합니다.
-
-기본적으로는 $SITE_ROOT/show 아래에 쇼 디렉토리가 생성 됩니다. 만일 이 장소를
-사이트 루트와 분리하고 싶다면 아래의 SHOW_ROOT 환경변수 섹션를 참고하세요.
+#### SITE_ROOT
 
 elo는 해당 사이트의 구조를 $SITE_ROOT/site.json 에서 불러오고
 $SITE_ROOT/runner안의 셸 파일을 이용해 프로그램을 엽니다.
 
-해당 파일들은 example 디렉토리 안에 존재하니 $SITE_ROOT에 복사해서 넣어주세요.
-리눅스에서는 다음처럼 하시면 됩니다.
+샘플 파일들이 레포지터리의 example 디렉토리 안에 존재하니
+$SITE_ROOT에 복사하고, 각 스튜디오에 맞는 설정으로 수정해주세요.
 
-```
-cp -r example/* $SITE_ROOT
-```
+#### SHOW_ROOT
 
-### $SHOW_ROOT
-
-사이트 루트와 쇼의 루트를 분리하고 싶을 때`SHOW_ROOT` 환경변수를 사용합니다.
-
-예를 들어 개발용 사이트 루트와 쇼 루트를 분리할 때 사용할 수 있습니다.
+$SHOW_ROOT는 각 쇼의 데이터를 저장하고 불러오는 장소입니다.
