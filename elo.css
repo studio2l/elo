@@ -11,6 +11,7 @@ body {
 	background-color: #202124;
 	color: white;
 	font-family: 'Open Sans', sans-serif;
+	user-select: none;
 }
 
 #log {
@@ -30,11 +31,18 @@ body {
 	border:solid 1px #AAAAAA;
 	margin: 1rem;
 	overflow: auto;
+	user-select: text;
 }
 
 #log-close {
 	height:2rem;
 	margin:0rem 1rem 1rem 1rem;
+}
+
+#notifier {
+	flex:1;
+	overflow:hidden;
+	user-select: text;
 }
 
 #modal {
