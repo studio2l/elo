@@ -81,12 +81,12 @@ function removeAll(pth: string) {
 
 function Test() {
 	site.Init()
-	let show = site.CreateShow("test")
-	let ctg = site.Show("test").Category("shot")
-	let grp  = site.Show("test").Category("shot").CreateGroup("cg")
-	let shot  = site.Show("test").Category("shot").Group("cg").CreateUnit("0010")
-	let part  = site.Show("test").Category("shot").Group("cg").Unit("0010").CreatePart("fx")
-	let task  = site.Show("test").Category("shot").Group("cg").Unit("0010").Part("fx").CreateTask("houdini", "main", "v001")
+	site.CreateShow("test")
+	site.Show("test").Category("shot")
+	site.Show("test").Category("shot").CreateGroup("cg")
+	site.Show("test").Category("shot").Group("cg").CreateUnit("0010")
+	site.Show("test").Category("shot").Group("cg").Unit("0010").CreatePart("fx")
+	site.Show("test").Category("shot").Group("cg").Unit("0010").Part("fx").CreateTask("houdini", "main", "v001")
 }
 
 RunTest()
