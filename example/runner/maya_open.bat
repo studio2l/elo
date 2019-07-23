@@ -1,0 +1,4 @@
+set SITE_MAYA_PATH=%SITE_ROOT%/global/maya
+set MAYA_PATH=%MAYA_PATH%;%SITE_MAYA_PATH%
+
+maya %1
