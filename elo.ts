@@ -503,9 +503,69 @@ function createGroup(show: string, ctg: string, grp: string) {
 
 // createUnit은 하나의 샷을 생성한다.
 function createUnit(show: string, ctg: string, grp: string, unit: string) {
-    site.Show(show).Category(ctg).Group(grp).CreateUnit(unit)
+    let units = parseUnitPattern(unit)
+    for (let u of units) {
+        site.Show(show).Category(ctg).Group(grp).CreateUnit(u)
+    }
     reloadUnits()
-    selectUnit(unit)
+    if (units.length == 1) {
+        selectUnit(unit)
+    }
+}
+
+// parseUnitPattern 은 유닛 문자열이 여러 유닛을 의미하는 패턴인지 검사하고 만일 그렇다면 그 유닛 리스트를 반환한다.
+// 그 패턴은 "min-max,inc" 이며, min과 max는 패딩을 가진 수, inc는 숫자여야한다. min과 max는 같은 길이를 가지고 있어야 한다.
+// 예를 들어 unit이 "0010-0030,10" 이라는 문자열이라면 반환되는 값은 ["0010", "0020", "0030"] 이다.
+// 만일 받아들인 값이 숫자가 아니거나 "0010" 같은 일반적인 패딩을 가진 수라면 ["0010"] 처럼 그 값만 리스트에 담겨 반환된다.
+function parseUnitPattern(unit: string): string[] {
+    let m1 = unit.match(/,/g)
+    let m2 = unit.match(/-/g)
+    if (!m1 && !m2) {
+        // 패턴 문자열이 아닌 유닛 이름이다.
+        return [unit]
+    }
+    if (m1 && m1.length != 1) {
+        throw Error("invalid unit name pattern: two or more comma(,)")
+    }
+    if (m2 && m2.length != 1) {
+        throw Error("invalid unit name pattern: two or more dash(-)")
+    }
+    let [rng, inc] = unit.split(",")
+    let [min, max] = rng.split("-")
+    if (!isDigits(min)) {
+        throw Error("invalid unit name pattern: min value is not a number")
+    }
+    if (!isDigits(max)) {
+        throw Error("invalid unit name pattern: max value is not a number")
+    }
+    let start = parseInt(min)
+    let end = parseInt(max)
+    let n = parseInt(inc)
+    if (start > end) {
+        throw Error("invalid unit name pattern: min value is bigger than max value")
+    }
+    if (min.length != max.length) {
+        throw Error("invalid unit name pattern: min and max's paddings are different")
+    }
+    let pad = min.length
+
+    let units = []
+    for (let i = start; i <= end; i += n) {
+        units.push(String(i).padStart(pad, "0"))
+    }
+    return units
+}
+
+// isDigits는 받아들인 문자열이 숫자로만 이루어져 있는지 확인한다.
+function isDigits(str: string): boolean {
+    let valids = "1234567890"
+    for (let i = 0; i < str.length; i++) {
+        let s = str[i]
+        if (!valids.includes(s)) {
+            return false
+        }
+    }
+    return true
 }
 
 // createPart는 하나의 샷 태스크를 생성한다.
