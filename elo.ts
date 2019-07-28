@@ -11,6 +11,9 @@ let pinnedShow = {}
 let pinnedGroup = {}
 let pinnedUnit = {}
 
+// currentNotificationID는 notify가 호출될 때마다 1씩 증가한다.
+let currentNotificationID = 0
+
 let selection = seltree.New()
 
 // init은 elo를 초기화 한다.
@@ -390,7 +393,7 @@ function closeModal() {
 }
 
 // notify는 아래쪽 표시줄에 text를 표시한다.
-function notify(text: string) {
+function notify(text: string): number {
     let logContent = document.getElementById("log-content")
     let pre = document.createElement("pre")
     pre.style.color = "black"
@@ -402,12 +405,15 @@ function notify(text: string) {
     let line = lines[lines.length - 1]
     let notifier = document.getElementById("notifier")
     notifier.innerText = line
+
+    // 현재 알림 메시지 아이디를 하나 증가시킨 후 반환한다.
+    currentNotificationID += 1
+    return currentNotificationID
 }
 
 // clearNotify는 아래쪽 표시줄에 기존에 표시된 내용을 지운다.
 function clearNotify() {
-    let notifier = document.getElementById("notifier")
-    notifier.innerText = ""
+    notify("")
 }
 
 // loadCategory는 설정 디렉토리에 저장된 내 파트 값을 불러온다.
@@ -1077,9 +1083,16 @@ function openTaskEv(show: string, ctg: string, grp: string, unit: string, part: 
         }
     }
     let [prog, task, ver] = vid.split("-")
+    let nid = notify(prog + " 씬을 열고 있습니다.. 조금 기다려 주세요.")
     uiEvent(function() {
         site.Show(show).Category(ctg).Group(grp).Unit(unit).Part(part).OpenTask(prog, task, ver, handleError)
     })()
+    setTimeout(function() {
+        // 5초 후에도 씬을 열고 있다는 메시지가 계속 떠 있다면 지운다.
+        if (nid == currentNotificationID) {
+            clearNotify()
+        }
+    }, 5000)
 }
 
 // clearBox는 'item-box' HTML 요소 안의 내용을 모두 지운다.
