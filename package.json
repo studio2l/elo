@@ -1,6 +1,6 @@
 {
   "name": "elo",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "2L's Scene Opener",
   "main": "main.js",
   "scripts": {
