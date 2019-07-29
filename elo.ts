@@ -871,12 +871,19 @@ function reloadShows() {
     let box = document.getElementById("show-box")
     box.innerText = ""
     let shows = names(site.Shows())
-    let byPin = function(a, b) {
-        if (isPinnedShow(a)) { return -1 }
-        if (isPinnedShow(b)) { return 1 }
-        return 0
+    let byPinAndName = function(a, b) {
+        let ap = isPinnedShow(a)
+        let bp = isPinnedShow(b)
+        if ((ap && bp) || (!ap && !bp)) {
+            return byName(a, b)
+        }
+        if (ap) {
+            return -1
+        } else {
+            return 1
+        }
     }
-    shows.sort(byPin)
+    shows.sort(byPinAndName)
     for (let show of shows) {
         let mark = ""
         if (isPinnedShow(show)) {
@@ -900,12 +907,19 @@ function reloadGroups() {
     let box = document.getElementById("group-box")
     box.innerText = ""
     let groups = names(site.Show(show).Category(ctg).Groups())
-    let byPin = function(a, b) {
-        if (isPinnedGroup(show, ctg, a)) { return -1 }
-        if (isPinnedGroup(show, ctg, b)) { return 1 }
-        return 0
+    let byPinAndName = function(a, b) {
+        let ap = isPinnedGroup(show, ctg, a)
+        let bp = isPinnedGroup(show, ctg, b)
+        if ((ap && bp) || (!ap && !bp)) {
+            return byName(a, b)
+        }
+        if (ap) {
+            return -1
+        } else {
+            return 1
+        }
     }
-    groups.sort(byPin)
+    groups.sort(byPinAndName)
     for (let grp of groups) {
         let mark = ""
         if (isPinnedGroup(show, ctg, grp)) {
@@ -933,12 +947,19 @@ function reloadUnits() {
     let box = document.getElementById("unit-box")
     box.innerText = ""
     let units = names(site.Show(show).Category(ctg).Group(grp).Units())
-    let byPin = function(a, b) {
-        if (isPinnedUnit(show, ctg, grp, a)) { return -1 }
-        if (isPinnedUnit(show, ctg, grp, b)) { return 1 }
-        return 0
+    let byPinAndName = function(a, b) {
+        let ap = isPinnedUnit(show, ctg, grp, a)
+        let bp = isPinnedUnit(show, ctg, grp, b)
+        if ((ap && bp) || (!ap && !bp)) {
+            return byName(a, b)
+        }
+        if (ap) {
+            return -1
+        } else {
+            return 1
+        }
     }
-    units.sort(byPin)
+    units.sort(byPinAndName)
     for (let unit of units) {
         let mark = ""
         if (isPinnedUnit(show, ctg, grp, unit)) {
@@ -1228,7 +1249,7 @@ function unpinGroup(show: string, ctg: string, grp: string) {
     fs.writeFileSync(fname, data)
 }
 
-function isPinnedGroup(show: string, ctg: string, grp: string) {
+function isPinnedGroup(show: string, ctg: string, grp: string): boolean {
     try {
         if (pinnedGroup[show][ctg][grp]) {
             return true
@@ -1295,6 +1316,16 @@ function isPinnedUnit(show: string, ctg: string, grp: string, unit: string) {
     } catch (err) {
         return false
     }
+}
+
+// byName은 sort에 사용하는 함수로 두 문자열을 비교해 왼쪽이 더 작으면 -1, 오른쪽이 작으면 1, 같으면 0을 반환한다.
+function byName(a: string, b: string): number {
+    if (a < b) {
+        return -1
+    } else if (a > b) {
+        return 1
+    }
+    return 0
 }
 
 // openDir은 받은 디렉토리 경로를 연다.
