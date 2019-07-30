@@ -1337,6 +1337,9 @@ function openDir(dir: string) {
     if (process.platform == "win32") {
         proc.execFile("explorer", [dir.replace(/\//g, "\\")])
         return
+    } else if (process.platform == "darwin") {
+        proc.execFile("open", [dir])
+        return
     } else {
         // 리눅스 - 배포판에 맞는 파일탐색기 명령을 찾는다.
         let maybeCmds = ["thunar", "nautilus"]
