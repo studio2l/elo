@@ -611,6 +611,7 @@ function addCategoryMenuItems() {
 function selectShowEv(show: string) {
     uiEvent(function() {
         selectShow(show)
+        reloadGroups()
         restoreGroupSelection(show)
         saveSelection()
     })()
@@ -640,6 +641,7 @@ function selectShow(show: string) {
 function selectGroupEv(grp: string) {
     uiEvent(function() {
         selectGroup(grp)
+        reloadUnits()
         restoreUnitSelection(currentShow(), currentCategory(), grp)
         saveSelection()
     })()
@@ -661,7 +663,6 @@ function selectGroup(grp: string) {
         throw Error("그룹 선택 실패: " + grp + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
-    reloadUnits()
 }
 
 // selectUnitEv는 사용자가 샷을 선택했을 때 그에 맞는 태스크 리스트를 보인다.
@@ -669,6 +670,7 @@ function selectGroup(grp: string) {
 function selectUnitEv(unit: string) {
     uiEvent(function() {
         selectUnit(unit)
+        reloadParts()
         restorePartSelection(currentShow(), currentCategory(), currentGroup(), unit)
         saveSelection()
     })()
@@ -690,13 +692,13 @@ function selectUnit(unit: string) {
         throw Error("유닛 선택 실패: " + unit + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
-    reloadParts()
 }
 
 // selectPartEv는 태스크를 선택했을 때 그 안의 요소 리스트를 보인다.
 function selectPartEv(part: string) {
     uiEvent(function() {
         selectPart(part)
+        reloadTasks()
         restoreTaskSelection(currentShow(), currentCategory(), currentGroup(), currentUnit(), part)
         saveSelection()
     })()
@@ -716,7 +718,6 @@ function selectPart(part: string) {
         throw Error("파트 선택 실패: " + part + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
-    reloadTasks()
 }
 
 // selectTaskEv는 요소를 선택했을 때 그 선택을 표시한다.
@@ -756,6 +757,7 @@ function restoreShowSelection() {
         log(err.message)
         return
     }
+    reloadGroups()
     restoreGroupSelection(show)
 }
 
@@ -775,6 +777,7 @@ function restoreGroupSelection(show: string) {
         log(err.message)
         return
     }
+    reloadUnits()
     restoreUnitSelection(show, ctg, grp)
 }
 
@@ -793,6 +796,7 @@ function restoreUnitSelection(show: string, ctg: string, grp: string) {
         log(err.message)
         return
     }
+    reloadParts()
     restorePartSelection(show, ctg, grp, unit)
 }
 
@@ -811,6 +815,7 @@ function restorePartSelection(show: string, ctg: string, grp: string, unit: stri
         log(err.message)
         return
     }
+    reloadTasks()
     restoreTaskSelection(show, ctg, grp, unit, part)
 }
 
