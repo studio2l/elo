@@ -638,17 +638,24 @@ function selectShow(show: string) {
 
 // restoreShowSelection은 마지막으로 선택되었던 쇼로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
+// 마지막 선택으로 돌리지 못하더라도 큰 문제는 아니기 때문에 실패에 대해 알리지 않는다.
 function restoreShowSelection() {
     let show = selection.Selected()
     if (!show) {
         return
     }
-    selectShow(show)
+    try {
+        selectShow(show)
+    } catch(err) {
+        log(err.message)
+        return
+    }
     restoreGroupSelection(show)
 }
 
 // restoreGroupSelection은 해당 쇼에서 마지막으로 선택되었던 그룹으로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
+// 마지막 선택으로 돌리지 못하더라도 큰 문제는 아니기 때문에 실패에 대해 알리지 않는다.
 function restoreGroupSelection(show: string) {
     let ctg = currentCategory()
     let ctgSel = selection.Select(show).Select(ctg)
@@ -656,35 +663,53 @@ function restoreGroupSelection(show: string) {
     if (!grp) {
         return
     }
-    selectGroup(grp)
+    try {
+        selectGroup(grp)
+    } catch(err) {
+        log(err.message)
+        return
+    }
     restoreUnitSelection(show, ctg, grp)
 }
 
 // restoreUnitSelection은 해당 그룹에서 마지막으로 선택되었던 유닛으로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
+// 마지막 선택으로 돌리지 못하더라도 큰 문제는 아니기 때문에 실패에 대해 알리지 않는다.
 function restoreUnitSelection(show: string, ctg: string, grp: string) {
     let grpSel = selection.Select(show).Select(ctg).Select(grp)
     let unit = grpSel.Selected()
     if (!unit) {
         return
     }
-    selectUnit(unit)
+    try {
+        selectUnit(unit)
+    } catch(err) {
+        log(err.message)
+        return
+    }
     restorePartSelection(show, ctg, grp, unit)
 }
 
 // restorePartSelection은 해당 유닛에서 마지막으로 선택되었던 파트로 선택을 되돌린다.
 // 기억된 하위 요소들도 함께 되돌린다.
+// 마지막 선택으로 돌리지 못하더라도 큰 문제는 아니기 때문에 실패에 대해 알리지 않는다.
 function restorePartSelection(show: string, ctg: string, grp: string, unit: string) {
     let unitSel = selection.Select(show).Select(ctg).Select(grp).Select(unit)
     let part = unitSel.Selected()
     if (!part) {
         return
     }
-    selectPart(part)
+    try {
+        selectPart(part)
+    } catch(err) {
+        log(err.message)
+        return
+    }
     restoreTaskSelection(show, ctg, grp, unit, part)
 }
 
 // restoreTaskSelection은 해당 파트에서 마지막으로 선택되었던 (버전 포함) 태스크로 선택을 되돌린다.
+// 마지막 선택으로 돌리지 못하더라도 큰 문제는 아니기 때문에 실패에 대해 알리지 않는다.
 function restoreTaskSelection(show: string, ctg: string, grp: string, unit: string, part: string) {
     let partSel = selection.Select(show).Select(ctg).Select(grp).Select(unit).Select(part)
     let vid = partSel.Selected()
@@ -696,7 +721,12 @@ function restoreTaskSelection(show: string, ctg: string, grp: string, unit: stri
         let tid = prog + "-" + task
         toggleVersionVisibility(tid)
     }
-    selectTask(vid)
+    try {
+        selectTask(vid)
+    } catch(err) {
+        log(err.message)
+        return
+    }
 }
 
 // selectGroupEv는 사용자가 그룹을 선택했을 때 그에 맞는 유닛 리스트를 보인다.
