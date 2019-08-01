@@ -640,8 +640,8 @@ function selectShow(show: string) {
 function selectGroupEv(grp: string) {
     uiEvent(function() {
         selectGroup(grp)
-        saveSelection()
         restoreUnitSelection(currentShow(), currentCategory(), grp)
+        saveSelection()
     })()
 }
 
@@ -669,8 +669,8 @@ function selectGroup(grp: string) {
 function selectUnitEv(unit: string) {
     uiEvent(function() {
         selectUnit(unit)
-        saveSelection()
         restorePartSelection(currentShow(), currentCategory(), currentGroup(), unit)
+        saveSelection()
     })()
 }
 
@@ -697,8 +697,8 @@ function selectUnit(unit: string) {
 function selectPartEv(part: string) {
     uiEvent(function() {
         selectPart(part)
-        saveSelection()
         restoreTaskSelection(currentShow(), currentCategory(), currentGroup(), currentUnit(), part)
+        saveSelection()
     })()
 }
 
