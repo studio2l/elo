@@ -392,13 +392,18 @@ function closeModal() {
     m.style.display = "none"
 }
 
-// notify는 아래쪽 표시줄에 text를 표시한다.
-function notify(text: string): number {
+// log는 로그 창에 새로운 기록을 추가한다.
+function log(text: string) {
     let logContent = document.getElementById("log-content")
     let pre = document.createElement("pre")
     pre.style.color = "black"
     pre.innerText = text
     logContent.appendChild(pre)
+}
+
+// notify는 아래쪽 표시줄에 text를 표시한다. 표시된 내용은 로그 창에도 기록된다.
+function notify(text: string): number {
+    log(text)
     // notifier는 한줄의 메세지만 보일 수 있다.
     // 마지막 줄을 보이기로 한다.
     let lines = text.trim().split("\n")
