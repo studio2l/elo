@@ -630,7 +630,7 @@ function selectShow(show: string) {
     }
     let selected = document.getElementById("show-" + show)
     if (!selected) {
-        throw Error("쇼 선택 실패: " + show + " 가 존재하지 않습니다: ")
+        throw Error("쇼 선택 실패: " + show + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
     reloadGroups()
@@ -751,7 +751,7 @@ function selectGroup(grp: string) {
     }
     let selected = document.getElementById("group-" + grp)
     if (!selected) {
-        throw Error("그룹 선택 실패: " + grp + " 가 존재하지 않습니다: ")
+        throw Error("그룹 선택 실패: " + grp + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
     reloadUnits()
@@ -780,7 +780,7 @@ function selectUnit(unit: string) {
     }
     let selected = document.getElementById("unit-" + unit)
     if (!selected) {
-        throw Error("유닛 선택 실패: " + unit + " 가 존재하지 않습니다: ")
+        throw Error("유닛 선택 실패: " + unit + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
     reloadParts()
@@ -806,7 +806,7 @@ function selectPart(part: string) {
     }
     let selected = document.getElementById("part-" + part)
     if (!selected) {
-        throw Error("파트 선택 실패: " + part + " 가 존재하지 않습니다: ")
+        throw Error("파트 선택 실패: " + part + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
     reloadTasks()
@@ -830,7 +830,7 @@ function selectTask(vid: string) {
     }
     let selected = document.getElementById("task-" + vid)
     if (!selected) {
-        throw Error("태스크 선택 실패: " + vid + " 가 존재하지 않습니다: ")
+        throw Error("태스크 선택 실패: " + vid + " 가 존재하지 않습니다.")
     }
     selected.classList.add("selected")
 }
