@@ -351,6 +351,9 @@ class PartBranch implements Branch {
     }
     Tasks(prog: string): TaskBranch[] {
         let dir = path.join(this.Dir, this.ProgramAt(prog))
+        if (!fs.existsSync(dir)) {
+            return []
+        }
         let pg = siteInfo.programs[prog]
         if (!pg) {
             throw Error("program not defined: " + prog)
