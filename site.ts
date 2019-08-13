@@ -332,7 +332,16 @@ class PartBranch implements Branch {
         if (!pg) {
             throw Error("program not defined: " + prog)
         }
-        let dir = path.join(this.Dir, this.ProgramAt(prog))
+        let progDir = this.ProgramAt(prog)
+        let dir = path.join(this.Dir, progDir)
+        if (!fs.existsSync(dir)) {
+            for (let i in this.Subdirs) {
+                let d = this.Subdirs[i]
+                if (d.Name == progDir) {
+                    makeDir(dir, d.Perm)
+                }
+            }
+        }
         let t = new TaskBranch(this, task, pg, dir)
         t.Create(ver)
     }
