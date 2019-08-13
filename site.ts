@@ -273,7 +273,14 @@ class UnitBranch implements Branch {
     Parts(): PartBranch[] {
         let children = []
         for (let d of listDirs(this.ChildRoot)) {
-            children.push(this.Part(d))
+            let p: PartBranch
+            try {
+                p = this.Part(d)
+            } catch(err) {
+                // 알지 못하는 파트가 있더라도 넘어간다.
+                continue
+            }
+            children.push(p)
         }
         return children
     }
