@@ -417,48 +417,21 @@ class TaskBranch implements Branch {
         if (fs.existsSync(scene)) {
             throw Error("scene already exists: " + scene)
         }
-        let env = this.Environ()
         let createCmd = this.Program.CreateCmd[process.platform]
         if (!createCmd) {
             throw Error("not supported os: " + process.platform)
         }
         let create = path.join(siteRoot, createCmd)
-        proc.execFileSync(create, [scene], { env: env })
+        proc.execFileSync(create, [scene])
     }
     Open(ver: string, handleError: (err: Error) => void) {
         let scene = this.Scene(ver)
-        let env = this.Environ()
         let openCmd = this.Program.OpenCmd[process.platform]
         if (!openCmd) {
             throw Error("not supported os: " + process.platform)
         }
         let open = path.join(siteRoot, openCmd)
-        spawn(open, [scene], { env: env, detach: true }, handleError)
-    }
-    Environ(): { [k: string]: string } {
-        let env = cloneEnv()
-        let s = getParent(this, "show")
-        let c = getParent(this, "category")
-        let g = getParent(this, "group")
-        let u = getParent(this, "unit")
-        let p = getParent(this, "part")
-        env["SHOW_ROOT"] = showRoot
-        env["SHOW"] = s.Name
-        env["SHOWD"] = s.Dir
-        if (c.Name == "asset") {
-            env["ASSET_TYPE"] = g.Name
-            env["ASSET"] = u.Name
-            env["ASSETD"] = u.Dir
-        } else if (c.Name == "shot") {
-            env["SEQ"] = g.Name
-            env["SHOT"] = g.Name + "_" + u.Name
-            env["SHOTD"] = u.Dir
-        }
-        env["PART"] = p.Name
-        env["PARTD"] = p.Dir
-        env["TASK"] = this.Name
-        env["TASKD"] = this.Dir
-        return env
+        spawn(open, [scene], { detach: true }, handleError)
     }
     Scene(ver): string {
         if (!ver) {
