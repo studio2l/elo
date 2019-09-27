@@ -403,6 +403,7 @@ class PartBranch implements Branch {
         let tasks = []
         for (let k in taskMap) {
             let t = taskMap[k]
+            t.Versions.sort()
             tasks.push(t)
         }
         tasks.sort(function(a, b) {
